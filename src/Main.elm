@@ -9,9 +9,9 @@ type alias Model =
     { count : Int }
 
 
-initialModel : Model
+initialModel : ( Model, Cmd Msg )
 initialModel =
-    { count = 0 }
+    ( { count = 0 }, Cmd.none )
 
 
 type Msg
@@ -19,14 +19,14 @@ type Msg
     | Decrement
 
 
-update : Msg -> Model -> Model
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Increment ->
-            { model | count = model.count + 1 }
+            ( { model | count = model.count + 1 }, Cmd.none )
 
         Decrement ->
-            { model | count = model.count - 1 }
+            ( { model | count = model.count - 1 }, Cmd.none )
 
 
 view : Model -> Html Msg
@@ -40,8 +40,14 @@ view model =
 
 main : Program () Model Msg
 main =
-    Browser.sandbox
-        { init = initialModel
+    Browser.element
+        { init = \_ -> initialModel
         , view = view
         , update = update
+        , subscriptions = subscriptions
         }
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Sub.none
