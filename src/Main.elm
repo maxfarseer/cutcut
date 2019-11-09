@@ -2,16 +2,15 @@ module Main exposing (main)
 
 import Browser
 import File exposing (File)
-import Html exposing (Html, button, div, form, i, input, label, span, text)
+import Html exposing (..)
 import Html.Attributes as Attr exposing (class, multiple, name, type_)
-import Html.Events as Events exposing (on)
+import Html.Events exposing (on)
 import Http as Http
 import Json.Decode as D
-import Json.Encode as E
 
 
 type alias Model =
-    { links : List String }
+    { links : List FileIoResponse }
 
 
 initialModel : ( Model, Cmd Msg )
@@ -42,20 +41,20 @@ update msg model =
 
                 Just file ->
                     ( model
-                    , Http.request
+                    , Http.post
                         { url = "https://file.io/?expires=1w"
-                        , method = "POST"
-                        , headers =
-                            []
                         , body = Http.multipartBody [ Http.filePart "file" file ]
                         , expect = Http.expectJson GotFileIo fileIoDecoder
-                        , timeout = Nothing
-                        , tracker = Nothing
                         }
                     )
 
-        GotFileIo _ ->
-            ( model, Cmd.none )
+        GotFileIo result ->
+            case result of
+                Err _ ->
+                    ( model, Cmd.none )
+
+                Ok response ->
+                    ( { model | links = response :: model.links }, Cmd.none )
 
 
 view : Model -> Html Msg
@@ -83,6 +82,20 @@ view model =
                     ]
                 ]
             ]
+        , h2 [] [ text "Uploaded files:" ]
+        , ul [] (renderLinksList model.links)
+        ]
+
+
+renderLinksList : List FileIoResponse -> List (Html Msg)
+renderLinksList list =
+    List.map renderLink list
+
+
+renderLink : FileIoResponse -> Html Msg
+renderLink fileIo =
+    li []
+        [ a [ Attr.href fileIo.link, Attr.target "_blank" ] [ text fileIo.link ]
         ]
 
 
@@ -97,7 +110,7 @@ main =
 
 
 subscriptions : Model -> Sub Msg
-subscriptions model =
+subscriptions _ =
     Sub.none
 
 
