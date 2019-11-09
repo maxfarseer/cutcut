@@ -7,18 +7,19 @@ import Html.Attributes as Attr exposing (class, multiple, name, type_)
 import Html.Events as Events exposing (on)
 import Http as Http
 import Json.Decode as D
+import Json.Encode as E
 
 
 type alias Model =
-    { count : Int }
+    { links : List String }
 
 
 initialModel : ( Model, Cmd Msg )
 initialModel =
-    ( { count = 0 }, Cmd.none )
+    ( { links = [] }, Cmd.none )
 
 
-type alias FileIoResp =
+type alias FileIoResponse =
     { success : Bool
     , key : String
     , link : String
@@ -28,7 +29,7 @@ type alias FileIoResp =
 
 type Msg
     = GotFiles (List File)
-    | GotFileIo (Result Http.Error FileIoResp)
+    | GotFileIo (Result Http.Error FileIoResponse)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -41,10 +42,15 @@ update msg model =
 
                 Just file ->
                     ( model
-                    , Http.post
+                    , Http.request
                         { url = "https://file.io/?expires=1w"
-                        , body = Http.fileBody file
+                        , method = "POST"
+                        , headers =
+                            []
+                        , body = Http.multipartBody [ Http.filePart "file" file ]
                         , expect = Http.expectJson GotFileIo fileIoDecoder
+                        , timeout = Nothing
+                        , tracker = Nothing
                         }
                     )
 
@@ -104,9 +110,9 @@ filesDecoder =
 -- {"success":true,"key":"2ojE41","link":"https://file.io/2ojE41","expiry":"14 days"}
 
 
-fileIoDecoder : D.Decoder FileIoResp
+fileIoDecoder : D.Decoder FileIoResponse
 fileIoDecoder =
-    D.map4 FileIoResp
+    D.map4 FileIoResponse
         (D.field "success" D.bool)
         (D.field "key" D.string)
         (D.field "link" D.string)
