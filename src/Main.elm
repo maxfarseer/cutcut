@@ -1,8 +1,12 @@
 module Main exposing (main)
 
 import Browser
-import Html exposing (Html, button, div, text)
-import Html.Events exposing (onClick)
+import File exposing (File)
+import Html exposing (Html, button, div, form, i, input, label, span, text)
+import Html.Attributes as Attr exposing (class, multiple, name, type_)
+import Html.Events as Events exposing (on)
+import Http as Http
+import Json.Decode as D
 
 
 type alias Model =
@@ -14,27 +18,65 @@ initialModel =
     ( { count = 0 }, Cmd.none )
 
 
+type alias FileIoResp =
+    { success : Bool
+    , key : String
+    , link : String
+    , expiry : String
+    }
+
+
 type Msg
-    = Increment
-    | Decrement
+    = GotFiles (List File)
+    | GotFileIo (Result Http.Error FileIoResp)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        Increment ->
-            ( { model | count = model.count + 1 }, Cmd.none )
+        GotFiles files ->
+            case List.head files of
+                Nothing ->
+                    ( model, Cmd.none )
 
-        Decrement ->
-            ( { model | count = model.count - 1 }, Cmd.none )
+                Just file ->
+                    ( model
+                    , Http.post
+                        { url = "https://file.io/?expires=1w"
+                        , body = Http.fileBody file
+                        , expect = Http.expectJson GotFileIo fileIoDecoder
+                        }
+                    )
+
+        GotFileIo _ ->
+            ( model, Cmd.none )
 
 
 view : Model -> Html Msg
 view model =
     div []
-        [ button [ onClick Increment ] [ text "+1" ]
-        , div [] [ text <| String.fromInt model.count ]
-        , button [ onClick Decrement ] [ text "-1" ]
+        [ form []
+            [ div [ class "file" ]
+                [ label [ class "file-label" ]
+                    [ input
+                        [ class "file-input"
+                        , name "resume"
+                        , type_ "file"
+                        , multiple False
+                        , on "change" (D.map GotFiles filesDecoder)
+                        ]
+                        []
+                    , span [ class "file-cta" ]
+                        [ span [ class "file-icon" ]
+                            [ i [ class "fas fa-upload" ]
+                                []
+                            ]
+                        , span [ class "file-label" ]
+                            [ text "Choose a file… " ]
+                        ]
+                    ]
+                ]
+            ]
         ]
 
 
@@ -51,3 +93,21 @@ main =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.none
+
+
+filesDecoder : D.Decoder (List File)
+filesDecoder =
+    D.at [ "target", "files" ] (D.list File.decoder)
+
+
+
+-- {"success":true,"key":"2ojE41","link":"https://file.io/2ojE41","expiry":"14 days"}
+
+
+fileIoDecoder : D.Decoder FileIoResp
+fileIoDecoder =
+    D.map4 FileIoResp
+        (D.field "success" D.bool)
+        (D.field "key" D.string)
+        (D.field "link" D.string)
+        (D.field "expiry" D.string)
