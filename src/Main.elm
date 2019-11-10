@@ -10,19 +10,23 @@ import Json.Decode as D
 
 
 type alias Model =
-    { list : ListStatus }
+    { list : List FileIoResponse
+    , uploadStatus : UploadStatus
+    }
 
 
-type ListStatus
+type UploadStatus
     = NotAsked
     | Loading
-    | Loaded (List FileIoResponse)
+    | Loaded
     | Errored Http.Error
 
 
 initialModel : ( Model, Cmd Msg )
 initialModel =
-    ( { list = NotAsked }
+    ( { list = []
+      , uploadStatus = NotAsked
+      }
     , Cmd.none
     )
 
@@ -49,7 +53,7 @@ update msg model =
                     ( model, Cmd.none )
 
                 Just file ->
-                    ( { model | list = Loading }
+                    ( { model | uploadStatus = Loading }
                     , Http.post
                         { url = "https://file.io/?expires=1w"
                         , body = Http.multipartBody [ Http.filePart "file" file ]
@@ -60,10 +64,15 @@ update msg model =
         GotFileIo result ->
             case result of
                 Err err ->
-                    ( { model | list = Errored err }, Cmd.none )
+                    ( { model | uploadStatus = Errored err }, Cmd.none )
 
                 Ok response ->
-                    ( { model | list = Loaded (response :: []) }, Cmd.none )
+                    ( { model
+                        | list = response :: model.list
+                        , uploadStatus = Loaded
+                      }
+                    , Cmd.none
+                    )
 
 
 view : Model -> Html Msg
@@ -92,21 +101,21 @@ view model =
                 ]
             ]
         , h2 [] [ text "Uploaded files:" ]
-        , renderLinksList model.list
+        , renderLinksList model
         ]
 
 
-renderLinksList : ListStatus -> Html Msg
-renderLinksList status =
-    case status of
+renderLinksList : Model -> Html Msg
+renderLinksList model =
+    case model.uploadStatus of
         NotAsked ->
             li [] [ text "Not asked yet" ]
 
         Loading ->
             li [] [ text "Loading..." ]
 
-        Loaded list ->
-            ul [] (List.map renderLink list)
+        Loaded ->
+            ul [] (List.map renderLink model.list)
 
         Errored _ ->
             li [] [ text "Loading error" ]
