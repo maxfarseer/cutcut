@@ -10,12 +10,21 @@ import Json.Decode as D
 
 
 type alias Model =
-    { links : List FileIoResponse }
+    { list : ListStatus }
+
+
+type ListStatus
+    = NotAsked
+    | Loading
+    | Loaded (List FileIoResponse)
+    | Errored Http.Error
 
 
 initialModel : ( Model, Cmd Msg )
 initialModel =
-    ( { links = [] }, Cmd.none )
+    ( { list = NotAsked }
+    , Cmd.none
+    )
 
 
 type alias FileIoResponse =
@@ -40,7 +49,7 @@ update msg model =
                     ( model, Cmd.none )
 
                 Just file ->
-                    ( model
+                    ( { model | list = Loading }
                     , Http.post
                         { url = "https://file.io/?expires=1w"
                         , body = Http.multipartBody [ Http.filePart "file" file ]
@@ -50,11 +59,11 @@ update msg model =
 
         GotFileIo result ->
             case result of
-                Err _ ->
-                    ( model, Cmd.none )
+                Err err ->
+                    ( { model | list = Errored err }, Cmd.none )
 
                 Ok response ->
-                    ( { model | links = response :: model.links }, Cmd.none )
+                    ( { model | list = Loaded (response :: []) }, Cmd.none )
 
 
 view : Model -> Html Msg
@@ -83,13 +92,24 @@ view model =
                 ]
             ]
         , h2 [] [ text "Uploaded files:" ]
-        , ul [] (renderLinksList model.links)
+        , renderLinksList model.list
         ]
 
 
-renderLinksList : List FileIoResponse -> List (Html Msg)
-renderLinksList list =
-    List.map renderLink list
+renderLinksList : ListStatus -> Html Msg
+renderLinksList status =
+    case status of
+        NotAsked ->
+            li [] [ text "Not asked yet" ]
+
+        Loading ->
+            li [] [ text "Loading..." ]
+
+        Loaded list ->
+            ul [] (List.map renderLink list)
+
+        Errored _ ->
+            li [] [ text "Loading error" ]
 
 
 renderLink : FileIoResponse -> Html Msg
