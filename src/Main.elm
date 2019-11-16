@@ -10,7 +10,7 @@ import Json.Decode as D
 
 
 type alias Model =
-    { list : List FileIoResponse
+    { list : List Base64
     , uploadStatus : UploadStatus
     }
 
@@ -31,17 +31,18 @@ initialModel =
     )
 
 
-type alias FileIoResponse =
-    { success : Bool
-    , key : String
-    , link : String
-    , expiry : String
-    }
+type alias Base64 =
+    String
 
 
 type Msg
     = GotFiles (List File)
-    | GotFileIo (Result Http.Error FileIoResponse)
+    | GotRemoveBgResponse (Result Http.Error Base64)
+
+
+removeBgApiUrl : String
+removeBgApiUrl =
+    "https://api.remove.bg/v1.0"
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -54,14 +55,21 @@ update msg model =
 
                 Just file ->
                     ( { model | uploadStatus = Loading }
-                    , Http.post
-                        { url = "https://file.io/?expires=1w"
-                        , body = Http.multipartBody [ Http.filePart "file" file ]
-                        , expect = Http.expectJson GotFileIo fileIoDecoder
+                    , Http.request
+                        { url = removeBgApiUrl ++ "/removebg"
+                        , headers =
+                            [ Http.header "X-Api-Key" "Ge5HqmTYvcD1UzadQ7MPVPVi"
+                            , Http.header "Accept" "application/json"
+                            ]
+                        , method = "POST"
+                        , timeout = Nothing
+                        , tracker = Nothing
+                        , body = Http.multipartBody [ Http.filePart "image_file" file ]
+                        , expect = Http.expectJson GotRemoveBgResponse fileBgDecoder
                         }
                     )
 
-        GotFileIo result ->
+        GotRemoveBgResponse result ->
             case result of
                 Err err ->
                     ( { model | uploadStatus = Errored err }, Cmd.none )
@@ -115,16 +123,16 @@ renderLinksList model =
             li [] [ text "Loading..." ]
 
         Loaded ->
-            ul [] (List.map renderLink model.list)
+            ul [] (List.map renderImage model.list)
 
         Errored _ ->
             li [] [ text "Loading error" ]
 
 
-renderLink : FileIoResponse -> Html Msg
-renderLink fileIo =
+renderImage : Base64 -> Html Msg
+renderImage base64str =
     li []
-        [ a [ Attr.href fileIo.link, Attr.target "_blank" ] [ text fileIo.link ]
+        [ img [ Attr.src ("data:image/png;base64, " ++ base64str) ] []
         ]
 
 
@@ -149,13 +157,15 @@ filesDecoder =
 
 
 
--- {"success":true,"key":"2ojE41","link":"https://file.io/2ojE41","expiry":"14 days"}
+{-
+   {
+     "data": {
+       "result_b64": "iVBORw0KGgoAAAANSUhEUgAAAIsAAACFC..."
+     }
+   }
+-}
 
 
-fileIoDecoder : D.Decoder FileIoResponse
-fileIoDecoder =
-    D.map4 FileIoResponse
-        (D.field "success" D.bool)
-        (D.field "key" D.string)
-        (D.field "link" D.string)
-        (D.field "expiry" D.string)
+fileBgDecoder : D.Decoder Base64
+fileBgDecoder =
+    D.field "data" (D.field "result_b64" D.string)
