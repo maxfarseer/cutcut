@@ -14,6 +14,7 @@
     <script>
         // you can define custom elements here
     </script>
+    <script src='/src/js/custom-canvas.js'></script>
   </head>
     
   <body>
@@ -31,6 +32,16 @@
       const flags = {}
       try {
         const app = Elm.Main.init({ node, flags });
+
+        // ports
+        app.ports.sendDataToJs.subscribe((data) => {
+          console.log('from Elm, data: ', data);
+          const event = new Event('draw-square');
+          const customCanvas = document.getElementsByTagName('custom-canvas')[0];
+          console.log(customCanvas)
+          customCanvas.dispatchEvent(event);
+        });
+
       } catch (e) {
         errorLogger(e);
         node.textContent = 'An error occurred while initializing the app';

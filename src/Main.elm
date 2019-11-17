@@ -1,4 +1,4 @@
-module Main exposing (main)
+port module Main exposing (main)
 
 import Browser
 import Css exposing (..)
@@ -6,7 +6,7 @@ import File exposing (File)
 import Html
 import Html.Styled exposing (..)
 import Html.Styled.Attributes exposing (class, css, multiple, name, src, type_)
-import Html.Styled.Events exposing (on)
+import Html.Styled.Events exposing (on, onClick)
 import Http as Http
 import Json.Decode as D
 
@@ -37,16 +37,19 @@ type alias Base64 =
     String
 
 
+type ToJSmsg
+    = DrawSquare
+
+
 type Msg
     = GotFiles (List File)
     | GotRemoveBgResponse (Result Http.Error Base64)
+    | ToJS ToJSmsg
 
 
-
-{- customCanvas : List (Attribute a) -> List (Html a) -> Html a
-   customCanvas =
-       Html.node "custom-canvas"
--}
+customCanvas : List (Attribute a) -> List (Html a) -> Html a
+customCanvas attributes children =
+    node "custom-canvas" attributes children
 
 
 removeBgApiUrl : String
@@ -91,6 +94,14 @@ update msg model =
                     , Cmd.none
                     )
 
+        ToJS msgToJs ->
+            case msgToJs of
+                DrawSquare ->
+                    ( model, sendDataToJs "square!" )
+
+
+port sendDataToJs : String -> Cmd msg
+
 
 view : Model -> Html Msg
 view model =
@@ -119,19 +130,22 @@ view model =
             ]
         , h2 [] [ text "Uploaded files:" ]
         , renderLinksList model
-
-        --        , renderCustomCanvas
-        , canvas [] []
+        , renderCustomCanvas
+        , button [ onClick (ToJS DrawSquare) ] [ text "Draw square" ]
         ]
 
 
-
-{- renderCustomCanvas : Html Msg
-   renderCustomCanvas =
-       customCanvas
-           []
-           []
--}
+renderCustomCanvas : Html Msg
+renderCustomCanvas =
+    customCanvas
+        [ css
+            [ border3 (px 1) solid (rgb 0 0 0)
+            , width (px 300)
+            , height (px 300)
+            , display block
+            ]
+        ]
+        []
 
 
 renderLinksList : Model -> Html Msg
