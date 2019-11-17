@@ -1,9 +1,9 @@
 port module Main exposing (main)
 
+import Assets
 import Browser
 import Css exposing (..)
 import File exposing (File)
-import Html
 import Html.Styled exposing (..)
 import Html.Styled.Attributes exposing (class, css, multiple, name, src, type_)
 import Html.Styled.Events exposing (on, onClick)
@@ -91,13 +91,13 @@ update msg model =
                         | list = response :: model.list
                         , uploadStatus = Loaded
                       }
-                    , Cmd.none
+                    , sendDataToJs response
                     )
 
         ToJS msgToJs ->
             case msgToJs of
                 DrawSquare ->
-                    ( model, sendDataToJs "square!" )
+                    ( model, sendDataToJs Assets.purpleSquare )
 
 
 port sendDataToJs : String -> Cmd msg

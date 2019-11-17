@@ -3,6 +3,7 @@ class CustomCanvas extends HTMLElement {
     const self = super();
     self._canvas = null;
     self._ctx = null;
+    self._cf = null; // cf = canvas fabric instance
     return self;
   }
   connectedCallback() {
@@ -15,14 +16,24 @@ class CustomCanvas extends HTMLElement {
     this._ctx = canvas.getContext('2d');
     this.appendChild(canvas);
 
+    this.initFabric();
+
     this.addEventListener('draw-square', e => {
-      this.drawRedSquare();
+      console.log(e);
+      this.drawImage(e.detail);
     });
   }
 
-  drawRedSquare() {
-    this._ctx.fillStyle = '#FF0000';
-    this._ctx.fillRect(20, 20, 150, 75);
+  initFabric() {
+    this._cf = new fabric.Canvas('cus');
+  }
+
+  drawImage(base64path) {
+    const url = `data:image/png;base64, ${base64path}`;
+
+    fabric.Image.fromURL(url, oImg => {
+      this._cf.add(oImg);
+    });
   }
 }
 

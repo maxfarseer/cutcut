@@ -7,13 +7,11 @@
     <!-- bulma css -->
     <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bulma@0.8.0/css/bulma.min.css'>
     <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>
+    <script src='/src/js/fabric.min.js'></script>
 
     
     <!-- if we need polyfill for custom elements -->
     <!-- https://github.com/webcomponents/polyfills/tree/master/packages/custom-elements -->
-    <script>
-        // you can define custom elements here
-    </script>
     <script src='/src/js/custom-canvas.js'></script>
   </head>
     
@@ -34,9 +32,8 @@
         const app = Elm.Main.init({ node, flags });
 
         // ports
-        app.ports.sendDataToJs.subscribe((data) => {
-          console.log('from Elm, data: ', data);
-          const event = new Event('draw-square');
+        app.ports.sendDataToJs.subscribe((base64path) => {
+          const event = new CustomEvent('draw-square', { 'detail': base64path });
           const customCanvas = document.getElementsByTagName('custom-canvas')[0];
           customCanvas.dispatchEvent(event);
         });

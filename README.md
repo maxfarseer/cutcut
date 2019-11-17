@@ -2,11 +2,11 @@
 
 Yet another elm project
 
-### For creating new project
+### For start project
 
 ```
-yarn add elm elm-format elm-live
-node_modules/.bin/elm init
+yarn install
+node_modules/.bin/elm install
 yarn start
 ```
 
