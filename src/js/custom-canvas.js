@@ -16,7 +16,6 @@ class CustomCanvas extends HTMLElement {
     this.appendChild(canvas);
 
     this.addEventListener('draw-square', e => {
-      console.log('listen');
       this.drawRedSquare();
     });
   }

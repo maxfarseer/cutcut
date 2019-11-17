@@ -38,7 +38,6 @@
           console.log('from Elm, data: ', data);
           const event = new Event('draw-square');
           const customCanvas = document.getElementsByTagName('custom-canvas')[0];
-          console.log(customCanvas)
           customCanvas.dispatchEvent(event);
         });
 
