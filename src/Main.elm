@@ -1,10 +1,12 @@
 module Main exposing (main)
 
 import Browser
+import Css exposing (..)
 import File exposing (File)
-import Html exposing (..)
-import Html.Attributes as Attr exposing (class, multiple, name, type_)
-import Html.Events exposing (on)
+import Html
+import Html.Styled exposing (..)
+import Html.Styled.Attributes exposing (class, css, multiple, name, src, type_)
+import Html.Styled.Events exposing (on)
 import Http as Http
 import Json.Decode as D
 
@@ -38,6 +40,13 @@ type alias Base64 =
 type Msg
     = GotFiles (List File)
     | GotRemoveBgResponse (Result Http.Error Base64)
+
+
+
+{- customCanvas : List (Attribute a) -> List (Html a) -> Html a
+   customCanvas =
+       Html.node "custom-canvas"
+-}
 
 
 removeBgApiUrl : String
@@ -110,7 +119,19 @@ view model =
             ]
         , h2 [] [ text "Uploaded files:" ]
         , renderLinksList model
+
+        --        , renderCustomCanvas
+        , canvas [] []
         ]
+
+
+
+{- renderCustomCanvas : Html Msg
+   renderCustomCanvas =
+       customCanvas
+           []
+           []
+-}
 
 
 renderLinksList : Model -> Html Msg
@@ -132,7 +153,7 @@ renderLinksList model =
 renderImage : Base64 -> Html Msg
 renderImage base64str =
     li []
-        [ img [ Attr.src ("data:image/png;base64, " ++ base64str) ] []
+        [ img [ src ("data:image/png;base64, " ++ base64str) ] []
         ]
 
 
@@ -140,7 +161,7 @@ main : Program () Model Msg
 main =
     Browser.element
         { init = \_ -> initialModel
-        , view = view
+        , view = view >> toUnstyled
         , update = update
         , subscriptions = subscriptions
         }
