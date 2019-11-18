@@ -4,6 +4,7 @@ class CustomCanvas extends HTMLElement {
     self._canvas = null;
     self._ctx = null;
     self._cf = null; // cf = canvas fabric instance
+    self._image = null;
     return self;
   }
   connectedCallback() {
@@ -18,17 +19,14 @@ class CustomCanvas extends HTMLElement {
 
     // this.initFabric();
 
-    this.addEventListener('draw-square', e => {
-      console.log(e.detail);
-      this.drawImage(e.detail);
-    });
+    this.addEventListener('draw-square', this.drawImage, false);
   }
 
   initFabric() {
     this._cf = new fabric.Canvas('cus');
   }
 
-  /* drawImage(imgUrl) {
+  drawFabricImage(imgUrl) {
     // const url = `data:image/png;base64, ${base64path}`;
     const url = imgUrl;
 
@@ -39,11 +37,14 @@ class CustomCanvas extends HTMLElement {
       });
       this._cf.add(oImg);
     });
-  } */
+  }
 
-  drawImage(imgUrl) {
+  drawImage(e) {
+    const imgUrl = e.detail;
     const img = new Image();
     img.crossOrigin = 'Anonymous';
+    img.width = 120;
+    img.height = 100;
 
     img.onload = () => {
       this._ctx.shadowColor = '#fff'; // green for demo purposes
@@ -77,11 +78,22 @@ class CustomCanvas extends HTMLElement {
       this._ctx.shadowOffsetX = 0;
       this._ctx.shadowOffsetY = 0;
       this._ctx.drawImage(this._canvas, 0, 0);
-    };
 
-    img.src = 'https://file.io/ecHGkF';
+      this._image = this._canvas.toDataURL();
+
+      this.clearCanvas();
+      this.initFabric();
+      this.drawFabricImage(this._image);
+    };
+    img.src =
+      'https://github.githubassets.com/images/modules/logos_page/Octocat.png';
     // img.src =
     //   'https://cdn.glitch.com/4c9ebeb9-8b9a-4adc-ad0a-238d9ae00bb5%2Fmdn_logo-only_color.svg?1535749917189';
+  }
+
+  clearCanvas() {
+    this._ctx.clearRect(0, 0, this._ctx.canvas.width, this._ctx.canvas.height);
+    this._ctx.beginPath();
   }
 }
 
