@@ -5,6 +5,9 @@ class CustomCanvas extends HTMLElement {
     self._ctx = null;
     self._cf = null; // cf = canvas fabric instance
     self._image = null;
+    self._options = {
+      strokeWidth: 3,
+    };
     return self;
   }
   connectedCallback() {
@@ -31,10 +34,6 @@ class CustomCanvas extends HTMLElement {
     const url = imgUrl;
 
     fabric.Image.fromURL(url, oImg => {
-      oImg.set({
-        stroke: 'rgba(34,177,76,1)',
-        strokeWidth: 5,
-      });
       this._cf.add(oImg);
     });
   }
@@ -47,8 +46,10 @@ class CustomCanvas extends HTMLElement {
     img.height = 100;
 
     img.onload = () => {
-      this._ctx.shadowColor = '#fff'; // green for demo purposes
-      this._ctx.shadowBlur = 5;
+      const strokeWidth = this._options.strokeWidth;
+
+      this._ctx.shadowColor = '#fff';
+      this._ctx.shadowBlur = strokeWidth;
       this._ctx.shadowOffsetX = 0;
       this._ctx.shadowOffsetY = 0;
       this._ctx.drawImage(img, 30, 30, img.width, img.height);
@@ -74,7 +75,7 @@ class CustomCanvas extends HTMLElement {
       this._ctx.putImageData(imgData, 0, 0);
 
       this._ctx.shadowColor = '#aaa';
-      this._ctx.shadowBlur = 10;
+      this._ctx.shadowBlur = strokeWidth;
       this._ctx.shadowOffsetX = 0;
       this._ctx.shadowOffsetY = 0;
       this._ctx.drawImage(this._canvas, 0, 0);
