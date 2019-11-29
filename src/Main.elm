@@ -128,8 +128,6 @@ view model =
                     ]
                 ]
             ]
-        , h2 [] [ text "Uploaded files:" ]
-        , renderLinksList model
         , renderCustomCanvas
         , button [ onClick (ToJS DrawSquare) ] [ text "Draw square" ]
         ]
@@ -146,29 +144,6 @@ renderCustomCanvas =
             ]
         ]
         []
-
-
-renderLinksList : Model -> Html Msg
-renderLinksList model =
-    case model.uploadStatus of
-        NotAsked ->
-            li [] [ text "Not asked yet" ]
-
-        Loading ->
-            li [] [ text "Loading..." ]
-
-        Loaded ->
-            ul [] (List.map renderImage model.list)
-
-        Errored _ ->
-            li [] [ text "Loading error" ]
-
-
-renderImage : Base64 -> Html Msg
-renderImage base64str =
-    li []
-        [ img [ src ("data:image/png;base64, " ++ base64str) ] []
-        ]
 
 
 main : Program () Model Msg
@@ -189,16 +164,6 @@ subscriptions _ =
 filesDecoder : D.Decoder (List File)
 filesDecoder =
     D.at [ "target", "files" ] (D.list File.decoder)
-
-
-
-{-
-   {
-     "data": {
-       "result_b64": "iVBORw0KGgoAAAANSUhEUgAAAIsAAACFC..."
-     }
-   }
--}
 
 
 fileBgDecoder : D.Decoder Base64
