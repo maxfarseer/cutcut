@@ -4,7 +4,6 @@ class CustomCanvas extends HTMLElement {
     self._canvas = null;
     self._ctx = null;
     self._cf = null; // cf = canvas fabric instance
-    self._image = null;
     self._options = {
       strokeWidth: 3,
     };
@@ -13,14 +12,14 @@ class CustomCanvas extends HTMLElement {
   connectedCallback() {
     const canvas = document.createElement('canvas');
     canvas.id = 'cus';
-    canvas.width = 298;
-    canvas.height = 298;
+    canvas.width = 512;
+    canvas.height = 512;
 
     this._canvas = canvas;
     this._ctx = canvas.getContext('2d');
     this.appendChild(canvas);
 
-    // this.initFabric();
+    this.initFabric();
 
     this.addEventListener('draw-square', this.drawImage, false);
   }
@@ -30,6 +29,7 @@ class CustomCanvas extends HTMLElement {
   }
 
   drawFabricImage(imgUrl) {
+    // remove.bg - uncomment for usage
     // const url = `data:image/png;base64, ${base64path}`;
     const url = imgUrl;
 
@@ -42,59 +42,71 @@ class CustomCanvas extends HTMLElement {
     const imgUrl = e.detail;
     const img = new Image();
     img.crossOrigin = 'Anonymous';
-    img.width = 120;
-    img.height = 100;
 
     img.onload = () => {
-      const strokeWidth = this._options.strokeWidth;
-
-      this._ctx.shadowColor = '#fff';
-      this._ctx.shadowBlur = strokeWidth;
-      this._ctx.shadowOffsetX = 0;
-      this._ctx.shadowOffsetY = 0;
-      this._ctx.drawImage(img, 30, 30, img.width, img.height);
-
-      // get contents of blurry bordered image
-      const imgData = this._ctx.getImageData(
-        0,
-        0,
-        this._ctx.canvas.width - 1,
-        this._ctx.canvas.height - 1
-      );
-
-      const opaqueAlpha = 255;
-
-      // turn all non-transparent pixels to full opacity
-      for (let i = imgData.data.length; i > 0; i -= 4) {
-        if (imgData.data[i + 3] > 0) {
-          imgData.data[i + 3] = opaqueAlpha;
-        }
-      }
-
-      // write transformed opaque pixels back to image
-      this._ctx.putImageData(imgData, 0, 0);
-
-      this._ctx.shadowColor = '#aaa';
-      this._ctx.shadowBlur = strokeWidth;
-      this._ctx.shadowOffsetX = 0;
-      this._ctx.shadowOffsetY = 0;
-      this._ctx.drawImage(this._canvas, 0, 0);
-
-      this._image = this._canvas.toDataURL();
-
-      this.clearCanvas();
-      this.initFabric();
-      this.drawFabricImage(this._image);
+      const base64image = this.prepareImageForFabric(img);
+      this.drawFabricImage(base64image);
     };
-    img.src =
-      'https://github.githubassets.com/images/modules/logos_page/Octocat.png';
-    // img.src =
-    //   'https://cdn.glitch.com/4c9ebeb9-8b9a-4adc-ad0a-238d9ae00bb5%2Fmdn_logo-only_color.svg?1535749917189';
+
+    // remove.bg - uncomment for usage
+    // img.src = imgUrl;
+    img.src = 'https://i.imgur.com/KetXuTZ.png';
   }
 
   clearCanvas() {
     this._ctx.clearRect(0, 0, this._ctx.canvas.width, this._ctx.canvas.height);
     this._ctx.beginPath();
+  }
+
+  prepareImageForFabric(img) {
+    const { width, height } = img;
+    console.log(img.width, img.height);
+
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.id = 'temp-cus';
+    tempCanvas.width = width + 30;
+    tempCanvas.height = height + 30;
+
+    const ctx = tempCanvas.getContext('2d');
+    tempCanvas.style.display = 'none';
+    document.body.appendChild(tempCanvas);
+
+    const strokeWidth = this._options.strokeWidth;
+
+    ctx.shadowColor = '#fff';
+    ctx.shadowBlur = strokeWidth;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
+    ctx.drawImage(img, 10, 10, img.width, img.height);
+
+    // get contents of blurry bordered image
+    const imgData = ctx.getImageData(
+      0,
+      0,
+      ctx.canvas.width - 1,
+      ctx.canvas.height - 1
+    );
+
+    const opaqueAlpha = 255;
+
+    // turn all non-transparent pixels to full opacity
+    for (let i = imgData.data.length; i > 0; i -= 4) {
+      if (imgData.data[i + 3] > 0) {
+        imgData.data[i + 3] = opaqueAlpha;
+      }
+    }
+
+    // write transformed opaque pixels back to image
+    ctx.putImageData(imgData, 0, 0);
+    ctx.shadowColor = '#aaa';
+    ctx.shadowBlur = strokeWidth;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
+    ctx.drawImage(tempCanvas, 0, 0);
+
+    const base64image = tempCanvas.toDataURL();
+    document.body.removeChild(tempCanvas);
+    return base64image;
   }
 }
 

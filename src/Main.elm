@@ -140,8 +140,8 @@ renderCustomCanvas =
     customCanvas
         [ css
             [ border3 (px 1) solid (rgb 0 0 0)
-            , width (px 300)
-            , height (px 300)
+            , width (px 514)
+            , height (px 514)
             , display block
             ]
         ]
