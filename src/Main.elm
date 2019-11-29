@@ -1,6 +1,5 @@
 port module Main exposing (main)
 
-import Assets
 import Browser
 import Css exposing (..)
 import File exposing (File)
@@ -97,7 +96,7 @@ update msg model =
         ToJS msgToJs ->
             case msgToJs of
                 DrawSquare ->
-                    ( model, sendDataToJs Assets.purpleSquare )
+                    ( model, sendDataToJs "123" )
 
 
 port sendDataToJs : String -> Cmd msg
