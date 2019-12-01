@@ -33,7 +33,7 @@
 
         // ports
         app.ports.sendDataToJs.subscribe((base64path) => {
-          const event = new CustomEvent('draw-square', { 'detail': base64path });
+          const event = new CustomEvent('draw-image', { detail: {base64path } });
           const customCanvas = document.getElementsByTagName('custom-canvas')[0];
           customCanvas.dispatchEvent(event);
         });

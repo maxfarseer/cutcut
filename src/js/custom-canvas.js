@@ -21,7 +21,7 @@ class CustomCanvas extends HTMLElement {
 
     this.initFabric();
 
-    this.addEventListener('draw-square', this.drawImage, false);
+    this.addEventListener('draw-image', this.drawImage, false);
   }
 
   initFabric() {
@@ -29,17 +29,14 @@ class CustomCanvas extends HTMLElement {
   }
 
   drawFabricImage(imgUrl) {
-    // remove.bg - uncomment for usage
-    // const url = `data:image/png;base64, ${base64path}`;
-    const url = imgUrl;
-
-    fabric.Image.fromURL(url, oImg => {
+    fabric.Image.fromURL(imgUrl, oImg => {
       this._cf.add(oImg);
     });
   }
 
   drawImage(e) {
-    const imgUrl = e.detail;
+    console.log('drawImage', e);
+    const imgUrl = `data:image/png;base64, ${e.detail.base64path}`;
     const img = new Image();
     img.crossOrigin = 'Anonymous';
 
@@ -49,8 +46,8 @@ class CustomCanvas extends HTMLElement {
     };
 
     // remove.bg - uncomment for usage
-    // img.src = imgUrl;
-    img.src = 'https://i.imgur.com/KetXuTZ.png';
+    img.src = imgUrl;
+    // img.src = 'https://i.imgur.com/KetXuTZ.png';
   }
 
   clearCanvas() {
@@ -64,8 +61,8 @@ class CustomCanvas extends HTMLElement {
 
     const tempCanvas = document.createElement('canvas');
     tempCanvas.id = 'temp-cus';
-    tempCanvas.width = width + 30;
-    tempCanvas.height = height + 30;
+    tempCanvas.width = width + 20;
+    tempCanvas.height = height + 20;
 
     const ctx = tempCanvas.getContext('2d');
     tempCanvas.style.display = 'none';

@@ -96,7 +96,7 @@ update msg model =
         ToJS msgToJs ->
             case msgToJs of
                 DrawSquare ->
-                    ( model, sendDataToJs "123" )
+                    ( model, sendDataToJs "iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAARUlEQVR42u3PMREAAAgEoLd/AtNqBlcPGlDJdB4oEREREREREREREREREREREREREREREREREREREREREREREREREZGLBddNT+MQpgCuAAAAAElFTkSuQmCC" )
 
 
 port sendDataToJs : String -> Cmd msg
