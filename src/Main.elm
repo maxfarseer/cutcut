@@ -5,7 +5,7 @@ import Browser
 import Css exposing (..)
 import File exposing (File)
 import Html.Styled exposing (..)
-import Html.Styled.Attributes exposing (class, css, multiple, name, src, type_)
+import Html.Styled.Attributes exposing (class, css, id, multiple, name, src, type_)
 import Html.Styled.Events exposing (on, onClick)
 import Http as Http
 import Json.Decode as D
@@ -116,7 +116,7 @@ port sendDataToJs : String -> Cmd msg
 view : Model -> Html Msg
 view model =
     div []
-        [ AddImg.view model.addImg
+        [ h2 [] [ text "CutCut" ]
         , form []
             [ div [ class "file" ]
                 [ label [ class "file-label" ]
@@ -141,7 +141,7 @@ view model =
             ]
         , renderCustomCanvas
         , button [ onClick (ToJS DrawSquare) ] [ text "Draw square" ]
-        , button [ onClick (FromAddImg AddImg.ClickedAddImg) ] [ text "Add image" ]
+        , map FromAddImg (AddImg.view model.addImg)
         ]
 
 
