@@ -1,5 +1,6 @@
 port module Main exposing (main)
 
+import AddImg
 import Browser
 import Css exposing (..)
 import File exposing (File)
@@ -13,6 +14,7 @@ import Json.Decode as D
 type alias Model =
     { list : List Base64
     , uploadStatus : UploadStatus
+    , addImg : AddImg.Model
     }
 
 
@@ -27,6 +29,7 @@ initialModel : ( Model, Cmd Msg )
 initialModel =
     ( { list = []
       , uploadStatus = NotAsked
+      , addImg = AddImg.init
       }
     , Cmd.none
     )
@@ -44,6 +47,7 @@ type Msg
     = GotFiles (List File)
     | GotRemoveBgResponse (Result Http.Error Base64)
     | ToJS ToJSmsg
+    | FromAddImg AddImg.Msg
 
 
 customCanvas : List (Attribute a) -> List (Html a) -> Html a
@@ -59,6 +63,13 @@ removeBgApiUrl =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        FromAddImg addImgMsg ->
+            let
+                ( updatedAddImg, addImgCmd ) =
+                    AddImg.update addImgMsg model.addImg
+            in
+            ( { model | addImg = updatedAddImg }, addImgCmd |> Cmd.map FromAddImg )
+
         GotFiles files ->
             case List.head files of
                 Nothing ->
@@ -105,7 +116,8 @@ port sendDataToJs : String -> Cmd msg
 view : Model -> Html Msg
 view model =
     div []
-        [ form []
+        [ AddImg.view model.addImg
+        , form []
             [ div [ class "file" ]
                 [ label [ class "file-label" ]
                     [ input
@@ -129,6 +141,7 @@ view model =
             ]
         , renderCustomCanvas
         , button [ onClick (ToJS DrawSquare) ] [ text "Draw square" ]
+        , button [ onClick (FromAddImg AddImg.ClickedAddImg) ] [ text "Add image" ]
         ]
 
 
