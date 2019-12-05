@@ -2,6 +2,7 @@ port module AddImg exposing (Model, Msg(..), init, update, view)
 
 import Accessibility.Modal as Modal
 import Css exposing (..)
+import Custom exposing (customCropper)
 import Dict exposing (Dict)
 import File exposing (File)
 import Html.Styled exposing (..)
@@ -9,6 +10,7 @@ import Html.Styled.Attributes exposing (class, css, disabled, id, multiple, name
 import Html.Styled.Events exposing (on, onClick)
 import Http as Http
 import Json.Decode as D
+import Task
 
 
 type alias Model =
@@ -38,6 +40,7 @@ type Msg
     = ClickedAddImg
     | ModalMsg Int Modal.Msg
     | GotFiles (List File)
+    | GotPreview Base64
     | GotRemoveBgResponse (Result Http.Error Base64)
 
 
@@ -87,6 +90,9 @@ update msg model =
                                 { dismissOnEscAndOverlayClick = True }
                                 modalMsg
                                 modal
+
+                        _ =
+                            Debug.log "modalMsg" modalMsg
                     in
                     ( { model | modal = Dict.insert modalId newModalState model.modal }
                     , Cmd.map (ModalMsg modalId) modalCmd
@@ -100,21 +106,26 @@ update msg model =
                 Nothing ->
                     ( model, Cmd.none )
 
+                --                Just file ->
+                --                    ( { model | uploadStatus = Loading }
+                --                    , Http.request
+                --                        { url = removeBgApiUrl ++ "/removebg"
+                --                        , headers =
+                --                            [ Http.header "X-Api-Key" "Ge5HqmTYvcD1UzadQ7MPVPVi"
+                --                            , Http.header "Accept" "application/json"
+                --                            ]
+                --                        , method = "POST"
+                --                        , timeout = Nothing
+                --                        , tracker = Nothing
+                --                        , body = Http.multipartBody [ Http.filePart "image_file" file ]
+                --                        , expect = Http.expectJson GotRemoveBgResponse fileBgDecoder
+                --                        }
+                --                    )
                 Just file ->
-                    ( { model | uploadStatus = Loading }
-                    , Http.request
-                        { url = removeBgApiUrl ++ "/removebg"
-                        , headers =
-                            [ Http.header "X-Api-Key" "Ge5HqmTYvcD1UzadQ7MPVPVi"
-                            , Http.header "Accept" "application/json"
-                            ]
-                        , method = "POST"
-                        , timeout = Nothing
-                        , tracker = Nothing
-                        , body = Http.multipartBody [ Http.filePart "image_file" file ]
-                        , expect = Http.expectJson GotRemoveBgResponse fileBgDecoder
-                        }
-                    )
+                    ( model, Task.perform GotPreview <| File.toUrl file )
+
+        GotPreview base64 ->
+            ( { model | step = CropImgStep base64 }, Cmd.none )
 
         GotRemoveBgResponse result ->
             case result of
@@ -206,7 +217,14 @@ viewCropImage : Base64 -> Html Msg
 viewCropImage base64 =
     div []
         [ h2 [] [ text "Crop image" ]
-        , img [ src <| "data:image/png;base64, " ++ base64 ] []
+
+        --        , img [ src <| "data:image/png;base64, " ++ base64 ] []
+        , img
+            [ src base64
+            , css [ maxHeight (px 400) ]
+            ]
+            []
+        , viewCustomCropper
         ]
 
 
@@ -235,6 +253,19 @@ viewUploadFileBtn btnLabel isActive =
                 ]
             ]
         ]
+
+
+viewCustomCropper : Html Msg
+viewCustomCropper =
+    customCropper
+        [ css
+            [ border3 (px 1) solid (rgb 45 0 45)
+            , width (px 514)
+            , height (px 514)
+            , display block
+            ]
+        ]
+        []
 
 
 

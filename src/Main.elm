@@ -6,6 +6,7 @@ import Css exposing (..)
 import Html.Styled exposing (..)
 import Html.Styled.Attributes exposing (class, css, id, multiple, name, src, type_)
 import Html.Styled.Events exposing (on, onClick)
+import Ports exposing (OutgoingMsg(..), sendToJs)
 
 
 type alias Model =
@@ -21,12 +22,12 @@ initialModel =
     )
 
 
-type ToJSmsg
-    = DrawSquare
+type ForOutgoingMsg
+    = DrawTestSquare
 
 
 type Msg
-    = ToJS ToJSmsg
+    = ToJS ForOutgoingMsg
     | FromAddImg AddImg.Msg
 
 
@@ -47,13 +48,10 @@ update msg model =
 
         ToJS msgToJs ->
             case msgToJs of
-                DrawSquare ->
-                    ( model, Cmd.none )
-
-
-
---                DrawSquare ->
---                    ( model, sendDataToJs "iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAARUlEQVR42u3PMREAAAgEoLd/AtNqBlcPGlDJdB4oEREREREREREREREREREREREREREREREREREREREREREREREREZGLBddNT+MQpgCuAAAAAElFTkSuQmCC" )
+                DrawTestSquare ->
+                    ( model
+                    , sendToJs (DrawSquare "iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAARUlEQVR42u3PMREAAAgEoLd/AtNqBlcPGlDJdB4oEREREREREREREREREREREREREREREREREREREREREREREREREZGLBddNT+MQpgCuAAAAAElFTkSuQmCC")
+                    )
 
 
 view : Model -> Html Msg
@@ -61,7 +59,7 @@ view model =
     div []
         [ h2 [] [ text "CutCut" ]
         , renderCustomCanvas
-        , button [ onClick (ToJS DrawSquare) ] [ text "Draw square" ]
+        , button [ onClick (ToJS DrawTestSquare) ] [ text "Draw square" ]
         , map FromAddImg (AddImg.view model.addImg)
         ]
 

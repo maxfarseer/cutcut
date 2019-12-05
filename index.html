@@ -9,10 +9,14 @@
     <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>
     <script src='/src/js/fabric.min.js'></script>
 
+    <!-- cropper.js -->
+    <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.6/cropper.min.css'>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.6/cropper.min.js'></script>
     
     <!-- if we need polyfill for custom elements -->
     <!-- https://github.com/webcomponents/polyfills/tree/master/packages/custom-elements -->
     <script src='/src/js/custom-canvas.js'></script>
+    <script src='/src/js/custom-cropper.js'></script>
   </head>
     
   <body>
@@ -21,6 +25,16 @@
         <div id='app'></div>
       </div>
     </section>
+    <script>
+      // move this to another file,
+      // and import
+      // TODO: add index.js endpoint + wepback or something, instead of index.html
+      const drawSqaure = (base64path) => {
+        const event = new CustomEvent('draw-image', { detail: { base64path } });
+        const customCanvas = document.getElementsByTagName('custom-canvas')[0];
+        customCanvas.dispatchEvent(event);
+      }
+    </script>
     <script src="/elm.js"></script>
     <script>
       const errorLogger = error => console.error(`App Error: ${error}`);
@@ -32,10 +46,47 @@
         const app = Elm.Main.init({ node, flags });
 
         // ports
-        app.ports.sendDataToJs.subscribe((base64path) => {
-          const event = new CustomEvent('draw-image', { detail: {base64path } });
-          const customCanvas = document.getElementsByTagName('custom-canvas')[0];
-          customCanvas.dispatchEvent(event);
+        const handlePortMsg = async ({ action, payload }) => {
+          switch (action) {
+            case 'DrawSquare': {
+              drawSqaure(payload);
+              break;
+            }
+            default:
+              throw new Error(`Received unknown message ${action} from Elm.`);
+          }
+        };
+
+        app.ports.msgForJs.subscribe(handlePortMsg);
+        // end ports
+
+        // ports
+        /**
+         * @param {Object} action
+         * @param {string} action.name
+         * @param {Object} action.payload
+         */
+        
+        app.ports.sendDataToJs.subscribe(({ name, payload }) => {
+          switch (action.name) {
+            /* case 'draw-square-clicked': {
+              const event = new CustomEvent('draw-image', { detail: { base64path: action.payload } });
+              const customCanvas = document.getElementsByTagName('custom-canvas')[0];
+              customCanvas.dispatchEvent(event);    
+              break;
+            } */
+
+            case 'image-crop-requested': {
+              const event = new CustomEvent('crop-image-init', { detail: { base64url: action.payload } });
+              const customCropper = document.getElementsByTagName('custom-cropper')[0];
+              customCropper.dispatchEvent(event);
+              break;
+            }
+          
+            default:
+              console.warn('unknown action name');
+              break;
+          }
         });
 
       } catch (e) {
