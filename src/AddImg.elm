@@ -10,6 +10,7 @@ import Html.Styled.Attributes exposing (class, css, disabled, id, multiple, name
 import Html.Styled.Events exposing (on, onClick)
 import Http as Http
 import Json.Decode as D
+import Ports exposing (OutgoingMsg(..), sendToJs)
 import Task
 
 
@@ -42,6 +43,7 @@ type Msg
     | GotFiles (List File)
     | GotPreview Base64
     | GotRemoveBgResponse (Result Http.Error Base64)
+    | CropBtnClicked Base64
 
 
 init : Model
@@ -127,17 +129,26 @@ update msg model =
         GotPreview base64 ->
             ( { model | step = CropImgStep base64 }, Cmd.none )
 
+        CropBtnClicked base64 ->
+            ( model, sendToJs (CropImage base64) )
+
         GotRemoveBgResponse result ->
             case result of
                 Err err ->
                     ( { model | uploadStatus = Errored err }, Cmd.none )
 
                 Ok response ->
-                    ( { model
-                        | step = CropImgStep response
-                      }
-                    , sendDataToJs response
-                    )
+                    ( model, Cmd.none )
+
+
+
+{- Ok response ->
+   ( { model
+       | step = CropImgStep response
+     }
+   , sendDataToJs response
+   )
+-}
 
 
 view : Model -> Html Msg
@@ -214,16 +225,11 @@ viewAddImgStep uploadStatus =
 
 
 viewCropImage : Base64 -> Html Msg
-viewCropImage base64 =
+viewCropImage imgUrl =
     div []
-        [ h2 [] [ text "Crop image" ]
-
-        --        , img [ src <| "data:image/png;base64, " ++ base64 ] []
-        , img
-            [ src base64
-            , css [ maxHeight (px 400) ]
-            ]
-            []
+        [ h2 []
+            [ text "Crop image" ]
+        , button [ onClick <| CropBtnClicked imgUrl ] [ text "Crop init (refactor)" ]
         , viewCustomCropper
         ]
 

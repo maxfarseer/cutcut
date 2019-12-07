@@ -34,6 +34,13 @@
         const customCanvas = document.getElementsByTagName('custom-canvas')[0];
         customCanvas.dispatchEvent(event);
       }
+
+      const cropImage = (imgUrl) => {
+        const event = new CustomEvent('crop-image-init', { detail: { imgUrl } });
+        console.log(document.getElementsByTagName('custom-cropper')[0])
+        const customCropper = document.getElementsByTagName('custom-cropper')[0];
+        customCropper.dispatchEvent(event);
+      }
     </script>
     <script src="/elm.js"></script>
     <script>
@@ -52,6 +59,10 @@
               drawSqaure(payload);
               break;
             }
+            case 'CropImage': {
+              cropImage(payload);
+              break;
+            }
             default:
               throw new Error(`Received unknown message ${action} from Elm.`);
           }
@@ -59,35 +70,6 @@
 
         app.ports.msgForJs.subscribe(handlePortMsg);
         // end ports
-
-        // ports
-        /**
-         * @param {Object} action
-         * @param {string} action.name
-         * @param {Object} action.payload
-         */
-        
-        app.ports.sendDataToJs.subscribe(({ name, payload }) => {
-          switch (action.name) {
-            /* case 'draw-square-clicked': {
-              const event = new CustomEvent('draw-image', { detail: { base64path: action.payload } });
-              const customCanvas = document.getElementsByTagName('custom-canvas')[0];
-              customCanvas.dispatchEvent(event);    
-              break;
-            } */
-
-            case 'image-crop-requested': {
-              const event = new CustomEvent('crop-image-init', { detail: { base64url: action.payload } });
-              const customCropper = document.getElementsByTagName('custom-cropper')[0];
-              customCropper.dispatchEvent(event);
-              break;
-            }
-          
-            default:
-              console.warn('unknown action name');
-              break;
-          }
-        });
 
       } catch (e) {
         errorLogger(e);

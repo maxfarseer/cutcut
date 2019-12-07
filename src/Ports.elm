@@ -15,6 +15,7 @@ type alias Base64 =
 
 type OutgoingMsg
     = DrawSquare Base64
+    | CropImage Base64
 
 
 {-| Send messages to JS
@@ -28,3 +29,6 @@ sendToJs outgoingMsg =
         case outgoingMsg of
             DrawSquare base64 ->
                 { action = "DrawSquare", payload = Encode.string base64 }
+
+            CropImage base64 ->
+                { action = "CropImage", payload = Encode.string base64 }
