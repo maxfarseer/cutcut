@@ -44,6 +44,7 @@ type Msg
     | GotPreview Base64
     | GotRemoveBgResponse (Result Http.Error Base64)
     | CropBtnClicked Base64
+    | SendCroppedToRemoveBgClicked
 
 
 init : Model
@@ -140,6 +141,9 @@ update msg model =
                 Ok response ->
                     ( model, Cmd.none )
 
+        SendCroppedToRemoveBgClicked ->
+            ( model, sendToJs SendCroppedToRemoveBg )
+
 
 
 {- Ok response ->
@@ -230,6 +234,7 @@ viewCropImage imgUrl =
         [ h2 []
             [ text "Crop image" ]
         , button [ onClick <| CropBtnClicked imgUrl ] [ text "Crop init (refactor)" ]
+        , button [ onClick <| SendCroppedToRemoveBgClicked ] [ text "Send cropped" ]
         , viewCustomCropper
         ]
 

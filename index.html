@@ -17,6 +17,13 @@
     <!-- https://github.com/webcomponents/polyfills/tree/master/packages/custom-elements -->
     <script src='/src/js/custom-canvas.js'></script>
     <script src='/src/js/custom-cropper.js'></script>
+    <style>
+      /* todo: move to css */
+      #cropper-image {
+        display: block;
+        max-width: 100%;
+      }
+    </style>
   </head>
     
   <body>
@@ -24,6 +31,8 @@
       <div class='container'>
         <div id='app'></div>
       </div>
+      <!-- test container -->
+      <img id='after-remove'>
     </section>
     <script>
       // move this to another file,
@@ -37,9 +46,15 @@
 
       const cropImage = (imgUrl) => {
         const event = new CustomEvent('crop-image-init', { detail: { imgUrl } });
-        console.log(document.getElementsByTagName('custom-cropper')[0])
         const customCropper = document.getElementsByTagName('custom-cropper')[0];
         customCropper.dispatchEvent(event);
+      }
+
+      const sendCroppedToRemoveBg = () => {
+        const event = new CustomEvent('send-cropped-to-remove-bg');
+        const customCropper = document.getElementsByTagName('custom-cropper')[0];
+        customCropper.dispatchEvent(event);
+        
       }
     </script>
     <script src="/elm.js"></script>
@@ -61,6 +76,10 @@
             }
             case 'CropImage': {
               cropImage(payload);
+              break;
+            }
+            case 'SendCroppedToRemoveBg': {
+              sendCroppedToRemoveBg();
               break;
             }
             default:

@@ -19,6 +19,11 @@ class CustomCropper extends HTMLElement {
     this.appendChild(fragment);
 
     this.addEventListener('crop-image-init', this.initImage, false);
+    this.addEventListener(
+      'send-cropped-to-remove-bg',
+      this.sendImageToRemoveBg,
+      false
+    );
   }
 
   initImage = e => {
@@ -30,6 +35,7 @@ class CustomCropper extends HTMLElement {
   initCropper = () => {
     // https://github.com/fengyuanchen/cropperjs#options
     const image = document.getElementById('cropper-image');
+    const self = this;
 
     const cropper = new Cropper(image, {
       aspectRatio: 16 / 9,
@@ -43,11 +49,9 @@ class CustomCropper extends HTMLElement {
         console.log(event.detail.scaleY);
       },
       ready() {
-        console.log('ready to crop');
+        self._cropper = cropper;
       },
     });
-
-    this._cropper = cropper;
   };
 
   loadImage = (imgUrl, cb) => {
@@ -57,6 +61,39 @@ class CustomCropper extends HTMLElement {
     this._div.appendChild(img);
 
     img.src = imgUrl;
+  };
+
+  sendImageToRemoveBg = () => {
+    // https://github.com/fengyuanchen/cropperjs#getcroppedcanvasoptions
+    this._cropper.getCroppedCanvas().toBlob(blob => {
+      const formData = new FormData();
+      formData.append('image_file', blob);
+
+      const myHeaders = new Headers({
+        Accept: 'application/json',
+        'X-Api-Key': 'Ge5HqmTYvcD1UzadQ7MPVPVi',
+      });
+
+      // https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
+      const myInit = {
+        method: 'POST',
+        headers: myHeaders,
+        mode: 'cors',
+        cache: 'default',
+        body: formData,
+      };
+
+      const myRequest = new Request(
+        'https://api.remove.bg/v1.0/removebg',
+        myInit
+      );
+      fetch(myRequest).then(async response => {
+        const json = await response.json();
+        const imgUrl = `data:image/png;base64, ${json.data.result_b64}`;
+        const img = document.getElementById('after-remove');
+        img.src = imgUrl;
+      });
+    });
   };
 }
 
