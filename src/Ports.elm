@@ -16,7 +16,11 @@ type alias Base64 =
 type OutgoingMsg
     = DrawSquare Base64
     | CropImage Base64
-    | SendCroppedToRemoveBg
+    | RequestCroppedData
+
+
+type IncomingMsg
+    = ReceiveCroppedData Base64
 
 
 {-| Send messages to JS
@@ -34,5 +38,5 @@ sendToJs outgoingMsg =
             CropImage base64 ->
                 { action = "CropImage", payload = Encode.string base64 }
 
-            SendCroppedToRemoveBg ->
-                { action = "SendCroppedToRemoveBg", payload = Encode.null }
+            RequestCroppedData ->
+                { action = "RequestCroppedData", payload = Encode.null }

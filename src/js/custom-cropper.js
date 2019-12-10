@@ -19,11 +19,7 @@ class CustomCropper extends HTMLElement {
     this.appendChild(fragment);
 
     this.addEventListener('crop-image-init', this.initImage, false);
-    this.addEventListener(
-      'send-cropped-to-remove-bg',
-      this.sendImageToRemoveBg,
-      false
-    );
+    this.addEventListener('request-cropped-data', this.getCroppedData, false);
   }
 
   initImage = e => {
@@ -38,15 +34,14 @@ class CustomCropper extends HTMLElement {
     const self = this;
 
     const cropper = new Cropper(image, {
-      aspectRatio: 16 / 9,
       crop(event) {
-        console.log(event.detail.x);
+        /* console.log(event.detail.x);
         console.log(event.detail.y);
         console.log(event.detail.width);
         console.log(event.detail.height);
         console.log(event.detail.rotate);
         console.log(event.detail.scaleX);
-        console.log(event.detail.scaleY);
+        console.log(event.detail.scaleY); */
       },
       ready() {
         self._cropper = cropper;
@@ -63,7 +58,11 @@ class CustomCropper extends HTMLElement {
     img.src = imgUrl;
   };
 
-  sendImageToRemoveBg = () => {
+  getCroppedData = () => {
+    return this._cropper.getCroppedCanvas().toDataURL();
+  };
+
+  /* sendImageToRemoveBg = () => {
     // https://github.com/fengyuanchen/cropperjs#getcroppedcanvasoptions
     this._cropper.getCroppedCanvas().toBlob(blob => {
       const formData = new FormData();
@@ -94,7 +93,7 @@ class CustomCropper extends HTMLElement {
         img.src = imgUrl;
       });
     });
-  };
+  }; */
 }
 
 if (!window.customElements.get('custom-cropper')) {
