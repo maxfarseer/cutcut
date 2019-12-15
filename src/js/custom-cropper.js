@@ -182,7 +182,6 @@ class CustomCropper extends HTMLElement {
     const event = new CustomEvent('recieved-cropped-data', {
       bubbles: true,
       cancelable: true,
-      composed: true, // https://developers.google.com/web/fundamentals/web-components/shadowdom#customevents
       detail: imageBase64,
     });
 
