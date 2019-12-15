@@ -1,8 +1,7 @@
-module AddImgV2 exposing (..)
+module AddImgV2 exposing (Model, Msg, init, update, view)
 
 import Css exposing (..)
 import Custom exposing (customCropper)
-import Dict exposing (Dict)
 import File exposing (File)
 import Html.Styled exposing (..)
 import Html.Styled.Attributes exposing (class, css, disabled, id, multiple, name, src, type_)
@@ -32,7 +31,7 @@ type UploadStatus
 
 type Step
     = Add
-    | Crop Base64
+    | Crop
     | Erase
 
 
@@ -41,6 +40,7 @@ type Msg
     | GotFiles (List File)
     | GotFileUrl Base64
     | ClickedCloseModal
+    | CropFinishedBtnClicked
 
 
 init : Model
@@ -79,10 +79,13 @@ update msg model =
                     ( model, Task.perform GotFileUrl <| File.toUrl file )
 
         GotFileUrl base64 ->
-            ( { model | step = Crop base64 }, sendToJs <| CropImage base64 )
+            ( { model | step = Crop }, sendToJs <| CropImage base64 )
 
         ClickedCloseModal ->
             ( { model | step = Add }, Cmd.none )
+
+        CropFinishedBtnClicked ->
+            ( model, sendToJs <| RequestCroppedData )
 
 
 view : Model -> Html Msg
@@ -91,14 +94,16 @@ view model =
         Add ->
             viewUploadFileBtn
 
-        Crop base64 ->
+        Crop ->
             Ui.Modal.view
                 { title = "Add image"
                 , open = True
                 , closeMsg = ClickedCloseModal
                 }
                 []
-                [ viewCustomCropper ]
+                [ viewCustomCropper
+                , button [ onClick <| CropFinishedBtnClicked ] [ text "Finish crop" ]
+                ]
 
         Erase ->
             div []
