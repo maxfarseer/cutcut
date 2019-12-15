@@ -50,11 +50,17 @@
         });
       }
 
+      const prepareForErase = () => {
+        const event = new CustomEvent('prepare-for-erase');
+        const customCropper = document.getElementsByTagName('custom-cropper')[0];
+        customCropper.dispatchEvent(event);
+      }
+
       const requestCroppedData = () => {
         const event = new CustomEvent('request-cropped-data');
         const customCropper = document.getElementsByTagName('custom-cropper')[0];
         customCropper.dispatchEvent(event);
-      }
+      }      
     </script>
     <script src="/elm.js"></script>
     <script>
@@ -75,6 +81,10 @@
             }
             case 'CropImage': {
               cropImage(payload);
+              break;
+            }
+            case 'PrepareForErase': {
+              prepareForErase();
               break;
             }
             case 'RequestCroppedData': {

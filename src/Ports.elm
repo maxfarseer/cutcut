@@ -16,6 +16,7 @@ type alias Base64 =
 type OutgoingMsg
     = DrawSquare Base64
     | CropImage Base64
+    | PrepareForErase
     | RequestCroppedData
 
 
@@ -37,6 +38,9 @@ sendToJs outgoingMsg =
 
             CropImage base64 ->
                 { action = "CropImage", payload = Encode.string base64 }
+
+            PrepareForErase ->
+                { action = "PrepareForErase", payload = Encode.null }
 
             RequestCroppedData ->
                 { action = "RequestCroppedData", payload = Encode.null }

@@ -22,6 +22,7 @@ class CustomCanvas extends HTMLElement {
     this.initFabric();
 
     this.addEventListener('draw-image', this.drawImage, false);
+    this.addEventListener('recieved-cropped-data', this.drawImage, false);
   }
 
   initFabric() {
@@ -35,8 +36,7 @@ class CustomCanvas extends HTMLElement {
   }
 
   drawImage(e) {
-    console.log('drawImage', e);
-    const imgUrl = `data:image/png;base64, ${e.detail.base64path}`;
+    const imgUrl = e.detail;
     const img = new Image();
     img.crossOrigin = 'Anonymous';
 
@@ -45,9 +45,7 @@ class CustomCanvas extends HTMLElement {
       this.drawFabricImage(base64image);
     };
 
-    // remove.bg - uncomment for usage
     img.src = imgUrl;
-    // img.src = 'https://i.imgur.com/KetXuTZ.png';
   }
 
   clearCanvas() {
@@ -57,7 +55,6 @@ class CustomCanvas extends HTMLElement {
 
   prepareImageForFabric(img) {
     const { width, height } = img;
-    console.log(img.width, img.height);
 
     const tempCanvas = document.createElement('canvas');
     tempCanvas.id = 'temp-cus';
