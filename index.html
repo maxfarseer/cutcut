@@ -44,8 +44,10 @@
 
       const cropImage = (imgUrl) => {
         const event = new CustomEvent('crop-image-init', { detail: { imgUrl } });
-        const customCropper = document.getElementsByTagName('custom-cropper')[0];
-        customCropper.dispatchEvent(event);
+        window.requestAnimationFrame(() => {
+          const customCropper = document.getElementsByTagName('custom-cropper')[0];
+          customCropper.dispatchEvent(event);
+        });
       }
 
       const requestCroppedData = () => {

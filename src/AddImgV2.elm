@@ -79,7 +79,7 @@ update msg model =
                     ( model, Task.perform GotFileUrl <| File.toUrl file )
 
         GotFileUrl base64 ->
-            ( { model | step = Crop base64 }, Cmd.none )
+            ( { model | step = Crop base64 }, sendToJs <| CropImage base64 )
 
         ClickedCloseModal ->
             ( { model | step = Add }, Cmd.none )
