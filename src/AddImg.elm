@@ -1,4 +1,4 @@
-port module AddImg exposing (Model, Msg(..), init, update, view)
+module AddImg exposing (Model, Msg, init, update, view)
 
 import Accessibility.Modal as Modal
 import Css exposing (..)
@@ -41,7 +41,7 @@ type Msg
     = ClickedAddImg
     | ModalMsg Int Modal.Msg
     | GotFiles (List File)
-    | GotPreview Base64
+    | GotFileUrl Base64
     | GotRemoveBgResponse (Result Http.Error Base64)
     | CropBtnClicked Base64
     | CropFinishedBtnClicked
@@ -53,15 +53,6 @@ init =
     , step = AddImgStep
     , uploadStatus = NotAsked
     }
-
-
-
--- CONST
-
-
-removeBgApiUrl : String
-removeBgApiUrl =
-    "https://api.remove.bg/v1.0"
 
 
 
@@ -109,25 +100,10 @@ update msg model =
                 Nothing ->
                     ( model, Cmd.none )
 
-                --                Just file ->
-                --                    ( { model | uploadStatus = Loading }
-                --                    , Http.request
-                --                        { url = removeBgApiUrl ++ "/removebg"
-                --                        , headers =
-                --                            [ Http.header "X-Api-Key" "Ge5HqmTYvcD1UzadQ7MPVPVi"
-                --                            , Http.header "Accept" "application/json"
-                --                            ]
-                --                        , method = "POST"
-                --                        , timeout = Nothing
-                --                        , tracker = Nothing
-                --                        , body = Http.multipartBody [ Http.filePart "image_file" file ]
-                --                        , expect = Http.expectJson GotRemoveBgResponse fileBgDecoder
-                --                        }
-                --                    )
                 Just file ->
-                    ( model, Task.perform GotPreview <| File.toUrl file )
+                    ( model, Task.perform GotFileUrl <| File.toUrl file )
 
-        GotPreview base64 ->
+        GotFileUrl base64 ->
             ( { model | step = CropImgStep base64 }, Cmd.none )
 
         CropBtnClicked base64 ->
@@ -145,18 +121,23 @@ update msg model =
             ( model, sendToJs RequestCroppedData )
 
 
-
-{- Ok response ->
-   ( { model
-       | step = CropImgStep response
-     }
-   , sendDataToJs response
-   )
--}
-
-
 view : Model -> Html Msg
 view model =
+    case model.step of
+        AddImgStep ->
+            viewUploadFileBtn
+
+        CropImgStep base64 ->
+            div []
+                [ text "crop image step" ]
+
+        EraseImgStep ->
+            div []
+                [ text "Erase image" ]
+
+
+viewModal : Model -> Html Msg
+viewModal model =
     case Dict.get 0 model.modal of
         Just modal ->
             section []
@@ -200,7 +181,7 @@ viewModalBody : Model -> Html Msg
 viewModalBody model =
     case model.step of
         AddImgStep ->
-            viewAddImgStep model.uploadStatus
+            div [] [ text "unused" ]
 
         CropImgStep base64 ->
             viewCropImage base64
@@ -208,24 +189,6 @@ viewModalBody model =
         EraseImgStep ->
             div []
                 [ text "Erase image" ]
-
-
-viewAddImgStep : UploadStatus -> Html Msg
-viewAddImgStep uploadStatus =
-    case uploadStatus of
-        NotAsked ->
-            div []
-                [ viewUploadFileBtn "Remove background" True
-                , viewUploadFileBtn "Upload as is (INACTIVE)" False
-                ]
-
-        Loading ->
-            div []
-                [ text "Loading ..." ]
-
-        Errored err ->
-            div []
-                [ text "Error!" ]
 
 
 viewCropImage : Base64 -> Html Msg
@@ -239,8 +202,8 @@ viewCropImage imgUrl =
         ]
 
 
-viewUploadFileBtn : String -> Bool -> Html Msg
-viewUploadFileBtn btnLabel isActive =
+viewUploadFileBtn : Html Msg
+viewUploadFileBtn =
     form []
         [ div [ class "file" ]
             [ label [ class "file-label" ]
@@ -250,7 +213,6 @@ viewUploadFileBtn btnLabel isActive =
                     , type_ "file"
                     , multiple False
                     , on "change" (D.map GotFiles filesDecoder)
-                    , Html.Styled.Attributes.disabled (not isActive)
                     ]
                     []
                 , span [ class "file-cta" ]
@@ -259,7 +221,7 @@ viewUploadFileBtn btnLabel isActive =
                             []
                         ]
                     , span [ class "file-label" ]
-                        [ text <| btnLabel ]
+                        [ text "Add image" ]
                     ]
                 ]
             ]
@@ -277,10 +239,3 @@ viewCustomCropper =
             ]
         ]
         []
-
-
-
--- PORTS
-
-
-port sendDataToJs : String -> Cmd msg

@@ -1,6 +1,6 @@
 module Main exposing (main)
 
-import AddImg
+import AddImgV2
 import Browser
 import Css exposing (..)
 import Html.Styled exposing (..)
@@ -11,13 +11,13 @@ import Ports exposing (OutgoingMsg(..), sendToJs)
 
 
 type alias Model =
-    { addImg : AddImg.Model
+    { addImg : AddImgV2.Model
     }
 
 
 initialModel : ( Model, Cmd Msg )
 initialModel =
-    ( { addImg = AddImg.init
+    ( { addImg = AddImgV2.init
       }
     , Cmd.none
     )
@@ -29,7 +29,7 @@ type ForOutgoingMsg
 
 type Msg
     = ToJS ForOutgoingMsg
-    | FromAddImg AddImg.Msg
+    | FromAddImg AddImgV2.Msg
 
 
 customCanvas : List (Attribute a) -> List (Html a) -> Html a
@@ -43,7 +43,7 @@ update msg model =
         FromAddImg addImgMsg ->
             let
                 ( updatedAddImg, addImgCmd ) =
-                    AddImg.update addImgMsg model.addImg
+                    AddImgV2.update addImgMsg model.addImg
             in
             ( { model | addImg = updatedAddImg }, addImgCmd |> Cmd.map FromAddImg )
 
@@ -61,7 +61,7 @@ view model =
         [ h2 [] [ text "CutCut" ]
         , renderCustomCanvas
         , button [ onClick (ToJS DrawTestSquare) ] [ text "Draw square" ]
-        , map FromAddImg (AddImg.view model.addImg)
+        , map FromAddImg (AddImgV2.view model.addImg)
         ]
 
 

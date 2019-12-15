@@ -2,3 +2,4 @@ node_modules/
 elm-stuff/
 elm.js
 .idea
+src/Ui/Example.elm

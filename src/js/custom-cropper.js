@@ -18,7 +18,7 @@ class CustomCropper extends HTMLElement {
     this.addEventListener('crop-image-init', this.initImage, false);
     this.addEventListener(
       'request-cropped-data',
-      this.sendImageToRemoveBg,
+      this.fakeSendImageToRemoveBg,
       false
     );
   }
