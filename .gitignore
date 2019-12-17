@@ -1,4 +1,18 @@
+.idea
+.cache/
+coverage/
+dist/
+!dist/index.html
 node_modules/
+*.log
 elm-stuff/
 elm.js
-.idea
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db

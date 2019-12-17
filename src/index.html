@@ -7,7 +7,7 @@
     <!-- bulma css -->
     <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bulma@0.8.0/css/bulma.min.css'>
     <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>
-    <script src='/src/js/fabric.min.js'></script>
+    <script src='/js/fabric.min.js'></script>
 
     <!-- cropper.js -->
     <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.6/cropper.min.css'>
@@ -15,15 +15,8 @@
     
     <!-- if we need polyfill for custom elements -->
     <!-- https://github.com/webcomponents/polyfills/tree/master/packages/custom-elements -->
-    <script src='/src/js/custom-canvas.js'></script>
-    <script src='/src/js/custom-cropper.js'></script>
-    <style>
-      /* todo: move to css */
-      #cropper-image {
-        display: block;
-        max-width: 100%;
-      }
-    </style>
+    <script src='/js/custom-canvas.js'></script>
+    <script src='/js/custom-cropper.js'></script>
   </head>
     
   <body>
@@ -62,47 +55,6 @@
         customCropper.dispatchEvent(event);
       }      
     </script>
-    <script src="/elm.js"></script>
-    <script>
-      const errorLogger = error => console.error(`App Error: ${error}`);
-      const node = document.querySelector('#app');
-      
-      // add flags here
-      const flags = {}
-      try {
-        const app = Elm.Main.init({ node, flags });
-
-        // ports
-        const handlePortMsg = async ({ action, payload }) => {
-          switch (action) {
-            case 'DrawSquare': {
-              drawSqaure(payload);
-              break;
-            }
-            case 'CropImage': {
-              cropImage(payload);
-              break;
-            }
-            case 'PrepareForErase': {
-              prepareForErase();
-              break;
-            }
-            case 'RequestCroppedData': {
-              requestCroppedData();
-              break;
-            }
-            default:
-              throw new Error(`Received unknown message ${action} from Elm.`);
-          }
-        };
-
-        app.ports.msgForJs.subscribe(handlePortMsg);
-        // end ports
-
-      } catch (e) {
-        errorLogger(e);
-        node.textContent = 'An error occurred while initializing the app';
-      }
-    </script>
+    <script src="index.ts"></script>
   </body>
 </html>
