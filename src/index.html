@@ -25,36 +25,6 @@
         <div id='app'></div>
       </div>
     </section>
-    <script>
-      // move this to another file,
-      // and import
-      // TODO: add index.js endpoint + wepback or something, instead of index.html
-      const drawSqaure = (base64path) => {
-        const event = new CustomEvent('draw-image', { detail: { base64path } });
-        const customCanvas = document.getElementsByTagName('custom-canvas')[0];
-        customCanvas.dispatchEvent(event);
-      }
-
-      const cropImage = (imgUrl) => {
-        const event = new CustomEvent('crop-image-init', { detail: { imgUrl } });
-        window.requestAnimationFrame(() => {
-          const customCropper = document.getElementsByTagName('custom-cropper')[0];
-          customCropper.dispatchEvent(event);
-        });
-      }
-
-      const prepareForErase = () => {
-        const event = new CustomEvent('prepare-for-erase');
-        const customCropper = document.getElementsByTagName('custom-cropper')[0];
-        customCropper.dispatchEvent(event);
-      }
-
-      const requestCroppedData = () => {
-        const event = new CustomEvent('request-cropped-data');
-        const customCropper = document.getElementsByTagName('custom-cropper')[0];
-        customCropper.dispatchEvent(event);
-      }      
-    </script>
     <script src="index.ts"></script>
   </body>
 </html>
