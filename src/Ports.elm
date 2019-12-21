@@ -20,10 +20,6 @@ type OutgoingMsg
     | RequestCroppedData
 
 
-type IncomingMsg
-    = ReceiveCroppedData Base64
-
-
 {-| Send messages to JS
 -}
 port msgForJs : PortData -> Cmd msg

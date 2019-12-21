@@ -1,8 +1,8 @@
 module Ui.Modal exposing (view)
 
-import Html.Styled exposing (..)
-import Html.Styled.Attributes exposing (attribute, class, css, disabled, id, multiple, name, src, type_)
-import Html.Styled.Events exposing (on, onClick)
+import Html.Styled exposing (Html, button, div, footer, header, p, section, text)
+import Html.Styled.Attributes exposing (attribute, class)
+import Html.Styled.Events exposing (onClick)
 
 
 type alias ViewConfig msg =

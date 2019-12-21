@@ -1,11 +1,10 @@
 module AddImg exposing (Model, Msg, init, update, view)
 
-import Css exposing (..)
 import Custom exposing (customCropper)
 import File exposing (File)
-import Html.Styled exposing (..)
-import Html.Styled.Attributes exposing (class, css, multiple, name, type_)
-import Html.Styled.Events exposing (on, onClick)
+import Html.Styled exposing (Html, div, form, i, input, label, span, text)
+import Html.Styled.Attributes exposing (class, multiple, name, type_)
+import Html.Styled.Events exposing (on)
 import Http as Http
 import Json.Decode as D
 import Ports exposing (OutgoingMsg(..), sendToJs)
@@ -36,8 +35,7 @@ type Step
 
 
 type Msg
-    = ClickedAddImg
-    | GotFiles (List File)
+    = GotFiles (List File)
     | GotFileUrl Base64
     | ClickedCloseModal
     | ClickedEraseFinish
@@ -60,17 +58,9 @@ filesDecoder =
     D.at [ "target", "files" ] (D.list File.decoder)
 
 
-fileBgDecoder : D.Decoder Base64
-fileBgDecoder =
-    D.field "data" (D.field "result_b64" D.string)
-
-
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        ClickedAddImg ->
-            ( model, Cmd.none )
-
         GotFiles files ->
             case List.head files of
                 Nothing ->
@@ -152,11 +142,5 @@ viewUploadFileBtn =
 viewCustomCropper : Html Msg
 viewCustomCropper =
     customCropper
-        [ css
-            [ border3 (px 1) solid (rgb 45 0 45)
-            , width (px 514)
-            , height (px 514)
-            , display block
-            ]
-        ]
+        []
         []

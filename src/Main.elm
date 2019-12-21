@@ -2,12 +2,10 @@ module Main exposing (main)
 
 import AddImg
 import Browser
-import Css exposing (..)
-import Html.Styled exposing (..)
-import Html.Styled.Attributes exposing (class, css, id, multiple, name, src, type_)
-import Html.Styled.Events exposing (on, onClick)
-import Json.Decode as Decode
-import Ports exposing (OutgoingMsg(..), sendToJs)
+import Css exposing (block, border3, display, height, px, rgb, solid, width)
+import Custom exposing (customCanvas)
+import Html.Styled exposing (Html, div, h2, map, text, toUnstyled)
+import Html.Styled.Attributes exposing (css)
 
 
 type alias Model =
@@ -25,11 +23,6 @@ initialModel =
 
 type Msg
     = FromAddImg AddImg.Msg
-
-
-customCanvas : List (Attribute a) -> List (Html a) -> Html a
-customCanvas attributes children =
-    node "custom-canvas" attributes children
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
