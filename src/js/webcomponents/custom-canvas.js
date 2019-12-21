@@ -104,8 +104,4 @@ class CustomCanvas extends HTMLElement {
   }
 }
 
-// https://github.com/github/image-crop-element/blob/master/index.js#L245
-if (!window.customElements.get('custom-canvas')) {
-  window.CustomCanvas = CustomCanvas;
-  window.customElements.define('custom-canvas', CustomCanvas);
-}
+window.CustomCanvas = CustomCanvas;

@@ -10,6 +10,7 @@ class CustomCropper extends HTMLElement {
     return self;
   }
   connectedCallback() {
+    console.log('connect custom-cropper');
     const div = document.createElement('div');
     div.id = 'img-wrapper';
     this._wrapperDiv = div;
@@ -28,6 +29,10 @@ class CustomCropper extends HTMLElement {
       this.requestCroppedData,
       false
     );
+  }
+
+  disconnectedCallback() {
+    console.log('disconnectedCallback');
   }
 
   initImage = e => {
@@ -60,13 +65,8 @@ class CustomCropper extends HTMLElement {
     img.src = imgUrl;
   };
 
-  getCroppedData = () => {
-    return this._cropper.getCroppedCanvas().toDataURL();
-  };
-
   fakeSendImageToRemoveBg = () => {
-    this.destroyCropper();
-
+    const dataUrl = sessionStorage.getItem('cutcut.img');
     const img = new Image();
     img.crossOrigin = 'Anonymous';
 
@@ -74,7 +74,8 @@ class CustomCropper extends HTMLElement {
       this.initEraseCanvas(img);
     };
 
-    img.src = `data:image/png;base64, ${testImg}`;
+    //img.src = `data:image/png;base64, ${testImg}`;
+    img.src = dataUrl;
   };
 
   sendImageToRemoveBg = () => {
@@ -82,8 +83,6 @@ class CustomCropper extends HTMLElement {
     this._cropper.getCroppedCanvas().toBlob(blob => {
       const formData = new FormData();
       formData.append('image_file', blob);
-
-      this.destroyCropper();
 
       // show preloader;
 
@@ -121,57 +120,10 @@ class CustomCropper extends HTMLElement {
     });
   };
 
-  destroyCropper = () => {
-    this._cropper.destroy();
-    this._cropper = null;
-    this._wrapperDiv.removeChild(document.getElementById('cropper-image'));
-  };
-
-  initEraseCanvas = imgNode => {
-    const { width, height } = imgNode;
-    const canvas = document.createElement('canvas');
-    canvas.id = 'erase-canvas';
-    canvas.width = width;
-    canvas.height = height;
-    const ctx = canvas.getContext('2d');
-
-    ctx.drawImage(imgNode, 0, 0);
-
-    this._wrapperDiv.appendChild(canvas);
-    this.initEraseTool(canvas);
-  };
-
-  initEraseTool = canvas => {
-    let isPress = false;
-    let old = null;
-
-    const ctx = canvas.getContext('2d');
-
-    canvas.addEventListener('mousedown', function(e) {
-      isPress = true;
-      old = { x: e.offsetX, y: e.offsetY };
-    });
-    canvas.addEventListener('mousemove', function(e) {
-      if (isPress) {
-        let x = e.offsetX;
-        let y = e.offsetY;
-        ctx.globalCompositeOperation = 'destination-out';
-
-        ctx.beginPath();
-        ctx.arc(x, y, 10, 0, 2 * Math.PI);
-        ctx.fill();
-
-        ctx.lineWidth = 20;
-        ctx.beginPath();
-        ctx.moveTo(old.x, old.y);
-        ctx.lineTo(x, y);
-        ctx.stroke();
-
-        old = { x: x, y: y };
-      }
-    });
-    canvas.addEventListener('mouseup', function(e) {
-      isPress = false;
+  saveCroppedDataToStore = () => {
+    customCropper._cropper.getCroppedCanvas().toDataURL(dataUrl => {
+      console.log(dataUrl.length);
+      sessionStorage.setItem('cutcut.img', dataUrl);
     });
   };
 
@@ -192,7 +144,4 @@ class CustomCropper extends HTMLElement {
   };
 }
 
-if (!window.customElements.get('custom-cropper')) {
-  window.CustomCropper = CustomCropper;
-  window.customElements.define('custom-cropper', CustomCropper);
-}
+window.customElements.define('custom-cropper', CustomCropper);
