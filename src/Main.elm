@@ -23,13 +23,8 @@ initialModel =
     )
 
 
-type ForOutgoingMsg
-    = DrawTestSquare
-
-
 type Msg
-    = ToJS ForOutgoingMsg
-    | FromAddImg AddImg.Msg
+    = FromAddImg AddImg.Msg
 
 
 customCanvas : List (Attribute a) -> List (Html a) -> Html a
@@ -47,20 +42,12 @@ update msg model =
             in
             ( { model | addImg = updatedAddImg }, addImgCmd |> Cmd.map FromAddImg )
 
-        ToJS msgToJs ->
-            case msgToJs of
-                DrawTestSquare ->
-                    ( model
-                    , sendToJs (DrawSquare "iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAARUlEQVR42u3PMREAAAgEoLd/AtNqBlcPGlDJdB4oEREREREREREREREREREREREREREREREREREREREREREREREREZGLBddNT+MQpgCuAAAAAElFTkSuQmCC")
-                    )
-
 
 view : Model -> Html Msg
 view model =
     div []
         [ h2 [] [ text "CutCut" ]
         , renderCustomCanvas
-        , button [ onClick (ToJS DrawTestSquare) ] [ text "Draw square" ]
         , map FromAddImg (AddImg.view model.addImg)
         ]
 
