@@ -86,10 +86,10 @@ update msg model =
             ( { model | step = Add }, Cmd.none )
 
         ClickedCropFinish ->
-            ( model, sendToJs <| PrepareForErase )
+            ( { model | step = Erase }, sendToJs <| PrepareForErase )
 
         ClickedEraseFinish ->
-            ( model, sendToJs <| RequestCroppedData )
+            ( { model | step = Add }, sendToJs <| RequestCroppedData )
 
 
 view : Model -> Html Msg
@@ -100,19 +100,27 @@ view model =
 
         Crop ->
             Ui.Modal.view
-                { title = "Add image"
+                { title = "Add image: Crop"
                 , open = True
                 , closeMsg = ClickedCloseModal
+                , confirmMsg = ClickedCropFinish
+                , confirmText = Just "Crop"
                 }
                 []
                 [ viewCustomCropper
-                , button [ onClick <| ClickedCropFinish ] [ text "Finish crop" ]
-                , button [ onClick <| ClickedEraseFinish ] [ text "Add to fabric" ]
                 ]
 
         Erase ->
-            div []
-                [ text "Erase image" ]
+            Ui.Modal.view
+                { title = "Add image: Erase"
+                , open = True
+                , closeMsg = ClickedCloseModal
+                , confirmMsg = ClickedEraseFinish
+                , confirmText = Just "Finish"
+                }
+                []
+                [ viewCustomCropper
+                ]
 
 
 viewUploadFileBtn : Html Msg
