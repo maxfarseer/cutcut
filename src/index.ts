@@ -1,6 +1,10 @@
 // @ts-ignore
 import { Elm } from './Main.elm'
 import { handlePortMsg } from './js/ports'
+import { CustomWindow } from './custom.window';
+
+// https://stackoverflow.com/questions/12709074/how-do-you-explicitly-set-a-new-property-on-window-in-typescript
+declare let window: CustomWindow;
 
 const errorLogger = (error: string) => console.error(`App Error: ${error}`);
 const node = document.querySelector('#app');
@@ -8,11 +12,17 @@ const node = document.querySelector('#app');
 // add flags here
 const flags = {}
 try {
-  const app = Elm.Main.init({ node, flags });
+  const app: IElmApp = Elm.Main.init({ node, flags });
 
   // ports
   app.ports.msgForJs.subscribe(handlePortMsg);
   // end ports
+
+  // TODO or NOT:
+  // make a parent class, which will take app as argument
+  // and will have a sendToElm method
+  // other webcomponents can inherit from it
+  window.elmApp = app;
 
 } catch (e) {
   errorLogger(e);

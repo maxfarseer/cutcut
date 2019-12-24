@@ -104,4 +104,4 @@ class CustomCanvas extends HTMLElement {
   }
 }
 
-window.CustomCanvas = CustomCanvas;
+window.customElements.define('custom-canvas', CustomCanvas);

@@ -1,24 +1,46 @@
+const ERASE_CANVAS_ID = 'erase-canvas';
+const ERASE_CANVAS_DIV_ID = 'erase-canvas-wrapper';
+
 class CustomEraser extends HTMLElement {
 
   connectedCallback() {
-    console.log('custom-eraser connected');
     const div = document.createElement('div');
-    const canvas = document.createElement('canvas');
+    div.id = ERASE_CANVAS_DIV_ID;
+    // const canvas = document.createElement('canvas');
+    // canvas.id = ERASE_CANVAS_ID;
 
-    div.appendChild(canvas);
+    // div.appendChild(canvas);
     this.appendChild(div);
 
-    let emptyImg = new Image();
-    this.initEraseCanvas(emptyImg);
+    this.addEventListener(
+      'prepare-for-erase',
+      this.fakeSendImageToRemoveBg,
+      // this.sendImageToRemoveBg,
+      false
+    );
+
+    this.addEventListener(
+      'add-img-finish',
+      this.addImgFinish,
+      false
+    );
   }
 
   initEraseCanvas = (imgNode: HTMLImageElement) => {
     const { width, height } = imgNode;
     const canvas = document.createElement('canvas');
-    canvas.id = 'erase-canvas';
+    canvas.id = ERASE_CANVAS_ID;
     canvas.width = width;
     canvas.height = height;
     const ctx = canvas.getContext('2d');
+
+    const wrapper = document.getElementById(ERASE_CANVAS_DIV_ID);
+
+    if (wrapper) {
+      wrapper.appendChild(canvas);
+    } else {
+      console.warn('canvas parent div not found, check CustomEraser')
+    }
 
     if (ctx) {
       ctx.drawImage(imgNode, 0, 0);
@@ -60,6 +82,91 @@ class CustomEraser extends HTMLElement {
     canvas.addEventListener('mouseup', function (e) {
       isPress = false;
     });
+  };
+
+  fakeSendImageToRemoveBg = (event: Event) => {
+    // https://github.com/microsoft/TypeScript/issues/28357
+    // https://stackoverflow.com/questions/47166369/argument-of-type-e-customevent-void-is-not-assignable-to-parameter-of-ty?rq=1
+    const removeBgOrNot: boolean = (event as CustomEvent).detail.removeBg;
+
+    if (removeBgOrNot) {
+      console.warn('send to remove bg disabled');
+    } else {
+      const dataUrl = sessionStorage.getItem('cutcut.img');
+      const img = new Image();
+      img.crossOrigin = 'Anonymous';
+
+      img.onload = () => {
+        this.initEraseCanvas(img);
+      };
+
+      if (dataUrl) {
+        img.src = dataUrl;
+      } else {
+        console.warn('image data not found');
+      }
+    }
+  };
+
+  sendImageToRemoveBg = () => {
+    // https://github.com/fengyuanchen/cropperjs#getcroppedcanvasoptions
+    this._cropper.getCroppedCanvas().toBlob(blob => {
+      const formData = new FormData();
+      formData.append('image_file', blob);
+
+      // show preloader;
+
+      const myHeaders = new Headers({
+        Accept: 'application/json',
+        'X-Api-Key': 'Ge5HqmTYvcD1UzadQ7MPVPVi',
+      });
+
+      // https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
+      const myInit = {
+        method: 'POST',
+        headers: myHeaders,
+        mode: 'cors',
+        cache: 'default',
+        body: formData,
+      };
+
+      const myRequest = new Request(
+        'https://api.remove.bg/v1.0/removebg',
+        myInit
+      );
+
+      fetch(myRequest).then(async response => {
+        const json = await response.json();
+        const imgUrl = `data:image/png;base64, ${json.data.result_b64}`;
+
+        const img = new Image();
+        img.crossOrigin = 'Anonymous';
+
+        img.onload = () => {
+          this.initEraseCanvas(img);
+        };
+        img.src = imgUrl;
+      });
+    });
+  };
+
+  addImgFinish = () => {
+    const customEraser = document.getElementById(ERASE_CANVAS_ID);
+
+    if (customEraser) {
+      const imageBase64 = (customEraser as HTMLCanvasElement).toDataURL();
+
+      const event = new CustomEvent('recieved-cropped-data', {
+        bubbles: true,
+        cancelable: true,
+        detail: imageBase64,
+      });
+
+      // TODO: is it possible to not use it here?
+      // Now cropper has a knowledge (or not?) about custom-canvas
+      const customCanvas = document.getElementsByTagName('custom-canvas')[0];
+      customCanvas.dispatchEvent(event);
+    }
   };
 }
 

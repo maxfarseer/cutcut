@@ -1,10 +1,10 @@
-module AddImg exposing (Model, Msg, init, update, view)
+module AddImg exposing (Model, Msg, callForErase, init, update, view)
 
-import Custom exposing (customCropper)
+import Custom exposing (customCropper, customEraser)
 import File exposing (File)
-import Html.Styled exposing (Html, div, form, i, input, label, span, text)
+import Html.Styled exposing (Html, button, div, form, i, input, label, span, text)
 import Html.Styled.Attributes exposing (class, multiple, name, type_)
-import Html.Styled.Events exposing (on)
+import Html.Styled.Events exposing (on, onClick)
 import Http as Http
 import Json.Decode as D
 import Ports exposing (OutgoingMsg(..), sendToJs)
@@ -31,6 +31,7 @@ type UploadStatus
 type Step
     = Add
     | Crop
+    | RemoveBgOrNot
     | Erase
 
 
@@ -40,6 +41,8 @@ type Msg
     | ClickedCloseModal
     | ClickedEraseFinish
     | ClickedCropFinish
+    | ClickedRemoveBg
+    | ClickedNotRemoveBg
 
 
 init : Model
@@ -56,6 +59,11 @@ init =
 filesDecoder : D.Decoder (List File)
 filesDecoder =
     D.at [ "target", "files" ] (D.list File.decoder)
+
+
+callForErase : Model -> ( Model, Cmd Msg )
+callForErase model =
+    ( { model | step = RemoveBgOrNot }, Cmd.none )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -76,10 +84,16 @@ update msg model =
             ( { model | step = Add }, Cmd.none )
 
         ClickedCropFinish ->
-            ( { model | step = Erase }, sendToJs <| PrepareForErase )
+            ( model, sendToJs <| SaveCroppedImage )
+
+        ClickedRemoveBg ->
+            ( { model | step = Erase }, sendToJs <| PrepareForErase True )
+
+        ClickedNotRemoveBg ->
+            ( { model | step = Erase }, sendToJs <| PrepareForErase False )
 
         ClickedEraseFinish ->
-            ( { model | step = Add }, sendToJs <| RequestCroppedData )
+            ( { model | step = Add }, sendToJs <| AddImgFinish )
 
 
 view : Model -> Html Msg
@@ -100,6 +114,18 @@ view model =
                 [ viewCustomCropper
                 ]
 
+        RemoveBgOrNot ->
+            Ui.Modal.view
+                { title = "Remove background?"
+                , open = True
+                , closeMsg = ClickedCloseModal
+                , confirmMsg = ClickedCropFinish
+                , confirmText = Nothing
+                }
+                []
+                [ viewRemoveBgQuestion
+                ]
+
         Erase ->
             Ui.Modal.view
                 { title = "Add image: Erase"
@@ -109,7 +135,7 @@ view model =
                 , confirmText = Just "Finish"
                 }
                 []
-                [ viewCustomCropper
+                [ viewCustomEraser
                 ]
 
 
@@ -142,5 +168,20 @@ viewUploadFileBtn =
 viewCustomCropper : Html Msg
 viewCustomCropper =
     customCropper
+        []
+        []
+
+
+viewRemoveBgQuestion : Html Msg
+viewRemoveBgQuestion =
+    div []
+        [ button [ onClick ClickedRemoveBg ] [ text "Yes, plase remove" ]
+        , button [ onClick ClickedNotRemoveBg ] [ text "No, do not remove" ]
+        ]
+
+
+viewCustomEraser : Html Msg
+viewCustomEraser =
+    customEraser
         []
         []

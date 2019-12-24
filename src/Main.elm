@@ -1,4 +1,4 @@
-module Main exposing (main)
+port module Main exposing (main)
 
 import AddImg
 import Browser
@@ -23,6 +23,7 @@ initialModel =
 
 type Msg
     = FromAddImg AddImg.Msg
+    | FromJS String
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -32,6 +33,13 @@ update msg model =
             let
                 ( updatedAddImg, addImgCmd ) =
                     AddImg.update addImgMsg model.addImg
+            in
+            ( { model | addImg = updatedAddImg }, addImgCmd |> Cmd.map FromAddImg )
+
+        FromJS _ ->
+            let
+                ( updatedAddImg, addImgCmd ) =
+                    AddImg.callForErase model.addImg
             in
             ( { model | addImg = updatedAddImg }, addImgCmd |> Cmd.map FromAddImg )
 
@@ -68,6 +76,9 @@ main =
         }
 
 
-subscriptions : Model -> Sub msg
+port modeChosen : (String -> msg) -> Sub msg
+
+
+subscriptions : Model -> Sub Msg
 subscriptions _ =
-    Sub.none
+    modeChosen FromJS
