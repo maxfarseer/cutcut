@@ -1,5 +1,6 @@
 import Cropper from 'cropperjs';
 import { CustomWindow } from '../../custom.window';
+import { saveImageBase64 } from '../storage';
 
 declare let window: CustomWindow;
 
@@ -69,7 +70,7 @@ class CustomCropper extends HTMLElement {
       const dataUrl = this._cropper.getCroppedCanvas().toDataURL();
       // TODO: make image optimised small
       // it's not worth to keep big for 512px sticker
-      sessionStorage.setItem('cutcut.img', dataUrl);
+      saveImageBase64(dataUrl);
       window.elmApp.ports.modeChosen.send('1');
     } else {
       console.warn('instance of cropper not found');

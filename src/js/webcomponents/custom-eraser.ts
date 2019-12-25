@@ -1,3 +1,5 @@
+import { getImageBase64 } from "../storage";
+
 const ERASE_CANVAS_ID = 'erase-canvas';
 const ERASE_CANVAS_DIV_ID = 'erase-canvas-wrapper';
 
@@ -6,16 +8,12 @@ class CustomEraser extends HTMLElement {
   connectedCallback() {
     const div = document.createElement('div');
     div.id = ERASE_CANVAS_DIV_ID;
-    // const canvas = document.createElement('canvas');
-    // canvas.id = ERASE_CANVAS_ID;
 
-    // div.appendChild(canvas);
     this.appendChild(div);
 
     this.addEventListener(
       'prepare-for-erase',
-      this.fakeSendImageToRemoveBg,
-      // this.sendImageToRemoveBg,
+      this.prepareForErase,
       false
     );
 
@@ -84,15 +82,19 @@ class CustomEraser extends HTMLElement {
     });
   };
 
-  fakeSendImageToRemoveBg = (event: Event) => {
+  prepareForErase = (event: Event) => {
     // https://github.com/microsoft/TypeScript/issues/28357
     // https://stackoverflow.com/questions/47166369/argument-of-type-e-customevent-void-is-not-assignable-to-parameter-of-ty?rq=1
     const removeBgOrNot: boolean = (event as CustomEvent).detail.removeBg;
+    const imgBase64 = getImageBase64();
+
+    if (!imgBase64) {
+      throw new Error('imgUrl not found');
+    }
 
     if (removeBgOrNot) {
-      console.warn('send to remove bg disabled');
+      this.sendImageToRemoveBg(imgBase64);
     } else {
-      const dataUrl = sessionStorage.getItem('cutcut.img');
       const img = new Image();
       img.crossOrigin = 'Anonymous';
 
@@ -100,53 +102,46 @@ class CustomEraser extends HTMLElement {
         this.initEraseCanvas(img);
       };
 
-      if (dataUrl) {
-        img.src = dataUrl;
-      } else {
-        console.warn('image data not found');
-      }
+      img.src = imgBase64;
     }
   };
 
-  sendImageToRemoveBg = () => {
-    // https://github.com/fengyuanchen/cropperjs#getcroppedcanvasoptions
-    this._cropper.getCroppedCanvas().toBlob(blob => {
-      const formData = new FormData();
-      formData.append('image_file', blob);
+  sendImageToRemoveBg = (imgBase64: string) => {
+    const formData = new FormData();
+    formData.append('image_file_b64', imgBase64);
 
-      // show preloader;
+    // show preloader;
 
-      const myHeaders = new Headers({
-        Accept: 'application/json',
-        'X-Api-Key': 'Ge5HqmTYvcD1UzadQ7MPVPVi',
-      });
+    const headers = new Headers({
+      Accept: 'application/json',
+      'X-Api-Key': 'Ge5HqmTYvcD1UzadQ7MPVPVi',
+    });
 
-      // https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
-      const myInit = {
-        method: 'POST',
-        headers: myHeaders,
-        mode: 'cors',
-        cache: 'default',
-        body: formData,
+    // https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
+    const requestOptions = {
+      method: 'POST',
+      headers,
+      mode: <RequestMode>'cors',
+      cache: <RequestCache>'default',
+      body: formData,
+    };
+
+    const myRequest = new Request(
+      'https://api.remove.bg/v1.0/removebg',
+      requestOptions
+    );
+
+    fetch(myRequest).then(async response => {
+      const json = await response.json();
+      const imgUrl = `data:image/png;base64, ${json.data.result_b64}`;
+
+      const img = new Image();
+      img.crossOrigin = 'Anonymous';
+
+      img.onload = () => {
+        this.initEraseCanvas(img);
       };
-
-      const myRequest = new Request(
-        'https://api.remove.bg/v1.0/removebg',
-        myInit
-      );
-
-      fetch(myRequest).then(async response => {
-        const json = await response.json();
-        const imgUrl = `data:image/png;base64, ${json.data.result_b64}`;
-
-        const img = new Image();
-        img.crossOrigin = 'Anonymous';
-
-        img.onload = () => {
-          this.initEraseCanvas(img);
-        };
-        img.src = imgUrl;
-      });
+      img.src = imgUrl;
     });
   };
 
