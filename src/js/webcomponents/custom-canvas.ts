@@ -1,13 +1,23 @@
+import { fabric } from 'fabric'
+
+type CustomCanvasOptions = {
+  strokeWidth: number;
+}
+
 class CustomCanvas extends HTMLElement {
+  private _canvas: HTMLCanvasElement | null;
+  private _ctx: CanvasRenderingContext2D | null;
+  private _cf: any;
+  private _options: CustomCanvasOptions;
+
   constructor() {
-    const self = super();
-    self._canvas = null;
-    self._ctx = null;
-    self._cf = null; // cf = canvas fabric instance
-    self._options = {
+    super();
+    this._canvas = null;
+    this._ctx = null;
+    this._cf = null; // cf = canvas fabric instance
+    this._options = {
       strokeWidth: 3,
     };
-    return self;
   }
   connectedCallback() {
     const canvas = document.createElement('canvas');
@@ -29,31 +39,32 @@ class CustomCanvas extends HTMLElement {
     this._cf = new fabric.Canvas('cus');
   }
 
-  drawFabricImage(imgUrl) {
+  drawFabricImage(imgUrl: string) {
     fabric.Image.fromURL(imgUrl, oImg => {
       this._cf.add(oImg);
     });
   }
 
-  drawImage(e) {
-    const imgUrl = e.detail;
+  drawImage(e: Event) {
+    const imgUrl = (e as CustomEvent).detail;
     const img = new Image();
     img.crossOrigin = 'Anonymous';
 
     img.onload = () => {
-      const base64image = this.prepareImageForFabric(img);
+      const base64image = this.addStroke(img);
       this.drawFabricImage(base64image);
     };
 
     img.src = imgUrl;
   }
 
-  clearCanvas() {
-    this._ctx.clearRect(0, 0, this._ctx.canvas.width, this._ctx.canvas.height);
-    this._ctx.beginPath();
+  // not used
+  clearCanvas(ctx: CanvasRenderingContext2D) {
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    ctx.beginPath();
   }
 
-  prepareImageForFabric(img) {
+  addStroke(img: HTMLImageElement) {
     const { width, height } = img;
 
     const tempCanvas = document.createElement('canvas');
@@ -61,7 +72,7 @@ class CustomCanvas extends HTMLElement {
     tempCanvas.width = width + 20;
     tempCanvas.height = height + 20;
 
-    const ctx = tempCanvas.getContext('2d');
+    const ctx = tempCanvas.getContext('2d')!;
     tempCanvas.style.display = 'none';
     document.body.appendChild(tempCanvas);
 
