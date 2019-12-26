@@ -71,7 +71,7 @@ class CustomCropper extends HTMLElement {
       // TODO: make image optimised small
       // it's not worth to keep big for 512px sticker
       saveImageBase64(dataUrl);
-      window.elmApp.ports.modeChosen.send('1');
+      window.elmApp.ports.msgForElm.send({ action: 'ImageSaved', payload: null });
     } else {
       console.warn('instance of cropper not found');
     }

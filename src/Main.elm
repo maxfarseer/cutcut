@@ -1,4 +1,4 @@
-port module Main exposing (main)
+module Main exposing (main)
 
 import AddImg
 import Browser
@@ -6,6 +6,7 @@ import Css exposing (block, border3, display, height, px, rgb, solid, width)
 import Custom exposing (customCanvas)
 import Html.Styled exposing (Html, div, h2, map, text, toUnstyled)
 import Html.Styled.Attributes exposing (css)
+import Ports exposing (IncomingMsg(..), listenToJs)
 
 
 type alias Model =
@@ -23,7 +24,8 @@ initialModel =
 
 type Msg
     = FromAddImg AddImg.Msg
-    | FromJS String
+    | FromJS IncomingMsg
+    | FromJSDecodeError String
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -36,12 +38,29 @@ update msg model =
             in
             ( { model | addImg = updatedAddImg }, addImgCmd |> Cmd.map FromAddImg )
 
-        FromJS _ ->
+        FromJS incomingMsg ->
+            case incomingMsg of
+                ImageSaved ->
+                    let
+                        ( updatedAddImg, addImgCmd ) =
+                            AddImg.setRemoveBgOrNotStep model.addImg
+                    in
+                    ( { model | addImg = updatedAddImg }, addImgCmd |> Cmd.map FromAddImg )
+
+                UnknownIncomingMessage str ->
+                    -- TODO: show error message for user
+                    let
+                        _ =
+                            Debug.log "unknown message" str
+                    in
+                    ( model, Cmd.none )
+
+        FromJSDecodeError err ->
             let
-                ( updatedAddImg, addImgCmd ) =
-                    AddImg.callForErase model.addImg
+                _ =
+                    Debug.log "update IncomingDecoderError" err
             in
-            ( { model | addImg = updatedAddImg }, addImgCmd |> Cmd.map FromAddImg )
+            ( model, Cmd.none )
 
 
 view : Model -> Html Msg
@@ -76,9 +95,6 @@ main =
         }
 
 
-port modeChosen : (String -> msg) -> Sub msg
-
-
-subscriptions : Model -> Sub Msg
-subscriptions _ =
-    modeChosen FromJS
+subscriptions : a -> Sub Msg
+subscriptions =
+    \_ -> listenToJs FromJS FromJSDecodeError

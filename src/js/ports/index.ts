@@ -1,3 +1,5 @@
+import { IPortMsg } from "./types";
+
 const getCustomCropper = (): Node => {
   return document.getElementsByTagName('custom-cropper')[0];
 }
@@ -40,12 +42,7 @@ const saveCroppedImage = () => {
   customCropper.dispatchEvent(event);
 }
 
-type PortMsg = {
-  action: string,
-  payload: any,
-}
-
-const handlePortMsg = async ({ action, payload }: PortMsg) => {
+const handlePortMsg = async ({ action, payload }: IPortMsg) => {
   switch (action) {
     case 'DrawSquare': {
       drawSqaure(payload);

@@ -1,4 +1,4 @@
-module AddImg exposing (Model, Msg, callForErase, init, update, view)
+module AddImg exposing (Model, Msg, init, setRemoveBgOrNotStep, update, view)
 
 import Custom exposing (customCropper, customEraser)
 import File exposing (File)
@@ -61,8 +61,8 @@ filesDecoder =
     D.at [ "target", "files" ] (D.list File.decoder)
 
 
-callForErase : Model -> ( Model, Cmd Msg )
-callForErase model =
+setRemoveBgOrNotStep : Model -> ( Model, Cmd Msg )
+setRemoveBgOrNotStep model =
     ( { model | step = RemoveBgOrNot }, Cmd.none )
 
 

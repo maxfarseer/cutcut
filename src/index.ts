@@ -2,6 +2,7 @@
 import { Elm } from './Main.elm'
 import { handlePortMsg } from './js/ports'
 import { CustomWindow } from './custom.window';
+import { IElmApp } from './js/ports/types';
 
 // https://stackoverflow.com/questions/12709074/how-do-you-explicitly-set-a-new-property-on-window-in-typescript
 declare let window: CustomWindow;

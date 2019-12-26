@@ -1,5 +1,6 @@
-port module Ports exposing (OutgoingMsg(..), sendToJs)
+port module Ports exposing (IncomingMsg(..), OutgoingMsg(..), listenToJs, sendToJs)
 
+import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode
 
 
@@ -21,9 +22,19 @@ type OutgoingMsg
     | SaveCroppedImage
 
 
+type IncomingMsg
+    = ImageSaved
+    | UnknownIncomingMessage String
+
+
 {-| Send messages to JS
 -}
 port msgForJs : PortData -> Cmd msg
+
+
+{-| Listen to messages from JS
+-}
+port msgForElm : (Decode.Value -> msg) -> Sub msg
 
 
 sendToJs : OutgoingMsg -> Cmd msg
@@ -44,3 +55,35 @@ sendToJs outgoingMsg =
 
             SaveCroppedImage ->
                 { action = "SaveCroppedImage", payload = Encode.null }
+
+
+
+-- SUBSCRIPTION
+
+
+incomingMsgDecoder : Decoder IncomingMsg
+incomingMsgDecoder =
+    Decode.field "action" Decode.string
+        |> Decode.andThen
+            (\action ->
+                case action of
+                    "ImageSaved" ->
+                        Decode.succeed ImageSaved
+
+                    _ ->
+                        Decode.succeed <|
+                            UnknownIncomingMessage
+                                ("Decoder for incoming messages failed, because of unknown action name " ++ action)
+            )
+
+
+listenToJs : (IncomingMsg -> msg) -> (String -> msg) -> Sub msg
+listenToJs decodeSuccessTag decodeErrorTag =
+    msgForElm <|
+        \dataToDecode ->
+            case Decode.decodeValue incomingMsgDecoder dataToDecode of
+                Ok incomingMsg ->
+                    decodeSuccessTag incomingMsg
+
+                Err _ ->
+                    decodeErrorTag "TODO: better decoder error"
