@@ -1,100 +1,105 @@
 module Main exposing (main)
 
-import AddImg
 import Browser
-import Css exposing (block, border3, display, height, px, rgb, solid, width)
-import Custom exposing (customCanvas)
-import Html.Styled exposing (Html, div, h2, map, text, toUnstyled)
-import Html.Styled.Attributes exposing (css)
-import Ports exposing (IncomingMsg(..), listenToJs)
+import Browser.Navigation as Nav
+import Html.Styled exposing (..)
+import Html.Styled.Attributes exposing (..)
+import Url
+
+
+
+-- MAIN
+
+
+main : Program () Model Msg
+main =
+    Browser.application
+        { init = init
+        , view = view
+        , update = update
+        , subscriptions = subscriptions
+        , onUrlChange = UrlChanged
+        , onUrlRequest = LinkClicked
+        }
+
+
+
+-- MODEL
 
 
 type alias Model =
-    { addImg : AddImg.Model
-    }
+    { key : Nav.Key }
 
 
-initialModel : ( Model, Cmd Msg )
-initialModel =
-    ( { addImg = AddImg.init
+
+{- init : () -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
+   init flags url key =
+       ( Model key url, Cmd.none )
+-}
+
+
+init : () -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
+init _ url key =
+    ( { key = key
       }
     , Cmd.none
     )
 
 
+
+-- UPDATE
+
+
 type Msg
-    = FromAddImg AddImg.Msg
-    | FromJS IncomingMsg
-    | FromJSDecodeError String
+    = LinkClicked Browser.UrlRequest
+    | UrlChanged Url.Url
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        FromAddImg addImgMsg ->
-            let
-                ( updatedAddImg, addImgCmd ) =
-                    AddImg.update addImgMsg model.addImg
-            in
-            ( { model | addImg = updatedAddImg }, addImgCmd |> Cmd.map FromAddImg )
-
-        FromJS incomingMsg ->
-            case incomingMsg of
-                ImageSaved ->
-                    let
-                        ( updatedAddImg, addImgCmd ) =
-                            AddImg.setRemoveBgOrNotStep model.addImg
-                    in
-                    ( { model | addImg = updatedAddImg }, addImgCmd |> Cmd.map FromAddImg )
-
-                UnknownIncomingMessage str ->
-                    -- TODO: show error message for user
-                    let
-                        _ =
-                            Debug.log "unknown message" str
-                    in
+        LinkClicked urlRequest ->
+            case urlRequest of
+                Browser.Internal url ->
                     ( model, Cmd.none )
 
-        FromJSDecodeError err ->
-            let
-                _ =
-                    Debug.log "update IncomingDecoderError" err
-            in
-            ( model, Cmd.none )
+                Browser.External href ->
+                    ( model, Nav.load href )
+
+        UrlChanged url ->
+            ( model
+            , Cmd.none
+            )
 
 
-view : Model -> Html Msg
+
+-- SUBSCRIPTIONS
+
+
+subscriptions : Model -> Sub Msg
+subscriptions _ =
+    Sub.none
+
+
+
+-- VIEW
+
+
+view : Model -> Browser.Document Msg
 view model =
-    div []
-        [ h2 [] [ text "CutCut" ]
-        , renderCustomCanvas
-        , map FromAddImg (AddImg.view model.addImg)
-        ]
+    { title = "URL Interceptor"
+    , body =
+        [ body model |> div [] |> toUnstyled ]
+    }
 
 
-renderCustomCanvas : Html Msg
-renderCustomCanvas =
-    customCanvas
-        [ css
-            [ border3 (px 1) solid (rgb 0 0 0)
-            , width (px 514)
-            , height (px 514)
-            , display block
-            ]
-        ]
-        []
+body : Model -> List (Html Msg)
+body model =
+    [ header [] [ text "header batteries ahaha" ]
+    , div [] [ text "div" ]
+    ]
 
 
-main : Program () Model Msg
-main =
-    Browser.element
-        { init = \_ -> initialModel
-        , view = view >> toUnstyled
-        , update = update
-        , subscriptions = subscriptions
-        }
-
-
-subscriptions : a -> Sub Msg
-subscriptions =
-    \_ -> listenToJs FromJS FromJSDecodeError
+viewLink : String -> Html msg
+viewLink path =
+    li [] [ a [ href path ] [ text path ] ]
