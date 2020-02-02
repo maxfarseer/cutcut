@@ -1,4 +1,4 @@
-module AddImg exposing (Model, Msg, init, setRemoveBgOrNotStep, update, view)
+module AddImg exposing (Model, Msg, closeModal, init, setRemoveBgOrNotStep, update, view)
 
 import Custom exposing (customCropper, customEraser)
 import File exposing (File)
@@ -66,6 +66,11 @@ setRemoveBgOrNotStep model =
     ( { model | step = RemoveBgOrNot }, Cmd.none )
 
 
+closeModal : Model -> Model
+closeModal model =
+    { model | step = Add }
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
@@ -93,7 +98,7 @@ update msg model =
             ( { model | step = Erase }, sendToJs <| PrepareForErase False )
 
         ClickedEraseFinish ->
-            ( { model | step = Add }, sendToJs <| AddImgFinish )
+            ( { model | step = Erase }, sendToJs <| AddImgFinish )
 
 
 view : Model -> Html Msg

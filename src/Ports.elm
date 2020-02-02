@@ -25,6 +25,7 @@ type OutgoingMsg
 
 type IncomingMsg
     = ImageSaved
+    | ImageAddedToFabric
     | UnknownIncomingMessage String
 
 
@@ -73,6 +74,9 @@ incomingMsgDecoder =
                 case action of
                     "ImageSaved" ->
                         Decode.succeed ImageSaved
+
+                    "ImageAddedToFabric" ->
+                        Decode.succeed ImageAddedToFabric
 
                     _ ->
                         Decode.succeed <|

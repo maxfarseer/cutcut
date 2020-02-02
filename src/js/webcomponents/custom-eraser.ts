@@ -1,4 +1,5 @@
 import { getImageBase64 } from "../storage";
+import { sendToElm } from "../ports";
 
 const ERASE_CANVAS_ID = 'erase-canvas';
 const ERASE_CANVAS_DIV_ID = 'erase-canvas-wrapper';
@@ -161,6 +162,7 @@ class CustomEraser extends HTMLElement {
       // Now cropper has a knowledge (or not?) about custom-canvas
       const customCanvas = document.getElementsByTagName('custom-canvas')[0];
       customCanvas.dispatchEvent(event);
+      sendToElm({ action: 'ImageAddedToFabric', payload: null });
     }
   };
 }

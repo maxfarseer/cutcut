@@ -1,4 +1,6 @@
 import { IPortMsg } from "./types";
+import { CustomWindow } from '../../custom.window';
+declare let window: CustomWindow;
 
 const getCustomCropper = (): Node => {
   return document.getElementsByTagName('custom-cropper')[0];
@@ -85,4 +87,8 @@ const handlePortMsg = async ({ action, payload }: IPortMsg) => {
   }
 };
 
-export { handlePortMsg };
+const sendToElm = ({ action, payload }: IPortMsg) => {
+  window.elmApp.ports.msgForElm.send({ action, payload })
+}
+
+export { handlePortMsg, sendToElm };

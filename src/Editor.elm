@@ -48,6 +48,13 @@ update msg model =
                     in
                     ( { model | addImg = updatedAddImg }, addImgCmd |> Cmd.map FromAddImg )
 
+                ImageAddedToFabric ->
+                    let
+                        updatedAddImg =
+                            AddImg.closeModal model.addImg
+                    in
+                    ( { model | addImg = updatedAddImg }, Cmd.none )
+
                 UnknownIncomingMessage str ->
                     -- TODO: show error message for user
                     let
