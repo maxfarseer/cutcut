@@ -3,8 +3,8 @@ module Main exposing (main)
 import Browser
 import Browser.Navigation as Nav
 import Editor
-import Html.Styled exposing (..)
-import Html.Styled.Attributes exposing (..)
+import Html.Styled exposing (Html, a, div, img, nav, span, strong, text, toUnstyled)
+import Html.Styled.Attributes exposing (attribute, class, href, id, src)
 import Route exposing (Route(..))
 import Url
 
@@ -43,15 +43,7 @@ type alias Model =
 
 init : () -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
 init _ url key =
-    let
-        route =
-            Route.fromUrl url
-    in
-    ( { key = key
-      , page = WelcomePage
-      }
-    , Cmd.none
-    )
+    updateUrl url { page = NotFoundPage, key = key }
 
 
 
