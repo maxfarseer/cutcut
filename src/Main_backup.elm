@@ -29,7 +29,7 @@ init : () -> Url -> Nav.Key -> ( Model, Cmd Msg )
 init flags url navKey =
     let
         model =
-            { route = Route.parseUrl url
+            { route = Route.fromUrl url
             , page = NotFound
             , navKey = navKey
             }
@@ -97,7 +97,7 @@ update msg model =
         ( UrlChanged url, _ ) ->
             let
                 newRoute =
-                    Route.parseUrl url
+                    Route.fromUrl url
             in
             ( { model | route = newRoute }, Cmd.none )
                 |> initCurrentPage

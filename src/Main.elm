@@ -4,6 +4,7 @@ import Browser
 import Browser.Navigation as Nav
 import Html.Styled exposing (..)
 import Html.Styled.Attributes exposing (..)
+import Route exposing (Route(..))
 import Url
 
 
@@ -28,19 +29,19 @@ main =
 
 
 type alias Model =
-    { key : Nav.Key }
-
-
-
-{- init : () -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
-   init flags url key =
-       ( Model key url, Cmd.none )
--}
+    { key : Nav.Key
+    , route : Route.Route
+    }
 
 
 init : () -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
 init _ url key =
+    let
+        route =
+            Route.fromUrl url
+    in
     ( { key = key
+      , route = route
       }
     , Cmd.none
     )
@@ -87,7 +88,7 @@ subscriptions _ =
 
 view : Model -> Browser.Document Msg
 view model =
-    { title = "URL Interceptor"
+    { title = "CutCut"
     , body =
         [ body model |> div [] |> toUnstyled ]
     }
@@ -95,11 +96,58 @@ view model =
 
 body : Model -> List (Html Msg)
 body model =
-    [ header [] [ text "header batteries ahaha" ]
-    , div [] [ text "div" ]
-    ]
+    case model.route of
+        NotFound ->
+            [ header [] [ text "Cut cut" ]
+            , div [] [ text "Not found" ]
+            ]
+
+        Editor ->
+            [ viewHeader
+            , div [] [ text "editor" ]
+            ]
+
+        Welcome ->
+            [ header [] [ text "Cut cut" ]
+            , div [] [ text "welcome" ]
+            ]
 
 
-viewLink : String -> Html msg
-viewLink path =
-    li [] [ a [ href path ] [ text path ] ]
+viewHeader : Html msg
+viewHeader =
+    nav [ attribute "aria-label" "main navigation", class "navbar", attribute "role" "navigation" ]
+        [ div [ class "navbar-brand" ]
+            [ a [ class "navbar-item", href "https://bulma.io" ]
+                [ img [ attribute "height" "28", src "https://i.imgur.com/OquiVkC.png", attribute "width" "96" ]
+                    []
+                ]
+            , a [ attribute "aria-expanded" "false", attribute "aria-label" "menu", class "navbar-burger burger", attribute "data-target" "navbarBasicExample", attribute "role" "button" ]
+                [ span [ attribute "aria-hidden" "true" ]
+                    []
+                , span [ attribute "aria-hidden" "true" ]
+                    []
+                , span [ attribute "aria-hidden" "true" ]
+                    []
+                ]
+            ]
+        , div [ class "navbar-menu", id "navbarBasicExample" ]
+            [ div [ class "navbar-start" ]
+                [ a [ class "navbar-item" ]
+                    [ text "Home" ]
+                , a [ class "navbar-item" ]
+                    [ text "Editor" ]
+                ]
+            , div [ class "navbar-end" ]
+                [ div [ class "navbar-item" ]
+                    [ div [ class "buttons" ]
+                        [ a [ class "button is-info" ]
+                            [ strong []
+                                [ text "Learn elm" ]
+                            ]
+                        , a [ class "button is-light" ]
+                            [ text "v. 0.0.1" ]
+                        ]
+                    ]
+                ]
+            ]
+        ]

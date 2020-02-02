@@ -1,4 +1,4 @@
-module Route exposing (Route(..), parseUrl)
+module Route exposing (Route(..), fromUrl)
 
 import Url exposing (Url)
 import Url.Parser exposing (Parser, map, oneOf, parse, s, top)
@@ -6,23 +6,20 @@ import Url.Parser exposing (Parser, map, oneOf, parse, s, top)
 
 type Route
     = NotFound
-    | Main
+    | Welcome
     | Editor
-
-
-parseUrl : Url -> Route
-parseUrl url =
-    case parse matchRoute url of
-        Just route ->
-            route
-
-        Nothing ->
-            NotFound
 
 
 matchRoute : Parser (Route -> a) a
 matchRoute =
     oneOf
-        [ map Main top
+        [ map Welcome top
+        , map Welcome (s "index.html")
         , map Editor (s "editor")
         ]
+
+
+fromUrl : Url -> Route
+fromUrl url =
+    parse matchRoute url
+        |> Maybe.withDefault NotFound
