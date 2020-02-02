@@ -141,7 +141,7 @@ view model =
 
 viewUploadFileBtn : Html Msg
 viewUploadFileBtn =
-    form []
+    form [ class "column is-2" ]
         [ div [ class "file" ]
             [ label [ class "file-label" ]
                 [ input

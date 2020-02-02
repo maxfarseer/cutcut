@@ -8,9 +8,13 @@ const getCustomEraser = (): Node => {
   return document.getElementsByTagName('custom-eraser')[0];
 }
 
+const getCustomCanvas = (): Node => {
+  return document.getElementsByTagName('custom-canvas')[0]
+}
+
 const drawSqaure = (base64path: string) => {
   const event = new CustomEvent('draw-image', { detail: { base64path } });
-  const customCanvas = document.getElementsByTagName('custom-canvas')[0];
+  const customCanvas = getCustomCanvas();
   customCanvas.dispatchEvent(event);
 };
 
@@ -30,6 +34,7 @@ const prepareForErase = (removeBg: boolean) => {
   });
 };
 
+/* TODO: doesn't work in Chrome, customEraser is undefined */
 const addImgFinish = () => {
   const event = new CustomEvent('add-img-finish');
   const customEraser = getCustomEraser();
@@ -40,6 +45,12 @@ const saveCroppedImage = () => {
   const event = new CustomEvent('save-cropped-image');
   const customCropper = getCustomCropper();
   customCropper.dispatchEvent(event);
+}
+
+const downloadSticker = () => {
+  const event = new CustomEvent('download-sticker');
+  const customCanvas = getCustomCanvas();
+  customCanvas.dispatchEvent(event);
 }
 
 const handlePortMsg = async ({ action, payload }: IPortMsg) => {
@@ -62,6 +73,10 @@ const handlePortMsg = async ({ action, payload }: IPortMsg) => {
     }
     case 'SaveCroppedImage': {
       saveCroppedImage();
+      break;
+    }
+    case 'DownloadSticker': {
+      downloadSticker();
       break;
     }
 

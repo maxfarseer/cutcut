@@ -20,6 +20,7 @@ type OutgoingMsg
     | PrepareForErase Bool
     | AddImgFinish
     | SaveCroppedImage
+    | DownloadSticker
 
 
 type IncomingMsg
@@ -55,6 +56,9 @@ sendToJs outgoingMsg =
 
             SaveCroppedImage ->
                 { action = "SaveCroppedImage", payload = Encode.null }
+
+            DownloadSticker ->
+                { action = "DownloadSticker", payload = Encode.null }
 
 
 

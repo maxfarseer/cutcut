@@ -33,6 +33,7 @@ class CustomCanvas extends HTMLElement {
 
     this.addEventListener('draw-image', this.drawImage, false);
     this.addEventListener('recieved-cropped-data', this.drawImage, false);
+    this.addEventListener('download-sticker', this.downloadSticker, false);
   }
 
   initFabric() {
@@ -40,7 +41,8 @@ class CustomCanvas extends HTMLElement {
   }
 
   drawFabricImage(imgUrl: string) {
-    fabric.Image.fromURL(imgUrl, oImg => {
+    // TODO: oImg is fabric object img
+    fabric.Image.fromURL(imgUrl, (oImg: any) => {
       this._cf.add(oImg);
     });
   }
@@ -112,6 +114,18 @@ class CustomCanvas extends HTMLElement {
     const base64image = tempCanvas.toDataURL();
     document.body.removeChild(tempCanvas);
     return base64image;
+  }
+
+  downloadSticker = () => {
+    if (this._canvas) {
+      /* https://stackoverflow.com/a/44487883/1916578 */
+      const link = document.createElement('a');
+      link.setAttribute('download', 'cutcut-sticker.png');
+      link.setAttribute('href', this._canvas.toDataURL("image/png").replace("image/png", "image/octet-stream"));
+      link.click();
+    } else {
+      console.warn('this._canvas not exist, check CustomCanvas component');
+    }
   }
 }
 

@@ -3,9 +3,10 @@ module Editor exposing (Model, Msg, init, subscriptions, update, view)
 import AddImg
 import Css exposing (block, border3, display, height, px, rgb, solid, width)
 import Custom exposing (customCanvas)
-import Html.Styled exposing (Html, div, h2, map, text)
-import Html.Styled.Attributes exposing (css)
-import Ports exposing (IncomingMsg(..), listenToJs)
+import Html.Styled exposing (Html, button, div, h2, map, text)
+import Html.Styled.Attributes exposing (class, css)
+import Html.Styled.Events exposing (onClick)
+import Ports exposing (IncomingMsg(..), OutgoingMsg(..), listenToJs, sendToJs)
 
 
 type alias Model =
@@ -25,6 +26,7 @@ type Msg
     = FromAddImg AddImg.Msg
     | FromJS IncomingMsg
     | FromJSDecodeError String
+    | ClickedDownloadSticker
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -61,13 +63,19 @@ update msg model =
             in
             ( model, Cmd.none )
 
+        ClickedDownloadSticker ->
+            ( model, sendToJs <| DownloadSticker )
+
 
 view : Model -> Html Msg
 view model =
     div []
         [ h2 [] [ text "CutCut" ]
         , renderCustomCanvas
-        , map FromAddImg (AddImg.view model.addImg)
+        , div [ class "columns" ]
+            [ map FromAddImg (AddImg.view model.addImg)
+            , renderSaveImgBtn
+            ]
         ]
 
 
@@ -82,6 +90,14 @@ renderCustomCanvas =
             ]
         ]
         []
+
+
+renderSaveImgBtn : Html Msg
+renderSaveImgBtn =
+    div [ class "column is-2" ]
+        [ button [ class "button is-info", onClick ClickedDownloadSticker ]
+            [ text "Download sticker" ]
+        ]
 
 
 subscriptions : a -> Sub Msg
