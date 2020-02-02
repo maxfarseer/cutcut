@@ -62,13 +62,13 @@ update msg model =
         LinkClicked urlRequest ->
             case urlRequest of
                 Browser.Internal url ->
-                    ( model, Cmd.none )
+                    ( model, Nav.pushUrl model.key (Url.toString url) )
 
-                Browser.External href ->
-                    ( model, Nav.load href )
+                Browser.External url ->
+                    ( model, Nav.load url )
 
         UrlChanged url ->
-            ( model
+            ( { model | route = Route.fromUrl url }
             , Cmd.none
             )
 
@@ -98,7 +98,7 @@ body : Model -> List (Html Msg)
 body model =
     case model.route of
         NotFound ->
-            [ header [] [ text "Cut cut" ]
+            [ viewHeader
             , div [] [ text "Not found" ]
             ]
 
@@ -108,7 +108,7 @@ body model =
             ]
 
         Welcome ->
-            [ header [] [ text "Cut cut" ]
+            [ viewHeader
             , div [] [ text "welcome" ]
             ]
 
@@ -117,7 +117,7 @@ viewHeader : Html msg
 viewHeader =
     nav [ attribute "aria-label" "main navigation", class "navbar", attribute "role" "navigation" ]
         [ div [ class "navbar-brand" ]
-            [ a [ class "navbar-item", href "https://bulma.io" ]
+            [ a [ class "navbar-item", href "/" ]
                 [ img [ attribute "height" "28", src "https://i.imgur.com/OquiVkC.png", attribute "width" "96" ]
                     []
                 ]
@@ -132,9 +132,9 @@ viewHeader =
             ]
         , div [ class "navbar-menu", id "navbarBasicExample" ]
             [ div [ class "navbar-start" ]
-                [ a [ class "navbar-item" ]
+                [ a [ class "navbar-item", href "/" ]
                     [ text "Home" ]
-                , a [ class "navbar-item" ]
+                , a [ class "navbar-item", href "/editor" ]
                     [ text "Editor" ]
                 ]
             , div [ class "navbar-end" ]
