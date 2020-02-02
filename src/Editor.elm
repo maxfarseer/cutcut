@@ -1,10 +1,9 @@
-module Editor exposing (Model, Msg, init, update, view)
+module Editor exposing (Model, Msg, init, subscriptions, update, view)
 
 import AddImg
-import Browser
 import Css exposing (block, border3, display, height, px, rgb, solid, width)
 import Custom exposing (customCanvas)
-import Html.Styled exposing (Html, div, h2, map, text, toUnstyled)
+import Html.Styled exposing (Html, div, h2, map, text)
 import Html.Styled.Attributes exposing (css)
 import Ports exposing (IncomingMsg(..), listenToJs)
 
@@ -85,18 +84,6 @@ renderCustomCanvas =
         []
 
 
-
-{- main : Program () Model Msg
-   main =
-       Browser.element
-           { init = \_ -> initialModel
-           , view = view >> toUnstyled
-           , update = update
-           , subscriptions = subscriptions
-           }
-
-
-   subscriptions : a -> Sub Msg
-   subscriptions =
-       \_ -> listenToJs FromJS FromJSDecodeError
--}
+subscriptions : a -> Sub Msg
+subscriptions =
+    \_ -> listenToJs FromJS FromJSDecodeError

@@ -112,8 +112,14 @@ toEditor model ( editorModel, editorCmd ) =
 
 
 subscriptions : Model -> Sub Msg
-subscriptions _ =
-    Sub.none
+subscriptions model =
+    case model.page of
+        EditorPage _ ->
+            Editor.subscriptions ()
+                |> Sub.map GotEditorMsg
+
+        _ ->
+            Sub.none
 
 
 
