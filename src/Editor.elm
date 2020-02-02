@@ -1,4 +1,4 @@
-module Main exposing (main)
+module Editor exposing (Model, Msg, init, update, view)
 
 import AddImg
 import Browser
@@ -14,8 +14,8 @@ type alias Model =
     }
 
 
-initialModel : ( Model, Cmd Msg )
-initialModel =
+init : ( Model, Cmd Msg )
+init =
     ( { addImg = AddImg.init
       }
     , Cmd.none
@@ -85,16 +85,18 @@ renderCustomCanvas =
         []
 
 
-main : Program () Model Msg
-main =
-    Browser.element
-        { init = \_ -> initialModel
-        , view = view >> toUnstyled
-        , update = update
-        , subscriptions = subscriptions
-        }
+
+{- main : Program () Model Msg
+   main =
+       Browser.element
+           { init = \_ -> initialModel
+           , view = view >> toUnstyled
+           , update = update
+           , subscriptions = subscriptions
+           }
 
 
-subscriptions : a -> Sub Msg
-subscriptions =
-    \_ -> listenToJs FromJS FromJSDecodeError
+   subscriptions : a -> Sub Msg
+   subscriptions =
+       \_ -> listenToJs FromJS FromJSDecodeError
+-}

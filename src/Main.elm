@@ -2,6 +2,7 @@ module Main exposing (main)
 
 import Browser
 import Browser.Navigation as Nav
+import Editor
 import Html.Styled exposing (..)
 import Html.Styled.Attributes exposing (..)
 import Route exposing (Route(..))
@@ -28,9 +29,15 @@ main =
 -- MODEL
 
 
+type Page
+    = WelcomePage
+    | EditorPage Editor.Model
+    | NotFoundPage
+
+
 type alias Model =
     { key : Nav.Key
-    , route : Route.Route
+    , page : Page
     }
 
 
@@ -41,7 +48,7 @@ init _ url key =
             Route.fromUrl url
     in
     ( { key = key
-      , route = route
+      , page = WelcomePage
       }
     , Cmd.none
     )
@@ -54,6 +61,7 @@ init _ url key =
 type Msg
     = LinkClicked Browser.UrlRequest
     | UrlChanged Url.Url
+    | GotEditorMsg Editor.Msg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -68,9 +76,35 @@ update msg model =
                     ( model, Nav.load url )
 
         UrlChanged url ->
-            ( { model | route = Route.fromUrl url }
-            , Cmd.none
-            )
+            updateUrl url model
+
+        GotEditorMsg editorMsg ->
+            case model.page of
+                EditorPage editorModel ->
+                    toEditor model (Editor.update editorMsg editorModel)
+
+                _ ->
+                    ( model, Cmd.none )
+
+
+updateUrl : Url.Url -> Model -> ( Model, Cmd Msg )
+updateUrl url model =
+    case Route.fromUrl url of
+        Welcome ->
+            ( { model | page = WelcomePage }, Cmd.none )
+
+        Editor ->
+            Editor.init |> toEditor model
+
+        NotFound ->
+            ( { model | page = NotFoundPage }, Cmd.none )
+
+
+toEditor : Model -> ( Editor.Model, Cmd Editor.Msg ) -> ( Model, Cmd Msg )
+toEditor model ( editorModel, editorCmd ) =
+    ( { model | page = EditorPage editorModel }
+    , Cmd.map GotEditorMsg editorCmd
+    )
 
 
 
@@ -96,18 +130,18 @@ view model =
 
 body : Model -> List (Html Msg)
 body model =
-    case model.route of
-        NotFound ->
+    case model.page of
+        NotFoundPage ->
             [ viewHeader
             , div [] [ text "Not found" ]
             ]
 
-        Editor ->
+        EditorPage editorModel ->
             [ viewHeader
-            , div [] [ text "editor" ]
+            , Editor.view editorModel |> Html.Styled.map GotEditorMsg
             ]
 
-        Welcome ->
+        WelcomePage ->
             [ viewHeader
             , div [] [ text "welcome" ]
             ]
