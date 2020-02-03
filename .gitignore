@@ -7,6 +7,7 @@ node_modules/
 *.log
 elm-stuff/
 elm.js
+.env
 
 # OS generated files
 .DS_Store

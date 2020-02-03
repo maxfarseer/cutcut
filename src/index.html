@@ -31,5 +31,10 @@
         <div id='app'></div>
       </div>
     </section>
+    <script>
+      window.fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/getMe`)
+        .then(response => response.json())
+        .then(json => console.log(json))
+    </script>
   </body>
 </html>
