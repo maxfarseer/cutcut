@@ -74,6 +74,23 @@
 
           // already taken: 😀, 🙂, 😁
         });
+
+        // example of blob -> telegram
+        /* const el = document.getElementById('cus');
+        el.toBlob((blob) => {
+          const formData = new FormData();
+          formData.append('user_id', botId); // bot id here
+          formData.append('name', 'firstpack_by_cutcutelm_bot');
+          formData.append('png_sticker', blob);
+          formData.append('emojis', '💍');
+
+          const options = {
+            method: 'POST',
+            body: formData,
+          };
+          
+          fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/addStickerToSet`, options);
+        }); */
       
     </script>
   </body>
