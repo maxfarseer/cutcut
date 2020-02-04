@@ -33,8 +33,29 @@
     </section>
     <script>
       window.fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/getMe`)
-        .then(response => response.json())
-        .then(json => console.log(json))
+        .then(botDataResponse => botDataResponse.json())
+        .then(bot => {
+          const botId = bot.result.id;
+          console.log(botId)
+
+          window.fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/createNewStickerSet`, {
+            method: 'POST',
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              user_id: process.env.TELEGRAM_USER_ID,
+              name: 'firstpack_by_cutcutelm_bot',
+              title: '1st pack by CutCut',
+              emojis: 'not_ready_yet',
+              png_sticker: 'https://i.ya-webdesign.com/images/512x512-png-images-11.png',
+            })
+          })
+          .then(stickerResponse => stickerResponse.json())
+          .then(stickerSet => console.log(stickerSet));
+        });
+      
     </script>
   </body>
 </html>
