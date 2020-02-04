@@ -36,9 +36,8 @@
         .then(botDataResponse => botDataResponse.json())
         .then(bot => {
           const botId = bot.result.id;
-          console.log(botId)
 
-          window.fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/createNewStickerSet`, {
+          /* window.fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/createNewStickerSet`, {
             method: 'POST',
             headers: {
               'Accept': 'application/json',
@@ -48,12 +47,32 @@
               user_id: process.env.TELEGRAM_USER_ID,
               name: 'firstpack_by_cutcutelm_bot',
               title: '1st pack by CutCut',
-              emojis: 'not_ready_yet',
+              emojis: '😀',
               png_sticker: 'https://i.ya-webdesign.com/images/512x512-png-images-11.png',
             })
           })
           .then(stickerResponse => stickerResponse.json())
-          .then(stickerSet => console.log(stickerSet));
+          .then(stickerSet => console.log(stickerSet)); */
+        
+          /* window.fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/addStickerToSet`, {
+            method: 'POST',
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              user_id: botId,//process.env.TELEGRAM_USER_ID,
+              name: 'firstpack_by_cutcutelm_bot',
+              emojis: '😁',
+              png_sticker: 'https://cdn.icon-icons.com/icons2/1584/PNG/512/3721679-youtube_108064.png',
+            })
+          })
+          .then(stickerResponse => stickerResponse.json())
+          .then(stickerSet => console.log(stickerSet)); */
+
+          // PHONE_IMG 'https://lh3.googleusercontent.com/proxy/JvqB2-YHykAwjUhTJIheG6ZV-oxEoJyX_eVVJ9tFjag5ftTSDO8WkIH0yVOa8Q5mYF7n8qoX3OErHfOTXVdDD_5tBf4TOCV88XaGrKDyGuzwUR3tU4N2MMsu7g1ShxFjVzSrTQnfHBUiwaUHtBZnWyz_EjDGJdAysWOW2qz5zugE0koRYcNozLW5Qoo',
+
+          // already taken: 😀, 🙂, 😁
         });
       
     </script>
