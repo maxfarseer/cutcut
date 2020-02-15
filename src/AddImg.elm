@@ -180,7 +180,7 @@ viewCustomCropper =
 viewRemoveBgQuestion : Html Msg
 viewRemoveBgQuestion =
     div []
-        [ button [ onClick ClickedRemoveBg ] [ text "Yes, plase remove" ]
+        [ button [ onClick ClickedRemoveBg ] [ text "Yes, please remove" ]
         , button [ onClick ClickedNotRemoveBg ] [ text "No, do not remove" ]
         ]
 

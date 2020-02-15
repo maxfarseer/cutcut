@@ -4,19 +4,21 @@ import AddImg
 import Css exposing (block, border3, display, height, px, rgb, solid, width)
 import Custom exposing (customCanvas)
 import Html.Styled exposing (Html, button, div, h2, map, text)
-import Html.Styled.Attributes exposing (class, css)
+import Html.Styled.Attributes exposing (class, css, disabled)
 import Html.Styled.Events exposing (onClick)
 import Ports exposing (IncomingMsg(..), OutgoingMsg(..), listenToJs, sendToJs)
 
 
 type alias Model =
     { addImg : AddImg.Model
+    , uploadingStickerInProgress : Bool
     }
 
 
 init : ( Model, Cmd Msg )
 init =
     ( { addImg = AddImg.init
+      , uploadingStickerInProgress = False
       }
     , Cmd.none
     )
@@ -27,6 +29,7 @@ type Msg
     | FromJS IncomingMsg
     | FromJSDecodeError String
     | ClickedDownloadSticker
+    | ClickedUploadToPack
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -55,6 +58,9 @@ update msg model =
                     in
                     ( { model | addImg = updatedAddImg }, Cmd.none )
 
+                StickerUploadedSuccess ->
+                    ( { model | uploadingStickerInProgress = False }, Cmd.none )
+
                 UnknownIncomingMessage str ->
                     -- TODO: show error message for user
                     let
@@ -73,15 +79,19 @@ update msg model =
         ClickedDownloadSticker ->
             ( model, sendToJs <| DownloadSticker )
 
+        ClickedUploadToPack ->
+            ( { model | uploadingStickerInProgress = True }, sendToJs <| RequestUploadToPack )
+
 
 view : Model -> Html Msg
 view model =
     div []
-        [ h2 [] [ text "CutCut" ]
+        [ h2 [] [ text "CutCut editor" ]
         , renderCustomCanvas
         , div [ class "columns" ]
             [ map FromAddImg (AddImg.view model.addImg)
             , renderSaveImgBtn
+            , renderUploadImgToStickerSetBtn model.uploadingStickerInProgress
             ]
         ]
 
@@ -104,6 +114,18 @@ renderSaveImgBtn =
     div [ class "column is-2" ]
         [ button [ class "button is-info", onClick ClickedDownloadSticker ]
             [ text "Download sticker" ]
+        ]
+
+
+
+-- TODO: preloader on button (check bulma)
+
+
+renderUploadImgToStickerSetBtn : Bool -> Html Msg
+renderUploadImgToStickerSetBtn inprogress =
+    div [ class "column is-2" ]
+        [ button [ class "button is-info", onClick ClickedUploadToPack, disabled inprogress ]
+            [ text "Upload to pack" ]
         ]
 
 

@@ -1,4 +1,5 @@
 import { fabric } from 'fabric'
+import { sendToElm } from '../ports';
 
 type CustomCanvasOptions = {
   strokeWidth: number;
@@ -31,13 +32,17 @@ class CustomCanvas extends HTMLElement {
 
     this.initFabric();
 
-    this.addEventListener('draw-image', this.drawImage, false);
     this.addEventListener('recieved-cropped-data', this.drawImage, false);
     this.addEventListener('download-sticker', this.downloadSticker, false);
+    this.addEventListener('request-upload-to-pack', this.requestUploadToPack, false);
   }
 
   initFabric() {
     this._cf = new fabric.Canvas('cus');
+  }
+
+  getDpr() {
+    return window.devicePixelRatio || 1;
   }
 
   drawFabricImage(imgUrl: string) {
@@ -118,14 +123,97 @@ class CustomCanvas extends HTMLElement {
 
   downloadSticker = () => {
     if (this._canvas) {
-      /* https://stackoverflow.com/a/44487883/1916578 */
-      const link = document.createElement('a');
-      link.setAttribute('download', 'cutcut-sticker.png');
-      link.setAttribute('href', this._canvas.toDataURL("image/png").replace("image/png", "image/octet-stream"));
-      link.click();
+
+      const dpr = this.getDpr();
+      const dataUrl = this._canvas.toDataURL();
+      const img = document.createElement('img');
+      img.onload = () => {
+        const WIDTH = img.width / dpr;
+        const HEIGHT = img.height / dpr;
+
+        img.width = WIDTH;
+        img.height = HEIGHT;
+
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = WIDTH;
+        tempCanvas.height = HEIGHT;
+        const tempCanvasCtx = tempCanvas.getContext('2d');
+        tempCanvasCtx!.drawImage(img, 0, 0, WIDTH, HEIGHT);
+
+        /* https://stackoverflow.com/a/44487883/1916578 */
+        const link = document.createElement('a');
+        link.setAttribute('download', 'cutcut-sticker.png');
+        link.setAttribute('href', tempCanvas.toDataURL("image/png").replace("image/png", "image/octet-stream"));
+        link.click();
+      }
+      img.src = dataUrl;
     } else {
-      console.warn('this._canvas not exist, check CustomCanvas component');
+      console.warn('this._canvas does not exist, check CustomCanvas component');
     }
+  }
+
+  requestUploadToPack = () => {
+    // this doesn't work for process.env
+    // const { TELEGRAM_BOT_TOKEN, TELEGRAM_BOT_ID } = process.env;
+
+    if (!process.env.TELEGRAM_BOT_TOKEN || !process.env.TELEGRAM_BOT_ID) {
+      console.log('Your forget to set up environment variables. Please check your .env file. https://parceljs.org/env.html')
+    }
+
+    if (this._canvas) {
+      const dpr = this.getDpr();
+      const dataUrl = this._canvas.toDataURL();
+      const img = document.createElement('img');
+      img.onload = () => {
+        const WIDTH = img.width / dpr;
+        const HEIGHT = img.height / dpr;
+
+        img.width = WIDTH;
+        img.height = HEIGHT;
+
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = WIDTH;
+        tempCanvas.height = HEIGHT;
+        const tempCanvasCtx = tempCanvas.getContext('2d');
+        tempCanvasCtx!.drawImage(img, 0, 0, WIDTH, HEIGHT);
+
+        this.uploadToStickerPack(tempCanvas, '💍')
+      }
+      img.src = dataUrl;
+
+    } else {
+      console.warn('this._canvas does not exist, check CustomCanvas component');
+    }
+  }
+
+  uploadToStickerPack(tempCanvas: HTMLCanvasElement, emoji: string) {
+    tempCanvas.toBlob((blob) => {
+      if (blob) {
+        const formData = new FormData();
+        formData.append('user_id', process.env.TELEGRAM_BOT_ID as string); // bot id here
+        formData.append('name', 'firstpack_by_cutcutelm_bot');
+        formData.append('png_sticker', blob);
+        formData.append('emojis', emoji);
+
+        const options = {
+          method: 'POST',
+          body: formData,
+        };
+
+        fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN as string}/addStickerToSet`, options)
+          .then(r => r.json())
+          .then(json => {
+            if (json.ok) {
+              sendToElm({ action: 'StickerUploadedSuccess', payload: null });
+            } else {
+              // TODO: error action + notification on elm side
+              console.log('ERROR')
+            }
+          })
+      } else {
+        console.log('blob is null')
+      }
+    })
   }
 }
 

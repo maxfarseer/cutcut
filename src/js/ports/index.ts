@@ -14,12 +14,6 @@ const getCustomCanvas = (): Node => {
   return document.getElementsByTagName('custom-canvas')[0]
 }
 
-const drawSqaure = (base64path: string) => {
-  const event = new CustomEvent('draw-image', { detail: { base64path } });
-  const customCanvas = getCustomCanvas();
-  customCanvas.dispatchEvent(event);
-};
-
 const cropImage = (imgUrl: string) => {
   const event = new CustomEvent('crop-image-init', { detail: { imgUrl } });
   window.requestAnimationFrame(() => {
@@ -55,12 +49,13 @@ const downloadSticker = () => {
   customCanvas.dispatchEvent(event);
 }
 
+const requestUploadToPack = () => {
+  const event = new CustomEvent('request-upload-to-pack');
+  getCustomCanvas().dispatchEvent(event);
+}
+
 const handlePortMsg = async ({ action, payload }: IPortMsg) => {
   switch (action) {
-    case 'DrawSquare': {
-      drawSqaure(payload);
-      break;
-    }
     case 'CropImage': {
       cropImage(payload);
       break;
@@ -79,6 +74,11 @@ const handlePortMsg = async ({ action, payload }: IPortMsg) => {
     }
     case 'DownloadSticker': {
       downloadSticker();
+      break;
+    }
+
+    case 'RequestUploadToPack': {
+      requestUploadToPack();
       break;
     }
 

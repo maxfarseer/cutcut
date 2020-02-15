@@ -15,18 +15,19 @@ type alias Base64 =
 
 
 type OutgoingMsg
-    = DrawSquare Base64
-    | CropImage Base64
+    = CropImage Base64
     | PrepareForErase Bool
     | AddImgFinish
     | SaveCroppedImage
     | DownloadSticker
+    | RequestUploadToPack
 
 
 type IncomingMsg
     = ImageSaved
     | ImageAddedToFabric
     | UnknownIncomingMessage String
+    | StickerUploadedSuccess
 
 
 {-| Send messages to JS
@@ -43,9 +44,6 @@ sendToJs : OutgoingMsg -> Cmd msg
 sendToJs outgoingMsg =
     msgForJs <|
         case outgoingMsg of
-            DrawSquare base64 ->
-                { action = "DrawSquare", payload = Encode.string base64 }
-
             CropImage base64 ->
                 { action = "CropImage", payload = Encode.string base64 }
 
@@ -61,9 +59,17 @@ sendToJs outgoingMsg =
             DownloadSticker ->
                 { action = "DownloadSticker", payload = Encode.null }
 
+            RequestUploadToPack ->
+                { action = "RequestUploadToPack", payload = Encode.null }
+
 
 
 -- SUBSCRIPTION
+
+
+payloadDecoder : Decoder value -> Decoder value
+payloadDecoder decoder =
+    Decode.field "payload" decoder
 
 
 incomingMsgDecoder : Decoder IncomingMsg
@@ -77,6 +83,9 @@ incomingMsgDecoder =
 
                     "ImageAddedToFabric" ->
                         Decode.succeed ImageAddedToFabric
+
+                    "StickerUploadedSuccess" ->
+                        Decode.succeed StickerUploadedSuccess
 
                     _ ->
                         Decode.succeed <|
@@ -93,5 +102,9 @@ listenToJs decodeSuccessTag decodeErrorTag =
                 Ok incomingMsg ->
                     decodeSuccessTag incomingMsg
 
-                Err _ ->
+                Err str ->
+                    let
+                        _ =
+                            Debug.log "error listenToJs" str
+                    in
                     decodeErrorTag "TODO: better decoder error"
