@@ -5,9 +5,6 @@ import { sendToElm } from '../ports'
 
 declare let window: CustomWindow;
 
-const testImg =
-  'iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAARUlEQVR42u3PMREAAAgEoLd/AtNqBlcPGlDJdB4oEREREREREREREREREREREREREREREREREREREREREREREREREZGLBddNT+MQpgCuAAAAAElFTkSuQmCC';
-
 class CustomCropper extends HTMLElement {
   private _cropper: Cropper | null;
   private _wrapperDiv: HTMLDivElement | null;
@@ -20,7 +17,6 @@ class CustomCropper extends HTMLElement {
 
   connectedCallback() {
     const div = document.createElement('div');
-    div.id = 'img-wrapper';
     this._wrapperDiv = div;
 
     this.appendChild(this._wrapperDiv);
@@ -33,44 +29,71 @@ class CustomCropper extends HTMLElement {
     this.loadImage(imgUrl, this.initCropper);
   };
 
-  initCropper = () => {
+  initCropper = (img: HTMLCanvasElement) => {
     // https://github.com/fengyuanchen/cropperjs#options
-    const image = document.getElementById('cropper-image');
     const self = this;
 
-    if (image) {
-      const cropper = new Cropper((image as HTMLImageElement), {
-        crop(event) {
-          // coordinates & more
-        },
-        ready() {
-          self._cropper = cropper;
-        },
-      });
-    } else {
-      console.warn('#cropper-image element not found')
-    }
+    const cropper = new Cropper(img, {
+      crop(event) {
+        // coordinates & more
+      },
+      ready() {
+        self._cropper = cropper;
+      },
+    });
   };
 
-  loadImage = (imgUrl: string, cb: () => void) => {
+  loadImage = (imgUrl: string, cb: (img: HTMLCanvasElement) => void) => {
     const img = new Image();
-    img.id = 'cropper-image';
-    img.onload = cb;
 
-    if (this._wrapperDiv) {
-      this._wrapperDiv.appendChild(img);
-    } else {
-      console.warn('parent div for crop-image not found');
+    img.onload = () => {
+      this.resizeImg(img)
+        .then((canvas: HTMLCanvasElement) => {
+          if (this._wrapperDiv) {
+
+            /**
+             * TODO: double check this.
+             * we need this style, according to cropper.js documentation
+             * https://github.com/fengyuanchen/cropperjs#usage
+             */
+            canvas.id = 'cropper-image';
+
+            this._wrapperDiv.appendChild(canvas);
+          } else {
+            console.warn('parent div for crop-image canvas element not found');
+          }
+          cb(canvas);
+        });
     }
 
     img.src = imgUrl;
   };
 
+  resizeImg = (img: HTMLImageElement) => {
+    // TODO: make canvas with propper width/heght + exif info (not rotated)
+
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    ctx!.drawImage(img, 0, 0, img.width, img.height);
+
+    const from = img;
+    const to = canvas;
+
+    return pica().resize(from, to, {
+      unsharpAmount: 80,
+      unsharpRadius: 0.6,
+      unsharpThreshold: 2
+    });
+  }
+
   saveCroppedImage = () => {
     if (this._cropper) {
       const dataUrl = this._cropper.getCroppedCanvas().toDataURL();
-      // TODO: make image optimised small
-      // it's not worth to keep big for 512px sticker
+      const img = new Image();
+      img.onload = () => {
+        console.log(img.width, img.height)
+      }
+      img.src = dataUrl;
 
       // TODO: why save in storage? Try send to Elm in payload and use it in next event
       saveImageBase64(dataUrl);

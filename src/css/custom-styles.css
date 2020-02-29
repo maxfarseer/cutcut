@@ -1,0 +1,7 @@
+/* for cropper.js
+  readmore: https://github.com/fengyuanchen/cropperjs#usage
+ */
+#cropper-image {
+  display: block;
+  max-width: 100%;
+}
