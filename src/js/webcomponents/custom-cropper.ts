@@ -26,7 +26,7 @@ class CustomCropper extends HTMLElement {
 
   initImage = (e: Event) => {
     const imgUrl = (e as CustomEvent).detail.imgUrl;
-    this.loadImage(imgUrl, this.initCropper);
+    this.loadImage(imgUrl);
   };
 
   initCropper = (img: HTMLCanvasElement) => {
@@ -43,26 +43,18 @@ class CustomCropper extends HTMLElement {
     });
   };
 
-  loadImage = (imgUrl: string, cb: (img: HTMLCanvasElement) => void) => {
+  loadImage = (imgUrl: string) => {
     const img = new Image();
 
     img.onload = () => {
       this.resizeImg(img)
         .then((canvas: HTMLCanvasElement) => {
           if (this._wrapperDiv) {
-
-            /**
-             * TODO: double check this.
-             * we need this style, according to cropper.js documentation
-             * https://github.com/fengyuanchen/cropperjs#usage
-             */
-            canvas.id = 'cropper-image';
-
             this._wrapperDiv.appendChild(canvas);
           } else {
             console.warn('parent div for crop-image canvas element not found');
           }
-          cb(canvas);
+          this.initCropper(canvas);
         });
     }
 
@@ -71,15 +63,23 @@ class CustomCropper extends HTMLElement {
 
   resizeImg = (img: HTMLImageElement) => {
     // TODO: make canvas with propper width/heght + exif info (not rotated)
+    const expected = 1024;
+    const { width, height } = img;
+
+    const newHeight = height / width * expected;
 
     const canvas = document.createElement('canvas');
+    canvas.style.width = expected + 'px';
+    canvas.style.height = newHeight + 'px';
     const ctx = canvas.getContext('2d');
-    ctx!.drawImage(img, 0, 0, img.width, img.height);
+    ctx!.drawImage(img, 0, 0, expected, newHeight);
+
+    document.body.appendChild(canvas);
 
     const from = img;
     const to = canvas;
 
-    return pica().resize(from, to, {
+    return window.pica().resize(from, to, {
       unsharpAmount: 80,
       unsharpRadius: 0.6,
       unsharpThreshold: 2
