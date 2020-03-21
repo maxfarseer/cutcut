@@ -1,6 +1,5 @@
 import Cropper from 'cropperjs';
 import { CustomWindow } from '../../custom.window';
-import { saveImageBase64 } from '../storage';
 import { sendToElm } from '../ports'
 
 declare let window: CustomWindow;
@@ -86,15 +85,7 @@ class CustomCropper extends HTMLElement {
   saveCroppedImage = () => {
     if (this._cropper) {
       const dataUrl = this._cropper.getCroppedCanvas().toDataURL();
-      const img = new Image();
-      img.onload = () => {
-        console.log(img.width, img.height)
-      }
-      img.src = dataUrl;
-
-      // TODO: why save in storage? Try send to Elm in payload and use it in next event
-      saveImageBase64(dataUrl);
-      sendToElm({ action: 'ImageSaved', payload: null });
+      sendToElm({ action: 'ImageSaved', payload: dataUrl });
     } else {
       console.warn('instance of cropper not found');
     }

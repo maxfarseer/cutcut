@@ -2,7 +2,7 @@ module AddImg exposing (Model, Msg, closeModal, init, setRemoveBgOrNotStep, upda
 
 import Custom exposing (customCropper, customEraser)
 import File exposing (File)
-import Html.Styled exposing (Html, button, div, form, i, input, label, span, text)
+import Html.Styled exposing (Html, button, div, p, form, i, input, label, span, text)
 import Html.Styled.Attributes exposing (class, multiple, name, type_)
 import Html.Styled.Events exposing (on, onClick)
 import Http as Http
@@ -14,7 +14,9 @@ import Ui.Modal
 
 type alias Model =
     { step : Step
+    , base64image: Maybe String
     , uploadStatus : UploadStatus
+    , error: Maybe String
     }
 
 
@@ -33,6 +35,7 @@ type Step
     | Crop
     | RemoveBgOrNot
     | Erase
+    | Error
 
 
 type Msg
@@ -48,7 +51,9 @@ type Msg
 init : Model
 init =
     { step = Add
+    , base64image = Nothing
     , uploadStatus = NotAsked
+    , error = Nothing
     }
 
 
@@ -61,9 +66,9 @@ filesDecoder =
     D.at [ "target", "files" ] (D.list File.decoder)
 
 
-setRemoveBgOrNotStep : Model -> ( Model, Cmd Msg )
-setRemoveBgOrNotStep model =
-    ( { model | step = RemoveBgOrNot }, Cmd.none )
+setRemoveBgOrNotStep : Model -> Base64 -> ( Model, Cmd Msg )
+setRemoveBgOrNotStep model img =
+    ( { model | step = RemoveBgOrNot, base64image = Just img }, Cmd.none )
 
 
 closeModal : Model -> Model
@@ -92,10 +97,18 @@ update msg model =
             ( model, sendToJs <| SaveCroppedImage )
 
         ClickedRemoveBg ->
-            ( { model | step = Erase }, sendToJs <| PrepareForErase True )
+            case model.base64image of
+                Just base64string ->
+                    ( { model | step = Erase }, sendToJs <| PrepareForErase True base64string)
+                Nothing ->
+                    ( { model | step = Error, error = Just "Problem with image..." }, Cmd.none )
 
         ClickedNotRemoveBg ->
-            ( { model | step = Erase }, sendToJs <| PrepareForErase False )
+            case model.base64image of
+                Just base64string ->
+                    ( { model | step = Erase }, sendToJs <| PrepareForErase False base64string)
+                Nothing ->
+                    ( { model | step = Error, error = Just "Problem with image..." }, Cmd.none )
 
         ClickedEraseFinish ->
             ( { model | step = Erase }, sendToJs <| AddImgFinish )
@@ -142,6 +155,26 @@ view model =
                 []
                 [ viewCustomEraser
                 ]
+
+        Error ->
+            case model.error of
+                Just err ->
+                    Ui.Modal.view
+                        { title = "Add image: Error"
+                        , open = True
+                        , closeMsg = ClickedCloseModal
+                        , confirmMsg = ClickedCloseModal
+                        , confirmText = Just "Close & try again"
+                        }
+                        []
+                        [ viewError err
+                        ]
+                Nothing ->
+                    let
+                        _ =
+                            Debug.log "impossible case, check AddImg module"
+                    in
+                    text ""
 
 
 viewUploadFileBtn : Html Msg
@@ -190,3 +223,10 @@ viewCustomEraser =
     customEraser
         []
         []
+
+
+viewError : String -> Html Msg
+viewError errorStr =
+    div [] [
+        p [] [text errorStr]
+    ]

@@ -1,5 +1,5 @@
-import { getImageBase64 } from "../storage";
 import { sendToElm } from "../ports";
+import { IPrepareForEraseArgs } from "../ports/types";
 
 const ERASE_CANVAS_ID = 'erase-canvas';
 const ERASE_CANVAS_DIV_ID = 'erase-canvas-wrapper';
@@ -86,15 +86,10 @@ class CustomEraser extends HTMLElement {
   prepareForErase = (event: Event) => {
     // https://github.com/microsoft/TypeScript/issues/28357
     // https://stackoverflow.com/questions/47166369/argument-of-type-e-customevent-void-is-not-assignable-to-parameter-of-ty?rq=1
-    const removeBgOrNot: boolean = (event as CustomEvent).detail.removeBg;
-    const imgBase64 = getImageBase64();
+    const { removeBg, base64img }: IPrepareForEraseArgs = (event as CustomEvent).detail;
 
-    if (!imgBase64) {
-      throw new Error('imgUrl not found');
-    }
-
-    if (removeBgOrNot) {
-      this.sendImageToRemoveBg(imgBase64);
+    if (removeBg) {
+      this.sendImageToRemoveBg(base64img);
     } else {
       const img = new Image();
       img.crossOrigin = 'Anonymous';
@@ -103,7 +98,7 @@ class CustomEraser extends HTMLElement {
         this.initEraseCanvas(img);
       };
 
-      img.src = imgBase64;
+      img.src = base64img;
     }
   };
 

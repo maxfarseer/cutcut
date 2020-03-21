@@ -16,7 +16,7 @@ type alias Base64 =
 
 type OutgoingMsg
     = CropImage Base64
-    | PrepareForErase Bool
+    | PrepareForErase Bool String
     | AddImgFinish
     | SaveCroppedImage
     | DownloadSticker
@@ -24,7 +24,7 @@ type OutgoingMsg
 
 
 type IncomingMsg
-    = ImageSaved
+    = ImageSaved String
     | ImageAddedToFabric
     | UnknownIncomingMessage String
     | StickerUploadedSuccess
@@ -47,8 +47,14 @@ sendToJs outgoingMsg =
             CropImage base64 ->
                 { action = "CropImage", payload = Encode.string base64 }
 
-            PrepareForErase answer ->
-                { action = "PrepareForErase", payload = Encode.bool answer }
+            PrepareForErase answer base64img ->
+                { action = "PrepareForErase"
+                , payload =
+                    Encode.object
+                        [ ( "removeBg", Encode.bool answer )
+                        , ( "base64img", Encode.string base64img )
+                        ]
+                }
 
             AddImgFinish ->
                 { action = "AddImgFinish", payload = Encode.null }
@@ -79,7 +85,10 @@ incomingMsgDecoder =
             (\action ->
                 case action of
                     "ImageSaved" ->
-                        Decode.succeed ImageSaved
+                        -- Decode.map ImageSaved (payloadDecoder Decode.string) is equal to
+                        Decode.string
+                            |> payloadDecoder
+                            |> Decode.map ImageSaved
 
                     "ImageAddedToFabric" ->
                         Decode.succeed ImageAddedToFabric
