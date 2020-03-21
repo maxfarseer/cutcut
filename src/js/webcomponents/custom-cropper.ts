@@ -62,19 +62,16 @@ class CustomCropper extends HTMLElement {
   };
 
   resizeImg = (img: HTMLImageElement) => {
-    // TODO: make canvas with propper width/heght + exif info (not rotated)
-    const expected = 1024;
+    // TODO: fix rotation as pica suggested
+    // TODO: play with width value
+    const expected = 640;
     const { width, height } = img;
 
-    const newHeight = height / width * expected;
+    const newHeight = height * expected / width;
 
     const canvas = document.createElement('canvas');
-    canvas.style.width = expected + 'px';
-    canvas.style.height = newHeight + 'px';
-    const ctx = canvas.getContext('2d');
-    ctx!.drawImage(img, 0, 0, expected, newHeight);
-
-    document.body.appendChild(canvas);
+    canvas.width = expected;
+    canvas.height = newHeight;
 
     const from = img;
     const to = canvas;
