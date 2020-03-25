@@ -1,8 +1,9 @@
 module AddImg exposing (Model, Msg, closeModal, init, setRemoveBgOrNotStep, update, view)
 
+import Base64 exposing (Base64ImgUrl)
 import Custom exposing (customCropper, customEraser)
 import File exposing (File)
-import Html.Styled exposing (Html, button, div, p, form, i, input, label, span, text)
+import Html.Styled exposing (Html, button, div, form, i, input, label, p, span, text)
 import Html.Styled.Attributes exposing (class, multiple, name, type_)
 import Html.Styled.Events exposing (on, onClick)
 import Http as Http
@@ -14,14 +15,10 @@ import Ui.Modal
 
 type alias Model =
     { step : Step
-    , base64image: Maybe String
+    , base64image : Maybe Base64ImgUrl
     , uploadStatus : UploadStatus
-    , error: Maybe String
+    , error : Maybe String
     }
-
-
-type alias Base64 =
-    String
 
 
 type UploadStatus
@@ -40,7 +37,7 @@ type Step
 
 type Msg
     = GotFiles (List File)
-    | GotFileUrl Base64
+    | GotFileUrl String
     | ClickedCloseModal
     | ClickedEraseFinish
     | ClickedCropFinish
@@ -66,7 +63,7 @@ filesDecoder =
     D.at [ "target", "files" ] (D.list File.decoder)
 
 
-setRemoveBgOrNotStep : Model -> Base64 -> ( Model, Cmd Msg )
+setRemoveBgOrNotStep : Model -> Base64ImgUrl -> ( Model, Cmd Msg )
 setRemoveBgOrNotStep model img =
     ( { model | step = RemoveBgOrNot, base64image = Just img }, Cmd.none )
 
@@ -99,14 +96,16 @@ update msg model =
         ClickedRemoveBg ->
             case model.base64image of
                 Just base64string ->
-                    ( { model | step = Erase }, sendToJs <| PrepareForErase True base64string)
+                    ( { model | step = Erase }, sendToJs <| PrepareForErase True base64string )
+
                 Nothing ->
                     ( { model | step = Error, error = Just "Problem with image..." }, Cmd.none )
 
         ClickedNotRemoveBg ->
             case model.base64image of
                 Just base64string ->
-                    ( { model | step = Erase }, sendToJs <| PrepareForErase False base64string)
+                    ( { model | step = Erase }, sendToJs <| PrepareForErase False base64string )
+
                 Nothing ->
                     ( { model | step = Error, error = Just "Problem with image..." }, Cmd.none )
 
@@ -169,6 +168,7 @@ view model =
                         []
                         [ viewError err
                         ]
+
                 Nothing ->
                     let
                         _ =
@@ -227,6 +227,6 @@ viewCustomEraser =
 
 viewError : String -> Html Msg
 viewError errorStr =
-    div [] [
-        p [] [text errorStr]
-    ]
+    div []
+        [ p [] [ text errorStr ]
+        ]

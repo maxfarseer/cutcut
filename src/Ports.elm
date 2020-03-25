@@ -1,5 +1,6 @@
 port module Ports exposing (IncomingMsg(..), OutgoingMsg(..), listenToJs, sendToJs)
 
+import Base64 exposing (Base64ImgUrl)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode
 
@@ -10,12 +11,8 @@ type alias PortData =
     }
 
 
-type alias Base64 =
-    String
-
-
 type OutgoingMsg
-    = CropImage Base64
+    = CropImage Base64ImgUrl
     | PrepareForErase Bool String
     | AddImgFinish
     | SaveCroppedImage
