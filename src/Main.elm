@@ -4,7 +4,7 @@ import Browser
 import Browser.Navigation as Nav
 import Editor
 import Html.Styled exposing (Html, a, div, footer, h1, h2, img, nav, p, section, span, strong, text, toUnstyled)
-import Html.Styled.Attributes exposing (attribute, class, href, id, src)
+import Html.Styled.Attributes exposing (attribute, class, href, id, src, target)
 import Route exposing (Route(..))
 import Url
 
@@ -181,9 +181,13 @@ viewHeader =
                 , div [ class "navbar-end" ]
                     [ div [ class "navbar-item" ]
                         [ div [ class "buttons" ]
-                            [ a [ class "button is-info" ]
+                            [ a
+                                [ class "button is-info"
+                                , href "https://github.com/maxfarseer/cutcut/"
+                                , target "_blank"
+                                ]
                                 [ strong []
-                                    [ text "Learn elm" ]
+                                    [ text "Fork me" ]
                                 ]
                             , a [ class "button is-light" ]
                                 [ text "v. 0.0.1" ]

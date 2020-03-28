@@ -179,12 +179,12 @@ view model =
 
 viewUploadFileBtn : Html Msg
 viewUploadFileBtn =
-    form [ class "column is-2" ]
+    form []
         [ div [ class "file" ]
             [ label [ class "file-label" ]
                 [ input
                     [ class "file-input"
-                    , name "resume"
+                    , name "upload-pic"
                     , type_ "file"
                     , multiple False
                     , on "change" (D.map GotFiles filesDecoder)

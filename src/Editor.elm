@@ -3,7 +3,7 @@ module Editor exposing (Model, Msg, init, subscriptions, update, view)
 import AddImg
 import Css exposing (block, border3, display, height, px, rgb, solid, width)
 import Custom exposing (customCanvas)
-import Html.Styled exposing (Html, button, div, h2, map, text)
+import Html.Styled exposing (Html, button, div, h1, h2, map, section, text)
 import Html.Styled.Attributes exposing (class, css, disabled)
 import Html.Styled.Events exposing (onClick)
 import Ports exposing (IncomingMsg(..), OutgoingMsg(..), listenToJs, sendToJs)
@@ -85,13 +85,29 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    div []
-        [ h2 [] [ text "CutCut editor" ]
-        , renderCustomCanvas
-        , div [ class "columns" ]
-            [ map FromAddImg (AddImg.view model.addImg)
-            , renderSaveImgBtn
-            , renderUploadImgToStickerSetBtn model.uploadingStickerInProgress
+    section []
+        [ div [ class "container" ]
+            [ h1 [ class "title" ] [ text "Editor" ]
+            , h2 [ class "subtitle" ] [ text "Upload photo and make fun" ]
+            , div [ class "level" ]
+                [ div [ class "level-left" ]
+                    [ div [ class "level-item" ]
+                        [ renderCustomCanvas
+                        ]
+                    ]
+                ]
+            , div [ class "level" ]
+                [ div [ class "level-left" ]
+                    [ div [ class "level-item" ]
+                        [ map FromAddImg (AddImg.view model.addImg)
+                        ]
+                    , div [ class "level-item" ]
+                        [ renderSaveImgBtn
+                        ]
+                    , div [ class "level-item" ]
+                        [ renderUploadImgToStickerSetBtn model.uploadingStickerInProgress ]
+                    ]
+                ]
             ]
         ]
 
@@ -111,10 +127,8 @@ renderCustomCanvas =
 
 renderSaveImgBtn : Html Msg
 renderSaveImgBtn =
-    div [ class "column is-2" ]
-        [ button [ class "button is-info", onClick ClickedDownloadSticker ]
-            [ text "Download sticker" ]
-        ]
+    button [ class "button is-info", onClick ClickedDownloadSticker ]
+        [ text "Download sticker" ]
 
 
 
@@ -123,10 +137,8 @@ renderSaveImgBtn =
 
 renderUploadImgToStickerSetBtn : Bool -> Html Msg
 renderUploadImgToStickerSetBtn inprogress =
-    div [ class "column is-2" ]
-        [ button [ class "button is-info", onClick ClickedUploadToPack, disabled inprogress ]
-            [ text "Upload to pack" ]
-        ]
+    button [ class "button is-info", onClick ClickedUploadToPack, disabled inprogress ]
+        [ text "Upload to pack" ]
 
 
 subscriptions : a -> Sub Msg
