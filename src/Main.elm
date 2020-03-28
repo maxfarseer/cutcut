@@ -3,7 +3,7 @@ module Main exposing (main)
 import Browser
 import Browser.Navigation as Nav
 import Editor
-import Html.Styled exposing (Html, a, div, img, nav, span, strong, text, toUnstyled)
+import Html.Styled exposing (Html, a, div, footer, h1, h2, img, nav, p, section, span, strong, text, toUnstyled)
 import Html.Styled.Attributes exposing (attribute, class, href, id, src)
 import Route exposing (Route(..))
 import Url
@@ -140,45 +140,93 @@ body model =
             ]
 
         WelcomePage ->
-            [ viewHeader
-            , div [] [ text "welcome" ]
+            [ section [ class "hero is-fullheight" ]
+                [ div [ class "hero-head" ]
+                    [ viewHeader
+                    ]
+                , div [ class "hero-body" ]
+                    [ viewWelcomePage ]
+                , div [ class "hero-foot" ]
+                    [ viewFooter
+                    ]
+                ]
             ]
 
 
 viewHeader : Html msg
 viewHeader =
     nav [ attribute "aria-label" "main navigation", class "navbar", attribute "role" "navigation" ]
-        [ div [ class "navbar-brand" ]
-            [ a [ class "navbar-item", href "/" ]
-                [ img [ attribute "height" "28", src "https://i.imgur.com/OquiVkC.png", attribute "width" "96" ]
-                    []
+        [ div [ class "container" ]
+            [ div [ class "navbar-brand" ]
+                [ a [ class "navbar-item", href "/" ]
+                    [ img [ attribute "height" "28", src "https://i.imgur.com/OquiVkC.png", attribute "width" "96" ]
+                        []
+                    ]
+                , a [ attribute "aria-expanded" "false", attribute "aria-label" "menu", class "navbar-burger burger", attribute "data-target" "navbarBasicExample", attribute "role" "button" ]
+                    [ span [ attribute "aria-hidden" "true" ]
+                        []
+                    , span [ attribute "aria-hidden" "true" ]
+                        []
+                    , span [ attribute "aria-hidden" "true" ]
+                        []
+                    ]
                 ]
-            , a [ attribute "aria-expanded" "false", attribute "aria-label" "menu", class "navbar-burger burger", attribute "data-target" "navbarBasicExample", attribute "role" "button" ]
-                [ span [ attribute "aria-hidden" "true" ]
-                    []
-                , span [ attribute "aria-hidden" "true" ]
-                    []
-                , span [ attribute "aria-hidden" "true" ]
-                    []
+            , div [ class "navbar-menu", id "navbarBasicExample" ]
+                [ div [ class "navbar-start" ]
+                    [ a [ class "navbar-item", href "/" ]
+                        [ text "Home" ]
+                    , a [ class "navbar-item", href "/editor" ]
+                        [ text "Editor" ]
+                    ]
+                , div [ class "navbar-end" ]
+                    [ div [ class "navbar-item" ]
+                        [ div [ class "buttons" ]
+                            [ a [ class "button is-info" ]
+                                [ strong []
+                                    [ text "Learn elm" ]
+                                ]
+                            , a [ class "button is-light" ]
+                                [ text "v. 0.0.1" ]
+                            ]
+                        ]
+                    ]
                 ]
             ]
-        , div [ class "navbar-menu", id "navbarBasicExample" ]
-            [ div [ class "navbar-start" ]
-                [ a [ class "navbar-item", href "/" ]
-                    [ text "Home" ]
-                , a [ class "navbar-item", href "/editor" ]
-                    [ text "Editor" ]
-                ]
-            , div [ class "navbar-end" ]
-                [ div [ class "navbar-item" ]
-                    [ div [ class "buttons" ]
-                        [ a [ class "button is-info" ]
-                            [ strong []
-                                [ text "Learn elm" ]
-                            ]
-                        , a [ class "button is-light" ]
-                            [ text "v. 0.0.1" ]
-                        ]
+        ]
+
+
+viewWelcomePage : Html msg
+viewWelcomePage =
+    div [ class "container" ]
+        [ h1
+            [ class "title" ]
+            [ text "Hello there" ]
+        , h2 [ class "subtitle" ]
+            [ text "This is hobby project built with Elm & Typescript"
+            ]
+        , p []
+            [ text "At first you have to setup user and bot ids, and you can go to "
+            , a [ href "/edit" ] [ text "/edit" ]
+            , text " then."
+            ]
+        ]
+
+
+viewFooter : Html msg
+viewFooter =
+    footer [ class "footer" ]
+        [ div [ class "content has-text-centered" ]
+            [ div [ class "container" ]
+                [ p []
+                    [ strong []
+                        [ text "CutCut" ]
+                    , text " by "
+                    , a [ href "https://maxpfrontend.ru" ]
+                        [ text "Max Frontend" ]
+                    , text ". The source code on "
+                    , a [ href "https://github.com/maxfarseer/cutcut/" ]
+                        [ text "github" ]
+                    , text ". Munich, 2020"
                     ]
                 ]
             ]
