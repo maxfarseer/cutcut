@@ -122,67 +122,87 @@ class CustomCanvas extends HTMLElement {
   }
 
   downloadSticker = () => {
-    if (this._canvas) {
-
-      const dpr = this.getDpr();
-      const dataUrl = this._canvas.toDataURL();
-      const img = document.createElement('img');
-      img.onload = () => {
-        const WIDTH = img.width / dpr;
-        const HEIGHT = img.height / dpr;
-
-        img.width = WIDTH;
-        img.height = HEIGHT;
-
-        const tempCanvas = document.createElement('canvas');
-        tempCanvas.width = WIDTH;
-        tempCanvas.height = HEIGHT;
-        const tempCanvasCtx = tempCanvas.getContext('2d');
-        tempCanvasCtx!.drawImage(img, 0, 0, WIDTH, HEIGHT);
-
-        /* https://stackoverflow.com/a/44487883/1916578 */
-        const link = document.createElement('a');
-        link.setAttribute('download', 'cutcut-sticker.png');
-        link.setAttribute('href', tempCanvas.toDataURL("image/png").replace("image/png", "image/octet-stream"));
-        link.click();
+    try {
+      if (!this._cf) {
+        throw new Error('fabric instance does not exist');
       }
-      img.src = dataUrl;
-    } else {
-      console.warn('this._canvas does not exist, check CustomCanvas component');
+      this._cf.discardActiveObject();
+      this._cf.requestRenderAll();
+
+      window.requestAnimationFrame(() => {
+        if (!this._canvas) {
+          throw new Error('canvas node does not exist');
+        }
+        const dpr = this.getDpr();
+        const dataUrl = this._canvas.toDataURL();
+        const img = document.createElement('img');
+        img.onload = () => {
+          const WIDTH = img.width / dpr;
+          const HEIGHT = img.height / dpr;
+
+          img.width = WIDTH;
+          img.height = HEIGHT;
+
+          const tempCanvas = document.createElement('canvas');
+          tempCanvas.width = WIDTH;
+          tempCanvas.height = HEIGHT;
+          const tempCanvasCtx = tempCanvas.getContext('2d');
+          tempCanvasCtx!.drawImage(img, 0, 0, WIDTH, HEIGHT);
+
+          /* https://stackoverflow.com/a/44487883/1916578 */
+          const link = document.createElement('a');
+          link.setAttribute('download', 'cutcut-sticker.png');
+          link.setAttribute('href', tempCanvas.toDataURL("image/png").replace("image/png", "image/octet-stream"));
+          link.click();
+        }
+        img.src = dataUrl;
+      })
+    } catch (err) {
+      console.warn(err);
     }
   }
 
   requestUploadToPack = () => {
-    // this doesn't work for process.env
-    // const { TELEGRAM_BOT_TOKEN, TELEGRAM_BOT_ID } = process.env;
-
-    if (!process.env.TELEGRAM_BOT_TOKEN || !process.env.TELEGRAM_BOT_ID) {
-      console.log('Your forget to set up environment variables. Please check your .env file. https://parceljs.org/env.html')
-    }
-
-    if (this._canvas) {
-      const dpr = this.getDpr();
-      const dataUrl = this._canvas.toDataURL();
-      const img = document.createElement('img');
-      img.onload = () => {
-        const WIDTH = img.width / dpr;
-        const HEIGHT = img.height / dpr;
-
-        img.width = WIDTH;
-        img.height = HEIGHT;
-
-        const tempCanvas = document.createElement('canvas');
-        tempCanvas.width = WIDTH;
-        tempCanvas.height = HEIGHT;
-        const tempCanvasCtx = tempCanvas.getContext('2d');
-        tempCanvasCtx!.drawImage(img, 0, 0, WIDTH, HEIGHT);
-
-        this.uploadToStickerPack(tempCanvas, '💍')
+    try {
+      // this doesn't work for process.env
+      // const { TELEGRAM_BOT_TOKEN, TELEGRAM_BOT_ID } = process.env;
+      if (!process.env.TELEGRAM_BOT_TOKEN || !process.env.TELEGRAM_BOT_ID) {
+        throw new Error('Your forgot to set up environment variables. Please check your .env file. https://parceljs.org/env.html')
       }
-      img.src = dataUrl;
 
-    } else {
-      console.warn('this._canvas does not exist, check CustomCanvas component');
+      if (!this._cf) {
+        throw new Error('fabric instance does not exist');
+      }
+      this._cf.discardActiveObject();
+      this._cf.requestRenderAll();
+
+      window.requestAnimationFrame(() => {
+        if (!this._canvas) {
+          throw new Error('this._canvas does not exist, check CustomCanvas component');
+        }
+
+        const dpr = this.getDpr();
+        const dataUrl = this._canvas.toDataURL();
+        const img = document.createElement('img');
+        img.onload = () => {
+          const WIDTH = img.width / dpr;
+          const HEIGHT = img.height / dpr;
+
+          img.width = WIDTH;
+          img.height = HEIGHT;
+
+          const tempCanvas = document.createElement('canvas');
+          tempCanvas.width = WIDTH;
+          tempCanvas.height = HEIGHT;
+          const tempCanvasCtx = tempCanvas.getContext('2d');
+          tempCanvasCtx!.drawImage(img, 0, 0, WIDTH, HEIGHT);
+
+          this.uploadToStickerPack(tempCanvas, '💍')
+        }
+        img.src = dataUrl;
+      })
+    } catch (err) {
+      console.warn(err);
     }
   }
 
