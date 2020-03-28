@@ -4,7 +4,7 @@ import AddImg
 import Css exposing (block, border3, display, height, px, rgb, solid, width)
 import Custom exposing (customCanvas)
 import Html.Styled exposing (Html, button, div, h1, h2, map, section, text)
-import Html.Styled.Attributes exposing (class, css, disabled)
+import Html.Styled.Attributes exposing (class, classList, css, disabled)
 import Html.Styled.Events exposing (onClick)
 import Ports exposing (IncomingMsg(..), OutgoingMsg(..), listenToJs, sendToJs)
 
@@ -137,7 +137,14 @@ renderSaveImgBtn =
 
 renderUploadImgToStickerSetBtn : Bool -> Html Msg
 renderUploadImgToStickerSetBtn inprogress =
-    button [ class "button is-info", onClick ClickedUploadToPack, disabled inprogress ]
+    button
+        [ classList
+            [ ( "button is-info", True )
+            , ( "is-loading", inprogress == True )
+            ]
+        , onClick ClickedUploadToPack
+        , disabled inprogress
+        ]
         [ text "Upload to pack" ]
 
 
