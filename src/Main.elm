@@ -202,7 +202,7 @@ viewWelcomePage =
             [ class "title" ]
             [ text "Hello there" ]
         , h2 [ class "subtitle" ]
-            [ text "This is hobby project built with Elm & Typescript"
+            [ text "This hobby project built with Elm & Typescript"
             ]
         , p []
             [ text "At first you have to setup user and bot ids, and you can go to "
