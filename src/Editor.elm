@@ -100,26 +100,32 @@ view model =
         [ div [ class "container" ]
             [ h1 [ class "title" ] [ text "Editor" ]
             , h2 [ class "subtitle" ] [ text "Upload photo and make fun" ]
-            , div [ class "level" ]
-                [ div [ class "level-left" ]
-                    [ div [ class "level-item" ]
-                        [ renderCustomCanvas
+            , div [ class "columns" ]
+                [ div [ class "column is-7" ]
+                    [ div [ class "columns" ]
+                        [ div [ class "column is-8" ]
+                            [ renderCustomCanvas
+                            ]
+                        , div [ class "column" ]
+                            (renderEditorBtns model.addText)
                         ]
-                    , div [ class "level-item" ]
-                        (renderEditorBtns model.addText)
                     ]
+                , div [ class "column" ] []
                 ]
-            , div [ class "level" ]
-                [ div [ class "level-left" ]
-                    [ div [ class "level-item" ]
-                        [ map FromAddImg (AddImg.view model.addImg)
+            , div [ class "columns" ]
+                [ div [ class "column" ]
+                    [ div [ class "columns" ]
+                        [ div [ class "column" ]
+                            [ map FromAddImg (AddImg.view model.addImg)
+                            ]
+                        , div [ class "column" ]
+                            [ renderSaveImgBtn
+                            ]
+                        , div [ class "column" ]
+                            [ renderUploadImgToStickerSetBtn model.uploadingStickerInProgress ]
                         ]
-                    , div [ class "level-item" ]
-                        [ renderSaveImgBtn
-                        ]
-                    , div [ class "level-item" ]
-                        [ renderUploadImgToStickerSetBtn model.uploadingStickerInProgress ]
                     ]
+                , div [ class "column is-7" ] []
                 ]
             ]
         ]
@@ -140,9 +146,17 @@ renderCustomCanvas =
 
 renderEditorBtns : AddText.Model -> List (Html Msg)
 renderEditorBtns addTextModel =
-    [ map FromAddText (AddText.view addTextModel)
-    , button [ class "button is-info" ]
-        [ text "add smth" ]
+    [ div [ class "columns" ]
+        [ div [ class "column" ]
+            [ map FromAddText (AddText.view addTextModel)
+            ]
+        ]
+    , div [ class "columns" ]
+        [ div [ class "column" ]
+            [ button [ class "button is-info" ]
+                [ text "add smth" ]
+            ]
+        ]
     ]
 
 
