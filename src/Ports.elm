@@ -18,6 +18,7 @@ type OutgoingMsg
     | SaveCroppedImage
     | DownloadSticker
     | RequestUploadToPack
+    | AddText String
 
 
 type IncomingMsg
@@ -55,6 +56,9 @@ sendToJs outgoingMsg =
 
             AddImgFinish ->
                 { action = "AddImgFinish", payload = Encode.null }
+
+            AddText text ->
+                { action = "AddText", payload = Encode.string text }
 
             SaveCroppedImage ->
                 { action = "SaveCroppedImage", payload = Encode.null }

@@ -53,6 +53,11 @@ const requestUploadToPack = () => {
   getCustomCanvas().dispatchEvent(event);
 }
 
+const addText = (payload: string) => {
+  const event = new CustomEvent('add-text', { detail: payload });
+  getCustomCanvas().dispatchEvent(event);
+}
+
 const handlePortMsg = async ({ action, payload }: IPortMsg) => {
   switch (action) {
     case 'CropImage': {
@@ -78,6 +83,11 @@ const handlePortMsg = async ({ action, payload }: IPortMsg) => {
 
     case 'RequestUploadToPack': {
       requestUploadToPack();
+      break;
+    }
+
+    case 'AddText': {
+      addText(payload);
       break;
     }
 

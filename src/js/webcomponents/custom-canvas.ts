@@ -33,12 +33,36 @@ class CustomCanvas extends HTMLElement {
     this.initFabric();
 
     this.addEventListener('recieved-cropped-data', this.drawImage, false);
+    this.addEventListener('add-text', this.addText, false);
     this.addEventListener('download-sticker', this.downloadSticker, false);
     this.addEventListener('request-upload-to-pack', this.requestUploadToPack, false);
   }
 
   initFabric() {
     this._cf = new fabric.Canvas('cus');
+  }
+
+  addText(e: Event) {
+    const text = (e as CustomEvent).detail;
+    try {
+      if (!this._cf) {
+        throw new Error('fabric instance not found');
+      }
+
+      const textObj = new fabric.Text(text, {
+        fontFamily: 'Verdana',
+        fontWeight: 'bold',
+        stroke: '#FFFFFF',
+        strokeWidth: 2,
+        fill: '000000',
+        fontSize: 70,
+      });
+
+      this._cf.add(textObj);
+
+    } catch (err) {
+      console.warn(err);
+    }
   }
 
   getDpr() {

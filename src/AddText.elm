@@ -3,6 +3,7 @@ module AddText exposing (Model, Msg, init, update, view)
 import Html.Styled exposing (Html, button, input, text)
 import Html.Styled.Attributes exposing (class, placeholder, value)
 import Html.Styled.Events exposing (onClick, onInput)
+import Ports exposing (OutgoingMsg(..), sendToJs)
 import Ui.Modal
 
 
@@ -23,6 +24,7 @@ init =
 type Msg
     = InputChanged String
     | ClickedCloseModal
+    | ClickedOpenAddTextModal
     | ClickedAddText
 
 
@@ -32,11 +34,20 @@ update msg model =
         ClickedCloseModal ->
             ( ModalClosed, Cmd.none )
 
-        ClickedAddText ->
+        ClickedOpenAddTextModal ->
             ( ModalOpen { text = "" }, Cmd.none )
 
         InputChanged value ->
             ( ModalOpen { text = value }, Cmd.none )
+
+        ClickedAddText ->
+            case model of
+                ModalOpen config ->
+                    ( ModalClosed, sendToJs <| AddText config.text )
+
+                ModalClosed ->
+                    -- impossible case
+                    ( model, Cmd.none )
 
 
 view : Model -> Html Msg
@@ -50,7 +61,7 @@ view model =
                 { title = "Add text"
                 , open = True
                 , closeMsg = ClickedCloseModal
-                , confirmMsg = ClickedCloseModal
+                , confirmMsg = ClickedAddText
                 , confirmText = Just "Add"
                 }
                 []
@@ -60,7 +71,7 @@ view model =
 
 viewAddTextBtn : Html Msg
 viewAddTextBtn =
-    button [ class "button is-info", onClick ClickedAddText ]
+    button [ class "button is-info", onClick ClickedOpenAddTextModal ]
         [ text "Add text" ]
 
 
