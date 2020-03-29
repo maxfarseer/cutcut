@@ -1,6 +1,7 @@
 module Editor exposing (Model, Msg, init, subscriptions, update, view)
 
 import AddImg
+import AddText
 import Css exposing (block, border3, display, height, px, rgb, solid, width)
 import Custom exposing (customCanvas)
 import Html.Styled exposing (Html, button, div, h1, h2, map, section, text)
@@ -11,6 +12,7 @@ import Ports exposing (IncomingMsg(..), OutgoingMsg(..), listenToJs, sendToJs)
 
 type alias Model =
     { addImg : AddImg.Model
+    , addText : AddText.Model
     , uploadingStickerInProgress : Bool
     }
 
@@ -18,6 +20,7 @@ type alias Model =
 init : ( Model, Cmd Msg )
 init =
     ( { addImg = AddImg.init
+      , addText = AddText.init
       , uploadingStickerInProgress = False
       }
     , Cmd.none
@@ -26,6 +29,7 @@ init =
 
 type Msg
     = FromAddImg AddImg.Msg
+    | FromAddText AddText.Msg
     | FromJS IncomingMsg
     | FromJSDecodeError String
     | ClickedDownloadSticker
@@ -41,6 +45,13 @@ update msg model =
                     AddImg.update addImgMsg model.addImg
             in
             ( { model | addImg = updatedAddImg }, addImgCmd |> Cmd.map FromAddImg )
+
+        FromAddText addTextMsg ->
+            let
+                ( updatedAddText, addTextCmd ) =
+                    AddText.update addTextMsg model.addText
+            in
+            ( { model | addText = updatedAddText }, addTextCmd |> Cmd.map FromAddText )
 
         FromJS incomingMsg ->
             case incomingMsg of
@@ -94,6 +105,8 @@ view model =
                     [ div [ class "level-item" ]
                         [ renderCustomCanvas
                         ]
+                    , div [ class "level-item" ]
+                        (renderEditorBtns model.addText)
                     ]
                 ]
             , div [ class "level" ]
@@ -125,14 +138,18 @@ renderCustomCanvas =
         []
 
 
+renderEditorBtns : AddText.Model -> List (Html Msg)
+renderEditorBtns addTextModel =
+    [ map FromAddText (AddText.view addTextModel)
+    , button [ class "button is-info" ]
+        [ text "add smth" ]
+    ]
+
+
 renderSaveImgBtn : Html Msg
 renderSaveImgBtn =
     button [ class "button is-info", onClick ClickedDownloadSticker ]
         [ text "Download sticker" ]
-
-
-
--- TODO: preloader on button (check bulma)
 
 
 renderUploadImgToStickerSetBtn : Bool -> Html Msg

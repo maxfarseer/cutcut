@@ -30,7 +30,7 @@ view config attrs body =
                 , section [ class "modal-card-body" ]
                     body
                 , footer [ class "modal-card-foot" ]
-                    [ button [ onClick config.confirmMsg, class "button is-success" ]
+                    [ button [ onClick config.confirmMsg, class "button is-info" ]
                         [ text <| Maybe.withDefault "Save changes" config.confirmText ]
                     , button [ onClick config.closeMsg, class "button" ]
                         [ text "Cancel" ]
