@@ -50,7 +50,7 @@ class CustomCanvas extends HTMLElement {
       }
 
       const textObj = new fabric.Text(text, {
-        fontFamily: 'Verdana',
+        fontFamily: 'Comic Sans MS',
         fontWeight: 'bold',
         stroke: '#FFFFFF',
         strokeWidth: 2,
