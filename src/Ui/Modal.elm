@@ -7,7 +7,7 @@ import Html.Styled.Events exposing (onClick)
 
 type alias ViewConfig msg =
     { closeMsg : msg
-    , confirmMsg : msg
+    , confirmMsg : Maybe msg
     , confirmText : Maybe String
     , open : Bool
     , title : String
@@ -17,6 +17,16 @@ type alias ViewConfig msg =
 view : ViewConfig msg -> List (Html.Styled.Attribute msg) -> List (Html msg) -> Html msg
 view config attrs body =
     if config.open then
+        let
+            confirmBtn =
+                case config.confirmMsg of
+                    Just msg ->
+                        button [ onClick msg, class "button is-info" ]
+                            [ text <| Maybe.withDefault "Save changes" config.confirmText ]
+
+                    Nothing ->
+                        text ""
+        in
         div (class "modal is-active" :: attrs)
             [ div [ class "modal-background", onClick config.closeMsg ]
                 []
@@ -30,8 +40,7 @@ view config attrs body =
                 , section [ class "modal-card-body" ]
                     body
                 , footer [ class "modal-card-foot" ]
-                    [ button [ onClick config.confirmMsg, class "button is-info" ]
-                        [ text <| Maybe.withDefault "Save changes" config.confirmText ]
+                    [ confirmBtn
                     , button [ onClick config.closeMsg, class "button" ]
                         [ text "Cancel" ]
                     ]

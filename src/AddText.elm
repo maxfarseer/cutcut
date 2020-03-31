@@ -61,7 +61,7 @@ view model =
                 { title = "Add text"
                 , open = True
                 , closeMsg = ClickedCloseModal
-                , confirmMsg = ClickedAddText
+                , confirmMsg = Just ClickedAddText
                 , confirmText = Just "Add"
                 }
                 []

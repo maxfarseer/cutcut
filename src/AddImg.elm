@@ -3,8 +3,8 @@ module AddImg exposing (Model, Msg, closeModal, init, setRemoveBgOrNotStep, upda
 import Base64 exposing (Base64ImgUrl)
 import Custom exposing (customCropper, customEraser)
 import File exposing (File)
-import Html.Styled exposing (Html, button, div, form, i, input, label, p, span, text)
-import Html.Styled.Attributes exposing (class, multiple, name, type_)
+import Html.Styled exposing (Html, a, button, div, form, i, input, label, p, span, text)
+import Html.Styled.Attributes exposing (class, href, multiple, name, target, type_)
 import Html.Styled.Events exposing (on, onClick)
 import Http as Http
 import Json.Decode as D
@@ -124,7 +124,7 @@ view model =
                 { title = "Add image: Crop"
                 , open = True
                 , closeMsg = ClickedCloseModal
-                , confirmMsg = ClickedCropFinish
+                , confirmMsg = Just ClickedCropFinish
                 , confirmText = Just "Crop"
                 }
                 []
@@ -133,10 +133,10 @@ view model =
 
         RemoveBgOrNot ->
             Ui.Modal.view
-                { title = "Remove background?"
+                { title = "Add image: Background"
                 , open = True
                 , closeMsg = ClickedCloseModal
-                , confirmMsg = ClickedCropFinish
+                , confirmMsg = Nothing
                 , confirmText = Nothing
                 }
                 []
@@ -145,14 +145,14 @@ view model =
 
         Erase ->
             Ui.Modal.view
-                { title = "Add image: Erase"
+                { title = "Add image: Erase (beta)"
                 , open = True
                 , closeMsg = ClickedCloseModal
-                , confirmMsg = ClickedEraseFinish
+                , confirmMsg = Just ClickedEraseFinish
                 , confirmText = Just "Finish"
                 }
                 []
-                [ viewCustomEraser
+                [ viewEraseStep
                 ]
 
         Error ->
@@ -162,8 +162,8 @@ view model =
                         { title = "Add image: Error"
                         , open = True
                         , closeMsg = ClickedCloseModal
-                        , confirmMsg = ClickedCloseModal
-                        , confirmText = Just "Close & try again"
+                        , confirmMsg = Nothing
+                        , confirmText = Nothing
                         }
                         []
                         [ viewError err
@@ -213,8 +213,50 @@ viewCustomCropper =
 viewRemoveBgQuestion : Html Msg
 viewRemoveBgQuestion =
     div []
-        [ button [ onClick ClickedRemoveBg ] [ text "Yes, please remove" ]
-        , button [ onClick ClickedNotRemoveBg ] [ text "No, do not remove" ]
+        [ div [ class "columns" ]
+            [ div [ class "column" ]
+                [ p []
+                    [ text "You can remove background automatically ("
+                    , a
+                        [ href "https://www.remove.bg/", target "_blank" ]
+                        [ text "remove.bg " ]
+                    , text
+                        "API is using)"
+                    ]
+                , p []
+                    [ text "Don't forget to setup environment variables with "
+                    , a
+                        [ href "https://www.remove.bg/api", target "_blank" ]
+                        [ text "API key" ]
+                    , text
+                        ". See example "
+                    , a [ href "https://github.com/maxfarseer/cutcut/blob/master/.env.example", target "_blank" ] [ text "here" ]
+                    , text "."
+                    ]
+                ]
+            ]
+        , div [ class "columns is-centered" ]
+            [ div [ class "column is-3" ]
+                [ button [ class "button is-small is-info", onClick ClickedRemoveBg ] [ text "Yes, please remove" ]
+                ]
+            , div [ class "column is-3" ]
+                [ button [ class "button is-small", onClick ClickedNotRemoveBg ] [ text "No, do not remove" ]
+                ]
+            ]
+        ]
+
+
+viewEraseStep : Html Msg
+viewEraseStep =
+    div []
+        [ div [ class "columns" ]
+            [ div [ class "column" ]
+                [ p []
+                    [ text "Use your mouse to erase unnecessary. But, ouch! Erase tool is crazy ;)"
+                    ]
+                ]
+            ]
+        , viewCustomEraser
         ]
 
 
