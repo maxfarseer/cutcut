@@ -5,15 +5,27 @@ import Browser.Navigation as Nav
 import Editor
 import Html.Styled exposing (Html, a, div, footer, h1, h2, img, nav, p, section, span, strong, text, toUnstyled)
 import Html.Styled.Attributes exposing (attribute, class, href, id, src, target)
+import Json.Decode as JD
 import Route exposing (Route(..))
 import Url
+
+
+type alias FlagsEnv =
+    { remove_bg_api_key : String
+    }
+
+
+type alias Flags =
+    { env : FlagsEnv
+    , buildDate : Int
+    }
 
 
 
 -- MAIN
 
 
-main : Program () Model Msg
+main : Program JD.Value Model Msg
 main =
     Browser.application
         { init = init
@@ -38,12 +50,39 @@ type Page
 type alias Model =
     { key : Nav.Key
     , page : Page
+    , flags : Flags
     }
 
 
-init : () -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
-init _ url key =
-    updateUrl url { page = NotFoundPage, key = key }
+init : JD.Value -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
+init flags url key =
+    case JD.decodeValue flagsDecoder flags of
+        Ok decodedFlags ->
+            updateUrl url { page = NotFoundPage, key = key, flags = decodedFlags }
+
+        Err err ->
+            updateUrl url
+                { page = NotFoundPage
+                , key = key
+                , flags = { env = FlagsEnv "no-env", buildDate = 0 }
+                }
+
+
+
+-- DECODERS
+
+
+flagsDecoder : JD.Decoder Flags
+flagsDecoder =
+    JD.map2 Flags
+        (JD.field "env" flagsEnvDecoder)
+        (JD.field "buildDate" JD.int)
+
+
+flagsEnvDecoder : JD.Decoder FlagsEnv
+flagsEnvDecoder =
+    JD.map FlagsEnv
+        (JD.field "REMOVE_BG_API_KEY" JD.string)
 
 
 
