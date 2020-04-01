@@ -106,39 +106,47 @@ class CustomEraser extends HTMLElement {
     const formData = new FormData();
     formData.append('image_file_b64', imgBase64);
 
-    // show preloader;
+    //TODO: show preloader during remove.bg work;
 
-    const headers = new Headers({
-      Accept: 'application/json',
-      'X-Api-Key': 'Ge5HqmTYvcD1UzadQ7MPVPVi',
-    });
+    try {
+      if (!process.env.REMOVE_BG_API_KEY) {
+        throw new Error('REMOVE_BG_API_KEY not exist, check your .env file (see .env.example)');
+      }
 
-    // https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
-    const requestOptions = {
-      method: 'POST',
-      headers,
-      mode: <RequestMode>'cors',
-      cache: <RequestCache>'default',
-      body: formData,
-    };
-
-    const myRequest = new Request(
-      'https://api.remove.bg/v1.0/removebg',
-      requestOptions
-    );
-
-    fetch(myRequest).then(async response => {
-      const json = await response.json();
-      const imgUrl = `data:image/png;base64, ${json.data.result_b64}`;
-
-      const img = new Image();
-      img.crossOrigin = 'Anonymous';
-
-      img.onload = () => {
-        this.initEraseCanvas(img);
+      const headers = new Headers({
+        Accept: 'application/json',
+        'X-Api-Key': process.env.REMOVE_BG_API_KEY,
+      });
+  
+      // https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
+      const requestOptions = {
+        method: 'POST',
+        headers,
+        mode: <RequestMode>'cors',
+        cache: <RequestCache>'default',
+        body: formData,
       };
-      img.src = imgUrl;
-    });
+  
+      const myRequest = new Request(
+        'https://api.remove.bg/v1.0/removebg',
+        requestOptions
+      );
+  
+      fetch(myRequest).then(async response => {
+        const json = await response.json();
+        const imgUrl = `data:image/png;base64, ${json.data.result_b64}`;
+  
+        const img = new Image();
+        img.crossOrigin = 'Anonymous';
+  
+        img.onload = () => {
+          this.initEraseCanvas(img);
+        };
+        img.src = imgUrl;
+      });
+    } catch (err) {
+      console.warn(err);
+    }
   };
 
   addImgFinish = () => {
