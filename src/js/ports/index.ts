@@ -1,4 +1,4 @@
-import { IPortMsg, IPrepareForEraseArgs } from "./types";
+import { IPortMsg } from "./types";
 import { CustomWindow } from '../../custom.window';
 declare let window: CustomWindow;
 
@@ -22,8 +22,8 @@ const cropImage = (imgUrl: string) => {
   });
 };
 
-const prepareForErase = ({ removeBg, base64img }: IPrepareForEraseArgs) => {
-  const event = new CustomEvent('prepare-for-erase', { detail: { removeBg, base64img } });
+const prepareForErase = (imgUrl: string) => {
+  const event = new CustomEvent('prepare-for-erase', { detail: imgUrl });
   window.requestAnimationFrame(() => {
     const customEraser = getCustomEraser();
     customEraser.dispatchEvent(event);

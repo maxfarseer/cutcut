@@ -3,6 +3,7 @@ module Main exposing (main)
 import Browser
 import Browser.Navigation as Nav
 import Editor
+import EnvAliases exposing (RemoveBgApiKey)
 import Html.Styled exposing (Html, a, div, footer, h1, h2, img, nav, p, section, span, strong, text, toUnstyled)
 import Html.Styled.Attributes exposing (attribute, class, href, id, src, target)
 import Json.Decode as JD
@@ -11,7 +12,7 @@ import Url
 
 
 type alias FlagsEnv =
-    { remove_bg_api_key : String
+    { removeBgApiKey : RemoveBgApiKey
     }
 
 
@@ -125,7 +126,7 @@ updateUrl url model =
             ( { model | page = WelcomePage }, Cmd.none )
 
         Editor ->
-            Editor.init |> toEditor model
+            Editor.init model.flags.env.removeBgApiKey |> toEditor model
 
         NotFound ->
             ( { model | page = NotFoundPage }, Cmd.none )

@@ -13,7 +13,7 @@ type alias PortData =
 
 type OutgoingMsg
     = CropImage Base64ImgUrl
-    | PrepareForErase Bool String
+    | PrepareForErase Base64ImgUrl
     | AddImgFinish
     | SaveCroppedImage
     | DownloadSticker
@@ -45,13 +45,10 @@ sendToJs outgoingMsg =
             CropImage base64 ->
                 { action = "CropImage", payload = Encode.string base64 }
 
-            PrepareForErase answer base64img ->
+            PrepareForErase base64img ->
                 { action = "PrepareForErase"
                 , payload =
-                    Encode.object
-                        [ ( "removeBg", Encode.bool answer )
-                        , ( "base64img", Encode.string base64img )
-                        ]
+                    Encode.string base64img
                 }
 
             AddImgFinish ->

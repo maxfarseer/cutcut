@@ -14,8 +14,3 @@ export interface IElmApp {
     }
   }
 }
-
-export interface IPrepareForEraseArgs {
-  removeBg: boolean,
-  base64img: string,
-}

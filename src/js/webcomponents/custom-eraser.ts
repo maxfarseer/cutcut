@@ -1,5 +1,4 @@
 import { sendToElm } from "../ports";
-import { IPrepareForEraseArgs } from "../ports/types";
 
 const ERASE_CANVAS_ID = 'erase-canvas';
 const ERASE_CANVAS_DIV_ID = 'erase-canvas-wrapper';
@@ -86,11 +85,9 @@ class CustomEraser extends HTMLElement {
   prepareForErase = (event: Event) => {
     // https://github.com/microsoft/TypeScript/issues/28357
     // https://stackoverflow.com/questions/47166369/argument-of-type-e-customevent-void-is-not-assignable-to-parameter-of-ty?rq=1
-    const { removeBg, base64img }: IPrepareForEraseArgs = (event as CustomEvent).detail;
+    const base64img = (event as CustomEvent).detail;
 
-    if (removeBg) {
-      this.sendImageToRemoveBg(base64img);
-    } else {
+    try {
       const img = new Image();
       img.crossOrigin = 'Anonymous';
 
@@ -99,54 +96,12 @@ class CustomEraser extends HTMLElement {
       };
 
       img.src = base64img;
-    }
-  };
-
-  sendImageToRemoveBg = (imgBase64: string) => {
-    const formData = new FormData();
-    formData.append('image_file_b64', imgBase64);
-
-    //TODO: show preloader during remove.bg work;
-
-    try {
-      if (!process.env.REMOVE_BG_API_KEY) {
-        throw new Error('REMOVE_BG_API_KEY not exist, check your .env file (see .env.example)');
-      }
-
-      const headers = new Headers({
-        Accept: 'application/json',
-        'X-Api-Key': process.env.REMOVE_BG_API_KEY,
-      });
-  
-      // https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
-      const requestOptions = {
-        method: 'POST',
-        headers,
-        mode: <RequestMode>'cors',
-        cache: <RequestCache>'default',
-        body: formData,
-      };
-  
-      const myRequest = new Request(
-        'https://api.remove.bg/v1.0/removebg',
-        requestOptions
-      );
-  
-      fetch(myRequest).then(async response => {
-        const json = await response.json();
-        const imgUrl = `data:image/png;base64, ${json.data.result_b64}`;
-  
-        const img = new Image();
-        img.crossOrigin = 'Anonymous';
-  
-        img.onload = () => {
-          this.initEraseCanvas(img);
-        };
-        img.src = imgUrl;
-      });
     } catch (err) {
-      console.warn(err);
+      // TODO: elm port message to RemoveBgStep ?
+      console.warn('prepare for erase image problem');
     }
+    
+    
   };
 
   addImgFinish = () => {
