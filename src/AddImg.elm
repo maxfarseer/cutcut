@@ -8,7 +8,7 @@ import Html.Styled exposing (Html, a, button, div, form, i, input, label, p, spa
 import Html.Styled.Attributes exposing (class, classList, disabled, href, multiple, name, target, type_)
 import Html.Styled.Events exposing (on, onClick)
 import Http as Http
-import Json.Decode as D
+import Json.Decode as JD
 import Json.Encode as JE
 import Ports exposing (OutgoingMsg(..), sendToJs)
 import Task
@@ -63,9 +63,9 @@ init removeBgApiKey =
 -- DECODERS
 
 
-filesDecoder : D.Decoder (List File)
+filesDecoder : JD.Decoder (List File)
 filesDecoder =
-    D.at [ "target", "files" ] (D.list File.decoder)
+    JD.at [ "target", "files" ] (JD.list File.decoder)
 
 
 setRemoveBgOrNotStep : Model -> Base64ImgUrl -> ( Model, Cmd Msg )
@@ -158,9 +158,9 @@ removeBgRequestEncoder imgUrl =
 -- DECODERS
 
 
-fileBgDecoder : D.Decoder Base64ImgUrl
+fileBgDecoder : JD.Decoder Base64ImgUrl
 fileBgDecoder =
-    D.field "data" (D.field "result_b64" D.string)
+    JD.field "data" (JD.field "result_b64" JD.string)
 
 
 
@@ -241,7 +241,7 @@ viewUploadFileBtn =
                     , name "upload-pic"
                     , type_ "file"
                     , multiple False
-                    , on "change" (D.map GotFiles filesDecoder)
+                    , on "change" (JD.map GotFiles filesDecoder)
                     ]
                     []
                 , span [ class "file-cta" ]
