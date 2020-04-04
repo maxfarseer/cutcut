@@ -266,16 +266,16 @@ viewCustomCropper =
 viewRemoveBgQuestion : UploadStatus -> Html Msg
 viewRemoveBgQuestion status =
     let
-        confirmBtnOrError =
+        confirmBtn =
             case status of
                 Loading ->
-                    viewRemoveBgConfirmBtn True
+                    viewRemoveBgConfirmBtn ( True, False )
 
                 NotAsked ->
-                    viewRemoveBgConfirmBtn False
+                    viewRemoveBgConfirmBtn ( False, False )
 
-                Errored err ->
-                    viewRemoveBgErrorBlock err
+                Errored _ ->
+                    viewRemoveBgConfirmBtn ( False, True )
     in
     div []
         [ div [ class "columns" ]
@@ -302,16 +302,17 @@ viewRemoveBgQuestion status =
             ]
         , div [ class "columns is-centered" ]
             [ div [ class "column is-3" ]
-                [ confirmBtnOrError ]
+                [ confirmBtn ]
             , div [ class "column is-3" ]
                 [ button [ class "button is-small", onClick ClickedNotRemoveBg ] [ text "No, do not remove" ]
                 ]
             ]
+        , viewRemoveBgErrorBlock status
         ]
 
 
-viewRemoveBgConfirmBtn : Bool -> Html Msg
-viewRemoveBgConfirmBtn isLoading =
+viewRemoveBgConfirmBtn : ( Bool, Bool ) -> Html Msg
+viewRemoveBgConfirmBtn ( isLoading, isError ) =
     button
         [ classList
             [ ( "button is-small", True )
@@ -319,16 +320,44 @@ viewRemoveBgConfirmBtn isLoading =
             , ( "is-loading", isLoading == True )
             ]
         , onClick ClickedRemoveBg
-        , disabled isLoading
+        , disabled (isLoading || isError)
         ]
         [ text "Yes, please remove" ]
 
 
-viewRemoveBgErrorBlock : Http.Error -> Html Msg
-viewRemoveBgErrorBlock err =
-    -- TODO: better err markup (case of + text )
-    p []
-        [ text "Error with auto remove background" ]
+viewRemoveBgErrorBlock : UploadStatus -> Html Msg
+viewRemoveBgErrorBlock status =
+    let
+        errorText =
+            case status of
+                NotAsked ->
+                    text ""
+
+                Loading ->
+                    text ""
+
+                Errored err ->
+                    case err of
+                        Http.BadUrl str ->
+                            text ("Request url is wrong: " ++ str)
+
+                        Http.Timeout ->
+                            text "Request takes too much time. Refresh page and try again"
+
+                        Http.NetworkError ->
+                            text "Network error. Check your internet connection, refresh page and try again"
+
+                        Http.BadStatus statusCode ->
+                            text ("Bad status: " ++ String.fromInt statusCode)
+
+                        Http.BadBody str ->
+                            text str
+    in
+    div [ class "columns" ]
+        [ div [ class "column" ]
+            [ p [ class "has-text-danger" ] [ errorText ]
+            ]
+        ]
 
 
 viewEraseStep : Html Msg
