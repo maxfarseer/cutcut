@@ -23,10 +23,18 @@ type alias Model =
     }
 
 
+type ErrorDetailed
+    = BadUrl String
+    | Timeout
+    | NetworkError
+    | BadStatus Http.Metadata String
+    | BadBody String
+
+
 type UploadStatus
     = NotAsked
     | Loading
-    | Errored Http.Error
+    | Errored ErrorDetailed
 
 
 type Step
@@ -40,7 +48,7 @@ type Step
 type Msg
     = GotFiles (List File)
     | GotFileUrl String
-    | GotRemoveBgResponse (Result Http.Error Base64ImgUrl)
+    | GotRemoveBgResponse (Result ErrorDetailed ( Http.Metadata, String ))
     | ClickedCloseModal
     | ClickedEraseFinish
     | ClickedCropFinish
@@ -110,7 +118,7 @@ update msg model =
                         , timeout = Nothing
                         , tracker = Nothing
                         , body = Http.jsonBody <| removeBgRequestEncoder base64string
-                        , expect = Http.expectJson GotRemoveBgResponse fileBgDecoder
+                        , expect = expectStringDetailed GotRemoveBgResponse
                         }
                     )
 
@@ -122,10 +130,16 @@ update msg model =
                 Err err ->
                     ( { model | step = RemoveBgOrNot <| Errored err }, Cmd.none )
 
-                Ok base64data ->
+                Ok ( metadata, body ) ->
                     let
                         base64imgUrl =
-                            "data:image/png;base64, " ++ base64data
+                            case removeBgResponseDecoder body of
+                                Ok base64data ->
+                                    "data:image/png;base64, " ++ base64data
+
+                                Err _ ->
+                                    -- TODO: better decode error response
+                                    ""
                     in
                     ( { model | step = Erase }, sendToJs <| PrepareForErase base64imgUrl )
 
@@ -156,9 +170,38 @@ removeBgRequestEncoder imgUrl =
 -- DECODERS
 
 
-fileBgDecoder : JD.Decoder Base64ImgUrl
-fileBgDecoder =
+removeBgResponseDecoder : String -> Result JD.Error Base64ImgUrl
+removeBgResponseDecoder =
     JD.field "data" (JD.field "result_b64" JD.string)
+        |> JD.decodeString
+
+
+
+-- Http detailed (https://medium.com/@jzxhuang/going-beyond-200-ok-a-guide-to-detailed-http-responses-in-elm-6ddd02322e)
+
+
+expectStringDetailed : (Result ErrorDetailed ( Http.Metadata, String ) -> msg) -> Http.Expect msg
+expectStringDetailed msg =
+    Http.expectStringResponse msg convertResponseString
+
+
+convertResponseString : Http.Response String -> Result ErrorDetailed ( Http.Metadata, String )
+convertResponseString httpResponse =
+    case httpResponse of
+        Http.BadUrl_ url ->
+            Err (BadUrl url)
+
+        Http.Timeout_ ->
+            Err Timeout
+
+        Http.NetworkError_ ->
+            Err NetworkError
+
+        Http.BadStatus_ metadata body ->
+            Err (BadStatus metadata body)
+
+        Http.GoodStatus_ metadata body ->
+            Ok ( metadata, body )
 
 
 
@@ -338,19 +381,19 @@ viewRemoveBgErrorBlock status =
 
                 Errored err ->
                     case err of
-                        Http.BadUrl str ->
+                        BadUrl str ->
                             text ("Request url is wrong: " ++ str)
 
-                        Http.Timeout ->
+                        Timeout ->
                             text "Request takes too much time. Refresh page and try again"
 
-                        Http.NetworkError ->
+                        NetworkError ->
                             text "Network error. Check your internet connection, refresh page and try again"
 
-                        Http.BadStatus statusCode ->
-                            text ("Bad status: " ++ String.fromInt statusCode)
+                        BadStatus metadata body ->
+                            text ("Bad status: " ++ body)
 
-                        Http.BadBody str ->
+                        BadBody str ->
                             text str
     in
     div [ class "columns" ]
