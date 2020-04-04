@@ -23,6 +23,12 @@ type alias Model =
     }
 
 
+type alias RemoveBgDetailedBadStatus =
+    { title : String
+    , code : String
+    }
+
+
 type ErrorDetailed
     = BadUrl String
     | Timeout
@@ -168,6 +174,19 @@ removeBgRequestEncoder imgUrl =
 
 
 -- DECODERS
+
+
+decoderA : JD.Decoder RemoveBgDetailedBadStatus
+decoderA =
+    JD.map2 RemoveBgDetailedBadStatus
+        (JD.field "title" JD.string)
+        (JD.field "code" JD.string)
+
+
+removeBgBadStatusBodyDecoder : String -> Result JD.Error (List RemoveBgDetailedBadStatus)
+removeBgBadStatusBodyDecoder =
+    JD.field "errors" (JD.list decoderA)
+        |> JD.decodeString
 
 
 removeBgResponseDecoder : String -> Result JD.Error Base64ImgUrl
@@ -393,8 +412,19 @@ viewRemoveBgErrorBlock status =
                         NetworkError ->
                             text "Network error. Check your internet connection, refresh page and try again"
 
+                        -- TODO: can we use better syntax here, may be andThen for decoder
                         BadStatus metadata body ->
-                            text ("Bad status: " ++ body)
+                            case removeBgBadStatusBodyDecoder body of
+                                Ok errorDescription ->
+                                    case List.head errorDescription of
+                                        Just decodedErr ->
+                                            text ("Bad status: " ++ decodedErr.title)
+
+                                        Nothing ->
+                                            text "Bad status: unknown problem"
+
+                                Err _ ->
+                                    text "Bad status: unknown problem"
 
                         BadBody str ->
                             text str
