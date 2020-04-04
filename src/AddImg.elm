@@ -35,6 +35,7 @@ type UploadStatus
     = NotAsked
     | Loading
     | Errored ErrorDetailed
+    | JsonResponseError
 
 
 type Step
@@ -131,17 +132,16 @@ update msg model =
                     ( { model | step = RemoveBgOrNot <| Errored err }, Cmd.none )
 
                 Ok ( metadata, body ) ->
-                    let
-                        base64imgUrl =
-                            case removeBgResponseDecoder body of
-                                Ok base64data ->
+                    case removeBgResponseDecoder body of
+                        Ok base64data ->
+                            let
+                                base64imgUrl =
                                     "data:image/png;base64, " ++ base64data
+                            in
+                            ( { model | step = Erase }, sendToJs <| PrepareForErase base64imgUrl )
 
-                                Err _ ->
-                                    -- TODO: better decode error response
-                                    ""
-                    in
-                    ( { model | step = Erase }, sendToJs <| PrepareForErase base64imgUrl )
+                        Err _ ->
+                            ( { model | step = RemoveBgOrNot <| JsonResponseError }, Cmd.none )
 
         ClickedNotRemoveBg ->
             case model.base64image of
@@ -319,6 +319,9 @@ viewRemoveBgQuestion status =
 
                 Errored _ ->
                     viewRemoveBgConfirmBtn ( False, True )
+
+                JsonResponseError ->
+                    viewRemoveBgConfirmBtn ( False, True )
     in
     div []
         [ div [ class "columns" ]
@@ -395,6 +398,9 @@ viewRemoveBgErrorBlock status =
 
                         BadBody str ->
                             text str
+
+                JsonResponseError ->
+                    text "Looks like remove.bg team has changed API Schema"
     in
     div [ class "columns" ]
         [ div [ class "column" ]
