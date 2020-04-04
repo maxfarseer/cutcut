@@ -5,7 +5,7 @@ import Custom exposing (customCropper, customEraser)
 import EnvAliases exposing (RemoveBgApiKey)
 import File exposing (File)
 import Html.Styled exposing (Html, a, button, div, form, i, input, label, p, span, text)
-import Html.Styled.Attributes exposing (class, classList, disabled, href, multiple, name, target, type_)
+import Html.Styled.Attributes exposing (accept, class, classList, disabled, href, multiple, name, target, type_)
 import Html.Styled.Events exposing (on, onClick)
 import Http as Http
 import Json.Decode as JD
@@ -18,7 +18,6 @@ import Ui.Modal
 type alias Model =
     { step : Step
     , base64image : Maybe Base64ImgUrl
-    , uploadStatus : UploadStatus
     , error : Maybe String
     , removeBgApiKey : RemoveBgApiKey
     }
@@ -53,7 +52,6 @@ init : RemoveBgApiKey -> Model
 init removeBgApiKey =
     { step = Add
     , base64image = Nothing
-    , uploadStatus = NotAsked
     , error = Nothing
     , removeBgApiKey = removeBgApiKey
     }
@@ -240,6 +238,7 @@ viewUploadFileBtn =
                     [ class "file-input"
                     , name "upload-pic"
                     , type_ "file"
+                    , accept "image/*"
                     , multiple False
                     , on "change" (JD.map GotFiles filesDecoder)
                     ]

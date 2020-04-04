@@ -86,22 +86,15 @@ class CustomEraser extends HTMLElement {
     // https://github.com/microsoft/TypeScript/issues/28357
     // https://stackoverflow.com/questions/47166369/argument-of-type-e-customevent-void-is-not-assignable-to-parameter-of-ty?rq=1
     const base64img = (event as CustomEvent).detail;
-
-    try {
-      const img = new Image();
-      img.crossOrigin = 'Anonymous';
-
-      img.onload = () => {
-        this.initEraseCanvas(img);
-      };
-
-      img.src = base64img;
-    } catch (err) {
-      // TODO: elm port message to RemoveBgStep ?
-      console.warn('prepare for erase image problem');
-    }
     
-    
+    const img = new Image();
+    img.crossOrigin = 'Anonymous';
+
+    img.onload = () => {
+      this.initEraseCanvas(img);
+    };
+
+    img.src = base64img;
   };
 
   addImgFinish = () => {

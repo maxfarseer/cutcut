@@ -250,8 +250,14 @@ class CustomCanvas extends HTMLElement {
             if (json.ok) {
               sendToElm({ action: 'StickerUploadedSuccess', payload: null });
             } else {
-              // TODO: error action + notification on elm side
-              console.log('ERROR')
+              const { error_code, description } = json;
+              sendToElm({
+                action: 'StickerUploadedFailure',
+                payload: {
+                  code: error_code,
+                  description
+                }
+              });
             }
           })
       } else {

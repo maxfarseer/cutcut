@@ -1,4 +1,4 @@
-port module Ports exposing (IncomingMsg(..), OutgoingMsg(..), listenToJs, sendToJs)
+port module Ports exposing (IncomingMsg(..), OutgoingMsg(..), StickerUploadError, listenToJs, sendToJs)
 
 import Base64 exposing (Base64ImgUrl)
 import Json.Decode as Decode exposing (Decoder)
@@ -8,6 +8,12 @@ import Json.Encode as Encode
 type alias PortData =
     { action : String
     , payload : Encode.Value
+    }
+
+
+type alias StickerUploadError =
+    { code : Int
+    , description : String
     }
 
 
@@ -26,6 +32,7 @@ type IncomingMsg
     | ImageAddedToFabric
     | UnknownIncomingMessage String
     | StickerUploadedSuccess
+    | StickerUploadedFailure StickerUploadError
 
 
 {-| Send messages to JS
@@ -68,12 +75,23 @@ sendToJs outgoingMsg =
 
 
 
--- SUBSCRIPTION
+-- DECODERS
 
 
 payloadDecoder : Decoder value -> Decoder value
 payloadDecoder decoder =
     Decode.field "payload" decoder
+
+
+stickerUploadFailureDecoder : Decoder StickerUploadError
+stickerUploadFailureDecoder =
+    Decode.map2 StickerUploadError
+        (Decode.field "code" Decode.int)
+        (Decode.field "description" Decode.string)
+
+
+
+-- SUBSCRIPTION
 
 
 incomingMsgDecoder : Decoder IncomingMsg
@@ -93,6 +111,11 @@ incomingMsgDecoder =
 
                     "StickerUploadedSuccess" ->
                         Decode.succeed StickerUploadedSuccess
+
+                    "StickerUploadedFailure" ->
+                        stickerUploadFailureDecoder
+                            |> payloadDecoder
+                            |> Decode.map StickerUploadedFailure
 
                     _ ->
                         Decode.succeed <|

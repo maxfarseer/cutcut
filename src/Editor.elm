@@ -5,16 +5,23 @@ import AddText
 import Css exposing (block, border3, display, height, px, rgb, solid, width)
 import Custom exposing (customCanvas)
 import EnvAliases exposing (RemoveBgApiKey)
-import Html.Styled exposing (Html, button, div, h1, h2, map, section, text)
+import Html.Styled exposing (Html, button, div, h1, h2, map, p, section, text)
 import Html.Styled.Attributes exposing (class, classList, css, disabled)
 import Html.Styled.Events exposing (onClick)
-import Ports exposing (IncomingMsg(..), OutgoingMsg(..), listenToJs, sendToJs)
+import Ports exposing (IncomingMsg(..), OutgoingMsg(..), StickerUploadError, listenToJs, sendToJs)
+
+
+type UploadStickerStatus
+    = NotAsked
+    | Loading
+    | Errorerd StickerUploadError
+    | Success
 
 
 type alias Model =
     { addImg : AddImg.Model
     , addText : AddText.Model
-    , uploadingStickerInProgress : Bool
+    , uploadStickerStatus : UploadStickerStatus
     }
 
 
@@ -22,7 +29,7 @@ init : RemoveBgApiKey -> ( Model, Cmd Msg )
 init removeBgApiKey =
     ( { addImg = AddImg.init removeBgApiKey
       , addText = AddText.init
-      , uploadingStickerInProgress = False
+      , uploadStickerStatus = NotAsked
       }
     , Cmd.none
     )
@@ -71,7 +78,10 @@ update msg model =
                     ( { model | addImg = updatedAddImg }, Cmd.none )
 
                 StickerUploadedSuccess ->
-                    ( { model | uploadingStickerInProgress = False }, Cmd.none )
+                    ( { model | uploadStickerStatus = Success }, Cmd.none )
+
+                StickerUploadedFailure err ->
+                    ( { model | uploadStickerStatus = Errorerd err }, Cmd.none )
 
                 UnknownIncomingMessage str ->
                     -- TODO: show error message for user
@@ -92,7 +102,7 @@ update msg model =
             ( model, sendToJs <| DownloadSticker )
 
         ClickedUploadToPack ->
-            ( { model | uploadingStickerInProgress = True }, sendToJs <| RequestUploadToPack )
+            ( { model | uploadStickerStatus = Loading }, sendToJs <| RequestUploadToPack )
 
 
 view : Model -> Html Msg
@@ -123,7 +133,7 @@ view model =
                             [ renderSaveImgBtn
                             ]
                         , div [ class "column" ]
-                            [ renderUploadImgToStickerSetBtn model.uploadingStickerInProgress ]
+                            [ renderUploadImgToStickerSetBtn model.uploadStickerStatus ]
                         ]
                     ]
                 , div [ class "column is-7" ] []
@@ -167,17 +177,50 @@ renderSaveImgBtn =
         [ text "Download sticker" ]
 
 
-renderUploadImgToStickerSetBtn : Bool -> Html Msg
-renderUploadImgToStickerSetBtn inprogress =
-    button
-        [ classList
-            [ ( "button is-info", True )
-            , ( "is-loading", inprogress == True )
+renderUploadImgToStickerSetBtn : UploadStickerStatus -> Html Msg
+renderUploadImgToStickerSetBtn status =
+    let
+        ( loadingStatus, disabledStatus ) =
+            case status of
+                NotAsked ->
+                    ( "", False )
+
+                Success ->
+                    ( "", False )
+
+                Loading ->
+                    ( "is-loading", True )
+
+                Errorerd _ ->
+                    ( "", False )
+    in
+    div [ class "columns" ]
+        [ div [ class "column" ]
+            [ button
+                [ class (String.concat [ "button is-info ", loadingStatus ])
+                , onClick ClickedUploadToPack
+                , disabled disabledStatus
+                ]
+                [ text "Upload to pack" ]
+            , renderErrorMessage status
             ]
-        , onClick ClickedUploadToPack
-        , disabled inprogress
         ]
-        [ text "Upload to pack" ]
+
+
+renderErrorMessage : UploadStickerStatus -> Html Msg
+renderErrorMessage status =
+    case status of
+        Errorerd err ->
+            div [ class "column" ]
+                [ p [ class "has-text-danger" ]
+                    [ text "Upload sticker error" ]
+                , p [ class "has-text-danger" ]
+                    [ text (String.fromInt err.code ++ ": " ++ err.description) ]
+                ]
+
+        -- TODO: question: is "_" ok in this situation?
+        _ ->
+            text ""
 
 
 subscriptions : a -> Sub Msg
