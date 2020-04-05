@@ -70,7 +70,7 @@ class CustomCanvas extends HTMLElement {
   }
 
   drawFabricImage(imgUrl: string) {
-    // TODO: oImg is fabric object img
+    // TODO: how to type oImg? (this is fabric object img)
     fabric.Image.fromURL(imgUrl, (oImg: any) => {
       this._cf.add(oImg);
     });

@@ -61,8 +61,6 @@ class CustomCropper extends HTMLElement {
   };
 
   resizeImg = (img: HTMLImageElement) => {
-    // TODO: fix rotation as pica suggested
-    // TODO: play with width value
     const expected = 640;
     const { width, height } = img;
 

@@ -176,8 +176,8 @@ removeBgRequestEncoder imgUrl =
 -- DECODERS
 
 
-decoderA : JD.Decoder RemoveBgDetailedBadStatus
-decoderA =
+removeBgBadStatusBodyItemDecoder : JD.Decoder RemoveBgDetailedBadStatus
+removeBgBadStatusBodyItemDecoder =
     JD.map2 RemoveBgDetailedBadStatus
         (JD.field "title" JD.string)
         (JD.field "code" JD.string)
@@ -185,7 +185,7 @@ decoderA =
 
 removeBgBadStatusBodyDecoder : String -> Result JD.Error (List RemoveBgDetailedBadStatus)
 removeBgBadStatusBodyDecoder =
-    JD.field "errors" (JD.list decoderA)
+    JD.field "errors" (JD.list removeBgBadStatusBodyItemDecoder)
         |> JD.decodeString
 
 
@@ -412,7 +412,7 @@ viewRemoveBgErrorBlock status =
                         NetworkError ->
                             text "Network error. Check your internet connection, refresh page and try again"
 
-                        -- TODO: can we use better syntax here, may be andThen for decoder
+                        -- TODO: can we use better/shorter syntax here.
                         BadStatus metadata body ->
                             case removeBgBadStatusBodyDecoder body of
                                 Ok errorDescription ->

@@ -6,7 +6,7 @@ import Css exposing (block, border3, display, height, px, rgb, solid, width)
 import Custom exposing (customCanvas)
 import EnvAliases exposing (RemoveBgApiKey)
 import Html.Styled exposing (Html, button, div, h1, h2, map, p, section, text)
-import Html.Styled.Attributes exposing (class, classList, css, disabled)
+import Html.Styled.Attributes exposing (class, css, disabled)
 import Html.Styled.Events exposing (onClick)
 import Ports exposing (IncomingMsg(..), OutgoingMsg(..), StickerUploadError, listenToJs, sendToJs)
 
@@ -84,7 +84,7 @@ update msg model =
                     ( { model | uploadStickerStatus = Errorerd err }, Cmd.none )
 
                 UnknownIncomingMessage str ->
-                    -- TODO: show error message for user
+                    -- TODO: show error message to user
                     let
                         _ =
                             Debug.log "unknown message" str
@@ -160,12 +160,6 @@ renderEditorBtns addTextModel =
     [ div [ class "columns" ]
         [ div [ class "column" ]
             [ map FromAddText (AddText.view addTextModel)
-            ]
-        ]
-    , div [ class "columns" ]
-        [ div [ class "column" ]
-            [ button [ class "button is-info" ]
-                [ text "add smth" ]
             ]
         ]
     ]
