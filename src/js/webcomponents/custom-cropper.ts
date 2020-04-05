@@ -74,6 +74,7 @@ class CustomCropper extends HTMLElement {
     const to = canvas;
 
     return window.pica().resize(from, to, {
+      alpha: true,
       unsharpAmount: 80,
       unsharpRadius: 0.6,
       unsharpThreshold: 2
