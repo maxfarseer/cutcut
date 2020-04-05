@@ -284,10 +284,7 @@ view model =
                         ]
 
                 Nothing ->
-                    let
-                        _ =
-                            Debug.log "impossible case, check AddImg module"
-                    in
+                    -- impossible case
                     text ""
 
 

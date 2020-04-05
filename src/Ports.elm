@@ -133,8 +133,4 @@ listenToJs decodeSuccessTag decodeErrorTag =
                     decodeSuccessTag incomingMsg
 
                 Err str ->
-                    let
-                        _ =
-                            Debug.log "error listenToJs" str
-                    in
                     decodeErrorTag "TODO: better decoder error"

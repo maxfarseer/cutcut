@@ -85,17 +85,9 @@ update msg model =
 
                 UnknownIncomingMessage str ->
                     -- TODO: show error message to user
-                    let
-                        _ =
-                            Debug.log "unknown message" str
-                    in
                     ( model, Cmd.none )
 
         FromJSDecodeError err ->
-            let
-                _ =
-                    Debug.log "update IncomingDecoderError" err
-            in
             ( model, Cmd.none )
 
         ClickedDownloadSticker ->
