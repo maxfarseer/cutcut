@@ -140,11 +140,7 @@ update msg model =
                 Ok ( metadata, body ) ->
                     case removeBgResponseDecoder body of
                         Ok base64data ->
-                            let
-                                base64imgUrl =
-                                    "data:image/png;base64, " ++ toString base64data
-                            in
-                            ( { model | step = Erase }, sendToJs <| PrepareForErase (fromString base64imgUrl) )
+                            ( { model | step = Erase }, sendToJs <| PrepareForErase base64data )
 
                         Err _ ->
                             ( { model | step = RemoveBgOrNot <| JsonResponseError }, Cmd.none )
