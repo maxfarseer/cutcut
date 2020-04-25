@@ -1,6 +1,6 @@
 port module Ports exposing (IncomingMsg(..), OutgoingMsg(..), StickerUploadError, listenToJs, sendToJs)
 
-import Base64 exposing (Base64ImgUrl)
+import Base64 exposing (Base64ImgUrl, toString)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode
 
@@ -50,12 +50,12 @@ sendToJs outgoingMsg =
     msgForJs <|
         case outgoingMsg of
             CropImage base64 ->
-                { action = "CropImage", payload = Encode.string base64 }
+                { action = "CropImage", payload = Encode.string (toString base64) }
 
             PrepareForErase base64img ->
                 { action = "PrepareForErase"
                 , payload =
-                    Encode.string base64img
+                    Encode.string (toString base64img)
                 }
 
             AddImgFinish ->
