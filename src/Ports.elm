@@ -1,6 +1,6 @@
 port module Ports exposing (IncomingMsg(..), OutgoingMsg(..), StickerUploadError, listenToJs, sendToJs)
 
-import Base64 exposing (Base64ImgUrl, toString)
+import Base64 exposing (Base64ImgUrl, decoderStringToBase64ImgUrl, toString)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode
 
@@ -28,7 +28,7 @@ type OutgoingMsg
 
 
 type IncomingMsg
-    = ImageSaved String
+    = ImageSaved Base64ImgUrl
     | ImageAddedToFabric
     | UnknownIncomingMessage String
     | StickerUploadedSuccess
@@ -102,7 +102,7 @@ incomingMsgDecoder =
                 case action of
                     "ImageSaved" ->
                         -- Decode.map ImageSaved (payloadDecoder Decode.string) is equal to
-                        Decode.string
+                        decoderStringToBase64ImgUrl
                             |> payloadDecoder
                             |> Decode.map ImageSaved
 

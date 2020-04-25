@@ -1,6 +1,6 @@
 module AddImg exposing (Model, Msg, closeModal, init, setRemoveBgOrNotStep, update, view)
 
-import Base64 exposing (Base64ImgUrl, fromString, toString)
+import Base64 exposing (Base64ImgUrl, decoderStringToBase64ImgUrl, fromString, toString)
 import Custom exposing (customCropper, customEraser)
 import EnvAliases exposing (RemoveBgApiKey)
 import File exposing (File)
@@ -189,11 +189,6 @@ removeBgResponseDecoder : String -> Result JD.Error Base64ImgUrl
 removeBgResponseDecoder =
     JD.field "data" (JD.field "result_b64" decoderStringToBase64ImgUrl)
         |> JD.decodeString
-
-
-decoderStringToBase64ImgUrl : JD.Decoder Base64ImgUrl
-decoderStringToBase64ImgUrl =
-    JD.map fromString JD.string
 
 
 

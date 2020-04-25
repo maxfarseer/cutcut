@@ -2,7 +2,6 @@ module Editor exposing (Model, Msg, init, subscriptions, update, view)
 
 import AddImg
 import AddText
-import Base64 exposing (fromString)
 import Css exposing (block, border3, display, height, px, rgb, solid, width)
 import Custom exposing (customCanvas)
 import EnvAliases exposing (RemoveBgApiKey)
@@ -67,7 +66,7 @@ update msg model =
                 ImageSaved base64 ->
                     let
                         ( updatedAddImg, addImgCmd ) =
-                            AddImg.setRemoveBgOrNotStep model.addImg (fromString base64)
+                            AddImg.setRemoveBgOrNotStep model.addImg base64
                     in
                     ( { model | addImg = updatedAddImg }, addImgCmd |> Cmd.map FromAddImg )
 
