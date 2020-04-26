@@ -10,16 +10,16 @@ type Base64ImgUrl
 
 toString : Base64ImgUrl -> String
 toString (Base64ImgUrl str) =
-    if startsWith "data:image" str then
-        str
-
-    else
-        "data:image/png;base64, " ++ str
+    str
 
 
 fromString : String -> Base64ImgUrl
 fromString str =
-    Base64ImgUrl str
+    if startsWith "data:image" str then
+        Base64ImgUrl str
+
+    else
+        Base64ImgUrl ("data:image/png;base64, " ++ str)
 
 
 
@@ -28,4 +28,4 @@ fromString str =
 
 decoderStringToBase64ImgUrl : JD.Decoder Base64ImgUrl
 decoderStringToBase64ImgUrl =
-    JD.map Base64ImgUrl JD.string
+    JD.map fromString JD.string

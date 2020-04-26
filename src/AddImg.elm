@@ -139,8 +139,8 @@ update msg model =
 
                 Ok ( metadata, body ) ->
                     case removeBgResponseDecoder body of
-                        Ok base64data ->
-                            ( { model | step = Erase }, sendToJs <| PrepareForErase base64data )
+                        Ok base64ImgUrl ->
+                            ( { model | step = Erase }, sendToJs <| PrepareForErase base64ImgUrl )
 
                         Err _ ->
                             ( { model | step = RemoveBgOrNot <| JsonResponseError }, Cmd.none )
