@@ -20,7 +20,7 @@ class CustomCropper extends HTMLElement {
 
     this.appendChild(this._wrapperDiv);
     this.addEventListener('crop-image-init', this.initImage, false);
-    this.addEventListener('save-cropped-image', this.saveCroppedImage, false);
+    this.addEventListener('crop-image', this.cropImage, false);
   }
 
   initImage = (e: Event) => {
@@ -81,7 +81,7 @@ class CustomCropper extends HTMLElement {
     });
   }
 
-  saveCroppedImage = () => {
+  cropImage = () => {
     if (this._cropper) {
       const dataUrl = this._cropper.getCroppedCanvas().toDataURL();
       sendToElm({ action: 'ImageCropped', payload: dataUrl });
