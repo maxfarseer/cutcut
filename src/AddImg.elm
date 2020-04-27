@@ -1,6 +1,6 @@
 module AddImg exposing (Model, Msg, closeModal, init, setRemoveBgOrNotStep, update, view)
 
-import Base64 exposing (Base64ImgUrl)
+import Base64 exposing (Base64ImgUrl, decoderStringToBase64ImgUrl, fromString, toString)
 import Custom exposing (customCropper, customEraser)
 import EnvAliases exposing (RemoveBgApiKey)
 import File exposing (File)
@@ -103,7 +103,7 @@ update msg model =
                     ( model, Task.perform GotFileUrl <| File.toUrl file )
 
         GotFileUrl base64 ->
-            ( { model | step = Crop }, sendToJs <| CropImage base64 )
+            ( { model | step = Crop }, sendToJs <| CropImage (fromString base64) )
 
         ClickedCloseModal ->
             ( { model | step = Add }, Cmd.none )
@@ -139,12 +139,8 @@ update msg model =
 
                 Ok ( metadata, body ) ->
                     case removeBgResponseDecoder body of
-                        Ok base64data ->
-                            let
-                                base64imgUrl =
-                                    "data:image/png;base64, " ++ base64data
-                            in
-                            ( { model | step = Erase }, sendToJs <| PrepareForErase base64imgUrl )
+                        Ok base64ImgUrl ->
+                            ( { model | step = Erase }, sendToJs <| PrepareForErase base64ImgUrl )
 
                         Err _ ->
                             ( { model | step = RemoveBgOrNot <| JsonResponseError }, Cmd.none )
@@ -168,7 +164,7 @@ update msg model =
 removeBgRequestEncoder : Base64ImgUrl -> JE.Value
 removeBgRequestEncoder imgUrl =
     JE.object
-        [ ( "image_file_b64", JE.string imgUrl )
+        [ ( "image_file_b64", JE.string <| toString imgUrl )
         ]
 
 
@@ -191,7 +187,7 @@ removeBgBadStatusBodyDecoder =
 
 removeBgResponseDecoder : String -> Result JD.Error Base64ImgUrl
 removeBgResponseDecoder =
-    JD.field "data" (JD.field "result_b64" JD.string)
+    JD.field "data" (JD.field "result_b64" decoderStringToBase64ImgUrl)
         |> JD.decodeString
 
 
