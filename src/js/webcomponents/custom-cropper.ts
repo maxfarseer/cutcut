@@ -84,7 +84,7 @@ class CustomCropper extends HTMLElement {
   saveCroppedImage = () => {
     if (this._cropper) {
       const dataUrl = this._cropper.getCroppedCanvas().toDataURL();
-      sendToElm({ action: 'ImageSaved', payload: dataUrl });
+      sendToElm({ action: 'ImageCropped', payload: dataUrl });
     } else {
       console.warn('instance of cropper not found');
     }

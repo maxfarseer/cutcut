@@ -28,7 +28,7 @@ type OutgoingMsg
 
 
 type IncomingMsg
-    = ImageSaved Base64ImgUrl
+    = ImageCropped Base64ImgUrl
     | ImageAddedToFabric
     | UnknownIncomingMessage String
     | StickerUploadedSuccess
@@ -100,11 +100,11 @@ incomingMsgDecoder =
         |> Decode.andThen
             (\action ->
                 case action of
-                    "ImageSaved" ->
-                        -- Decode.map ImageSaved (payloadDecoder Decode.string) is equal to
+                    "ImageCropped" ->
+                        -- Decode.map ImageCropped (payloadDecoder Decode.string) is equal to
                         decoderStringToBase64ImgUrl
                             |> payloadDecoder
-                            |> Decode.map ImageSaved
+                            |> Decode.map ImageCropped
 
                     "ImageAddedToFabric" ->
                         Decode.succeed ImageAddedToFabric
