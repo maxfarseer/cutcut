@@ -103,13 +103,13 @@ update msg model =
                     ( model, Task.perform GotFileUrl <| File.toUrl file )
 
         GotFileUrl base64 ->
-            ( { model | step = Crop }, sendToJs <| CropImage (fromString base64) )
+            ( { model | step = Crop }, sendToJs <| CropImageInit (fromString base64) )
 
         ClickedCloseModal ->
             ( { model | step = Add }, Cmd.none )
 
         ClickedCropFinish ->
-            ( model, sendToJs <| SaveCroppedImage )
+            ( model, sendToJs <| CropImage )
 
         ClickedRemoveBg ->
             case model.base64image of

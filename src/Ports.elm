@@ -18,17 +18,17 @@ type alias StickerUploadError =
 
 
 type OutgoingMsg
-    = CropImage Base64ImgUrl
+    = CropImageInit Base64ImgUrl
     | PrepareForErase Base64ImgUrl
     | AddImgFinish
-    | SaveCroppedImage
+    | CropImage
     | DownloadSticker
     | RequestUploadToPack
     | AddText String
 
 
 type IncomingMsg
-    = ImageSaved Base64ImgUrl
+    = ImageCropped Base64ImgUrl
     | ImageAddedToFabric
     | UnknownIncomingMessage String
     | StickerUploadedSuccess
@@ -49,8 +49,8 @@ sendToJs : OutgoingMsg -> Cmd msg
 sendToJs outgoingMsg =
     msgForJs <|
         case outgoingMsg of
-            CropImage base64 ->
-                { action = "CropImage", payload = Encode.string (toString base64) }
+            CropImageInit base64 ->
+                { action = "CropImageInit", payload = Encode.string (toString base64) }
 
             PrepareForErase base64img ->
                 { action = "PrepareForErase"
@@ -64,8 +64,8 @@ sendToJs outgoingMsg =
             AddText text ->
                 { action = "AddText", payload = Encode.string text }
 
-            SaveCroppedImage ->
-                { action = "SaveCroppedImage", payload = Encode.null }
+            CropImage ->
+                { action = "CropImage", payload = Encode.null }
 
             DownloadSticker ->
                 { action = "DownloadSticker", payload = Encode.null }
@@ -100,11 +100,11 @@ incomingMsgDecoder =
         |> Decode.andThen
             (\action ->
                 case action of
-                    "ImageSaved" ->
-                        -- Decode.map ImageSaved (payloadDecoder Decode.string) is equal to
+                    "ImageCropped" ->
+                        -- Decode.map ImageCropped (payloadDecoder Decode.string) is equal to
                         decoderStringToBase64ImgUrl
                             |> payloadDecoder
-                            |> Decode.map ImageSaved
+                            |> Decode.map ImageCropped
 
                     "ImageAddedToFabric" ->
                         Decode.succeed ImageAddedToFabric

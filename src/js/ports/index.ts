@@ -14,7 +14,7 @@ const getCustomCanvas = (): Node => {
   return document.getElementsByTagName('custom-canvas')[0]
 }
 
-const cropImage = (imgUrl: string) => {
+const cropImageInit = (imgUrl: string) => {
   const event = new CustomEvent('crop-image-init', { detail: { imgUrl } });
   window.requestAnimationFrame(() => {
     const customCropper = getCustomCropper();
@@ -36,8 +36,8 @@ const addImgFinish = () => {
   customEraser.dispatchEvent(event);
 };
 
-const saveCroppedImage = () => {
-  const event = new CustomEvent('save-cropped-image');
+const cropImage = () => {
+  const event = new CustomEvent('crop-image');
   const customCropper = getCustomCropper();
   customCropper.dispatchEvent(event);
 }
@@ -60,8 +60,8 @@ const addText = (payload: string) => {
 
 const handlePortMsg = async ({ action, payload }: IPortMsg) => {
   switch (action) {
-    case 'CropImage': {
-      cropImage(payload);
+    case 'CropImageInit': {
+      cropImageInit(payload);
       break;
     }
     case 'PrepareForErase': {
@@ -72,8 +72,8 @@ const handlePortMsg = async ({ action, payload }: IPortMsg) => {
       addImgFinish();
       break;
     }
-    case 'SaveCroppedImage': {
-      saveCroppedImage();
+    case 'CropImage': {
+      cropImage();
       break;
     }
     case 'DownloadSticker': {

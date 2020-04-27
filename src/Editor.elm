@@ -63,7 +63,7 @@ update msg model =
 
         FromJS incomingMsg ->
             case incomingMsg of
-                ImageSaved base64 ->
+                ImageCropped base64 ->
                     let
                         ( updatedAddImg, addImgCmd ) =
                             AddImg.setRemoveBgOrNotStep model.addImg base64
