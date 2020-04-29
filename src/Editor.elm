@@ -63,10 +63,10 @@ update msg model =
 
         FromJS incomingMsg ->
             case incomingMsg of
-                ImageCropped base64 ->
+                ImageCropped base64ImgUrl ->
                     let
                         ( updatedAddImg, addImgCmd ) =
-                            AddImg.setRemoveBgOrNotStep model.addImg base64
+                            AddImg.setRemoveBgOrNotStep model.addImg base64ImgUrl
                     in
                     ( { model | addImg = updatedAddImg }, addImgCmd |> Cmd.map FromAddImg )
 

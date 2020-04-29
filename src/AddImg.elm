@@ -17,10 +17,15 @@ import Ui.Modal
 
 type alias Model =
     { step : Step
-    , base64image : Maybe Base64ImgUrl
-    , error : Maybe String
     , removeBgApiKey : RemoveBgApiKey
     }
+
+
+type Step
+    = Add
+    | Crop
+    | RemoveBgOrNot UploadStatus Base64ImgUrl
+    | Erase
 
 
 type alias RemoveBgDetailedBadStatus =
@@ -44,32 +49,20 @@ type UploadStatus
     | JsonResponseError
 
 
-type Step
-    = Add
-    | Crop
-    | RemoveBgOrNot UploadStatus
-    | Erase
-    | Error
-
-
 type Msg
     = GotFiles (List File)
     | GotFileUrl String
-    | GotRemoveBgResponse (Result ErrorDetailed ( Http.Metadata, String ))
+    | GotRemoveBgResponse Base64ImgUrl (Result ErrorDetailed ( Http.Metadata, String ))
     | ClickedCloseModal
     | ClickedEraseFinish
     | ClickedCropFinish
-    | ClickedRemoveBg
-    | ClickedNotRemoveBg
+    | ClickedRemoveBg Base64ImgUrl
+    | ClickedNotRemoveBg Base64ImgUrl
 
 
 init : RemoveBgApiKey -> Model
 init removeBgApiKey =
-    { step = Add
-    , base64image = Nothing
-    , error = Nothing
-    , removeBgApiKey = removeBgApiKey
-    }
+    { step = Add, removeBgApiKey = removeBgApiKey }
 
 
 
@@ -82,8 +75,11 @@ filesDecoder =
 
 
 setRemoveBgOrNotStep : Model -> Base64ImgUrl -> ( Model, Cmd Msg )
-setRemoveBgOrNotStep model img =
-    ( { model | step = RemoveBgOrNot NotAsked, base64image = Just img }, Cmd.none )
+setRemoveBgOrNotStep model imgUrl =
+    ( RemoveBgOrNot NotAsked imgUrl
+        |> setStep model
+    , Cmd.none
+    )
 
 
 closeModal : Model -> Model
@@ -111,31 +107,29 @@ update msg model =
         ClickedCropFinish ->
             ( model, sendToJs <| CropImage )
 
-        ClickedRemoveBg ->
-            case model.base64image of
-                Just base64string ->
-                    ( { model | step = RemoveBgOrNot Loading }
-                    , Http.request
-                        { url = "https://api.remove.bg/v1.0/removebg"
-                        , headers =
-                            [ Http.header "X-Api-Key" model.removeBgApiKey
-                            , Http.header "Accept" "application/json"
-                            ]
-                        , method = "POST"
-                        , timeout = Nothing
-                        , tracker = Nothing
-                        , body = Http.jsonBody <| removeBgRequestEncoder base64string
-                        , expect = expectStringDetailed GotRemoveBgResponse
-                        }
-                    )
+        ClickedRemoveBg imgUrl ->
+            ( { model | step = RemoveBgOrNot Loading imgUrl }
+            , Http.request
+                { url = "https://api.remove.bg/v1.0/removebg"
+                , headers =
+                    [ Http.header "X-Api-Key" model.removeBgApiKey
+                    , Http.header "Accept" "application/json"
+                    ]
+                , method = "POST"
+                , timeout = Nothing
+                , tracker = Nothing
+                , body = Http.jsonBody <| removeBgRequestEncoder imgUrl
+                , expect = expectStringDetailed (GotRemoveBgResponse imgUrl)
+                }
+            )
 
-                Nothing ->
-                    ( { model | step = Error, error = Just "Problem with image..." }, Cmd.none )
-
-        GotRemoveBgResponse result ->
+        GotRemoveBgResponse imgUrl result ->
             case result of
                 Err err ->
-                    ( { model | step = RemoveBgOrNot <| Errored err }, Cmd.none )
+                    ( RemoveBgOrNot (Errored err) imgUrl
+                        |> setStep model
+                    , Cmd.none
+                    )
 
                 Ok ( metadata, body ) ->
                     case removeBgResponseDecoder body of
@@ -143,18 +137,25 @@ update msg model =
                             ( { model | step = Erase }, sendToJs <| PrepareForErase base64ImgUrl )
 
                         Err _ ->
-                            ( { model | step = RemoveBgOrNot <| JsonResponseError }, Cmd.none )
+                            ( RemoveBgOrNot JsonResponseError imgUrl
+                                |> setStep model
+                            , Cmd.none
+                            )
 
-        ClickedNotRemoveBg ->
-            case model.base64image of
-                Just base64imgUrl ->
-                    ( { model | step = Erase }, sendToJs <| PrepareForErase base64imgUrl )
-
-                Nothing ->
-                    ( { model | step = Error, error = Just "Problem with image..." }, Cmd.none )
+        ClickedNotRemoveBg imgUrl ->
+            ( { model | step = Erase }, sendToJs <| PrepareForErase imgUrl )
 
         ClickedEraseFinish ->
             ( { model | step = Erase }, sendToJs <| AddImgFinish )
+
+
+
+-- UTILS
+
+
+setStep : Model -> Step -> Model
+setStep model step =
+    { model | step = step }
 
 
 
@@ -241,7 +242,7 @@ view model =
                 [ viewCustomCropper
                 ]
 
-        RemoveBgOrNot status ->
+        RemoveBgOrNot status imgUrl ->
             Ui.Modal.view
                 { title = "Add image: Background"
                 , open = True
@@ -250,7 +251,7 @@ view model =
                 , confirmText = Nothing
                 }
                 []
-                [ viewRemoveBgQuestion status
+                [ viewRemoveBgQuestion status imgUrl
                 ]
 
         Erase ->
@@ -264,24 +265,6 @@ view model =
                 []
                 [ viewEraseStep
                 ]
-
-        Error ->
-            case model.error of
-                Just err ->
-                    Ui.Modal.view
-                        { title = "Add image: Error"
-                        , open = True
-                        , closeMsg = ClickedCloseModal
-                        , confirmMsg = Nothing
-                        , confirmText = Nothing
-                        }
-                        []
-                        [ viewError err
-                        ]
-
-                Nothing ->
-                    -- impossible case
-                    text ""
 
 
 viewUploadFileBtn : Html Msg
@@ -318,22 +301,22 @@ viewCustomCropper =
         []
 
 
-viewRemoveBgQuestion : UploadStatus -> Html Msg
-viewRemoveBgQuestion status =
+viewRemoveBgQuestion : UploadStatus -> Base64ImgUrl -> Html Msg
+viewRemoveBgQuestion status imgUrl =
     let
         confirmBtn =
             case status of
                 Loading ->
-                    viewRemoveBgConfirmBtn ( True, False )
+                    viewRemoveBgConfirmBtn ( True, False, imgUrl )
 
                 NotAsked ->
-                    viewRemoveBgConfirmBtn ( False, False )
+                    viewRemoveBgConfirmBtn ( False, False, imgUrl )
 
                 Errored _ ->
-                    viewRemoveBgConfirmBtn ( False, True )
+                    viewRemoveBgConfirmBtn ( False, True, imgUrl )
 
                 JsonResponseError ->
-                    viewRemoveBgConfirmBtn ( False, True )
+                    viewRemoveBgConfirmBtn ( False, True, imgUrl )
     in
     div []
         [ div [ class "columns" ]
@@ -362,22 +345,22 @@ viewRemoveBgQuestion status =
             [ div [ class "column is-3" ]
                 [ confirmBtn ]
             , div [ class "column is-3" ]
-                [ button [ class "button is-small", onClick ClickedNotRemoveBg ] [ text "No, do not remove" ]
+                [ button [ class "button is-small", onClick (ClickedNotRemoveBg imgUrl) ] [ text "No, do not remove" ]
                 ]
             ]
         , viewRemoveBgErrorBlock status
         ]
 
 
-viewRemoveBgConfirmBtn : ( Bool, Bool ) -> Html Msg
-viewRemoveBgConfirmBtn ( isLoading, isError ) =
+viewRemoveBgConfirmBtn : ( Bool, Bool, Base64ImgUrl ) -> Html Msg
+viewRemoveBgConfirmBtn ( isLoading, isError, imgUrl ) =
     button
         [ classList
             [ ( "button is-small", True )
             , ( "is-info", True )
             , ( "is-loading", isLoading == True )
             ]
-        , onClick ClickedRemoveBg
+        , onClick (ClickedRemoveBg imgUrl)
         , disabled (isLoading || isError)
         ]
         [ text "Yes, please remove" ]
@@ -451,10 +434,3 @@ viewCustomEraser =
     customEraser
         []
         []
-
-
-viewError : String -> Html Msg
-viewError errorStr =
-    div []
-        [ p [] [ text errorStr ]
-        ]
