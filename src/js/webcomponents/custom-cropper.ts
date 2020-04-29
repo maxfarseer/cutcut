@@ -85,8 +85,6 @@ class CustomCropper extends HTMLElement {
     if (this._cropper) {
       const dataUrl = this._cropper.getCroppedCanvas().toDataURL();
       sendToElm({ action: 'ImageCropped', payload: dataUrl });
-      // TODO: can it be possible to not return an image?
-      // if yes - we should send ImageCroppedErr msg and change the model of AddImg module
     } else {
       console.warn('instance of cropper not found');
     }
