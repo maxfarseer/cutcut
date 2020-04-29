@@ -15,7 +15,13 @@ import Task
 import Ui.Modal
 
 
-type Model
+type alias Model =
+    { step : Step
+    , removeBgApiKey : RemoveBgApiKey
+    }
+
+
+type Step
     = Add
     | Crop
     | RemoveBgOrNot UploadStatus Base64ImgUrl
@@ -56,7 +62,7 @@ type Msg
 
 init : RemoveBgApiKey -> Model
 init removeBgApiKey =
-    Add
+    { step = Add, removeBgApiKey = removeBgApiKey }
 
 
 
@@ -68,14 +74,17 @@ filesDecoder =
     JD.at [ "target", "files" ] (JD.list File.decoder)
 
 
-setRemoveBgOrNotStep : Base64ImgUrl -> ( Model, Cmd Msg )
-setRemoveBgOrNotStep imgUrl =
-    ( RemoveBgOrNot NotAsked imgUrl, Cmd.none )
+setRemoveBgOrNotStep : Model -> Base64ImgUrl -> ( Model, Cmd Msg )
+setRemoveBgOrNotStep model imgUrl =
+    ( RemoveBgOrNot NotAsked imgUrl
+        |> setStep model
+    , Cmd.none
+    )
 
 
 closeModal : Model -> Model
 closeModal model =
-    Add
+    { model | step = Add }
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -90,20 +99,20 @@ update msg model =
                     ( model, Task.perform GotFileUrl <| File.toUrl file )
 
         GotFileUrl base64 ->
-            ( Crop, sendToJs <| CropImageInit (fromString base64) )
+            ( { model | step = Crop }, sendToJs <| CropImageInit (fromString base64) )
 
         ClickedCloseModal ->
-            ( Add, Cmd.none )
+            ( { model | step = Add }, Cmd.none )
 
         ClickedCropFinish ->
             ( model, sendToJs <| CropImage )
 
         ClickedRemoveBg imgUrl ->
-            ( RemoveBgOrNot Loading imgUrl
+            ( { model | step = RemoveBgOrNot Loading imgUrl }
             , Http.request
                 { url = "https://api.remove.bg/v1.0/removebg"
                 , headers =
-                    [ Http.header "X-Api-Key" "model.removeBgApiKey"
+                    [ Http.header "X-Api-Key" model.removeBgApiKey
                     , Http.header "Accept" "application/json"
                     ]
                 , method = "POST"
@@ -117,21 +126,36 @@ update msg model =
         GotRemoveBgResponse imgUrl result ->
             case result of
                 Err err ->
-                    ( RemoveBgOrNot (Errored err) imgUrl, Cmd.none )
+                    ( RemoveBgOrNot (Errored err) imgUrl
+                        |> setStep model
+                    , Cmd.none
+                    )
 
                 Ok ( metadata, body ) ->
                     case removeBgResponseDecoder body of
                         Ok base64ImgUrl ->
-                            ( Erase, sendToJs <| PrepareForErase base64ImgUrl )
+                            ( { model | step = Erase }, sendToJs <| PrepareForErase base64ImgUrl )
 
                         Err _ ->
-                            ( RemoveBgOrNot JsonResponseError imgUrl, Cmd.none )
+                            ( RemoveBgOrNot JsonResponseError imgUrl
+                                |> setStep model
+                            , Cmd.none
+                            )
 
         ClickedNotRemoveBg imgUrl ->
-            ( Erase, sendToJs <| PrepareForErase imgUrl )
+            ( { model | step = Erase }, sendToJs <| PrepareForErase imgUrl )
 
         ClickedEraseFinish ->
-            ( Erase, sendToJs <| AddImgFinish )
+            ( { model | step = Erase }, sendToJs <| AddImgFinish )
+
+
+
+-- UTILS
+
+
+setStep : Model -> Step -> Model
+setStep model step =
+    { model | step = step }
 
 
 
@@ -202,7 +226,7 @@ convertResponseString httpResponse =
 
 view : Model -> Html Msg
 view model =
-    case model of
+    case model.step of
         Add ->
             viewUploadFileBtn
 

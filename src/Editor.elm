@@ -66,7 +66,7 @@ update msg model =
                 ImageCropped base64ImgUrl ->
                     let
                         ( updatedAddImg, addImgCmd ) =
-                            AddImg.setRemoveBgOrNotStep base64ImgUrl
+                            AddImg.setRemoveBgOrNotStep model.addImg base64ImgUrl
                     in
                     ( { model | addImg = updatedAddImg }, addImgCmd |> Cmd.map FromAddImg )
 
