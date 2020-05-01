@@ -1,16 +1,14 @@
 module Settings exposing (Model, Msg, init, update, view)
 
-import Html.Styled exposing (Html, div, h1, h2, input, section, text)
-import Html.Styled.Attributes exposing (class, placeholder, value)
-import Html.Styled.Events exposing (onInput)
+import Data.Settings
+import Html.Styled exposing (Html, button, div, h1, h2, input, label, section, text)
+import Html.Styled.Attributes exposing (class, placeholder, type_, value)
+import Html.Styled.Events exposing (onClick, onInput)
+import Ports exposing (IncomingMsg(..), OutgoingMsg(..), sendToJs)
 
 
 type alias Model =
-    { telegramBotToken : String
-    , telegramUserId : String
-    , telegramBotId : String
-    , removeBgApiKey : String
-    }
+    Data.Settings.Model
 
 
 type Msg
@@ -18,6 +16,7 @@ type Msg
     | TelegramUserIdChanged String
     | TelegramBotIdChanged String
     | RemoveBgApiKeyChanged String
+    | ClickedSave
 
 
 type InputName
@@ -51,6 +50,9 @@ update msg model =
         RemoveBgApiKeyChanged value ->
             ( { model | removeBgApiKey = value }, Cmd.none )
 
+        ClickedSave ->
+            ( model, sendToJs <| SaveSettingsToLS model )
+
 
 view : Model -> Html Msg
 view model =
@@ -71,6 +73,15 @@ view model =
                     ]
                 , div [ class "column" ] []
                 ]
+            , div [ class "columns" ]
+                [ div [ class "column" ]
+                    [ button
+                        [ class "button is-info"
+                        , onClick ClickedSave
+                        ]
+                        [ text "Save" ]
+                    ]
+                ]
             ]
         ]
 
@@ -78,9 +89,13 @@ view model =
 viewInput : (String -> Msg) -> InputName -> Model -> Html Msg
 viewInput onChange inputName model =
     div [ class "field" ]
-        [ div [ class "control" ]
+        [ label
+            [ class "label" ]
+            [ text (returnPlaceholder inputName) ]
+        , div [ class "control" ]
             [ input
                 [ class "input"
+                , type_ "password"
                 , onInput onChange
                 , placeholder ("Enter " ++ returnPlaceholder inputName)
                 , value (returnValue model inputName)
