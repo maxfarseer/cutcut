@@ -230,7 +230,7 @@ viewHeader =
                                     [ text "Fork me" ]
                                 ]
                             , a [ class "button is-light" ]
-                                [ text "v. 0.0.1" ]
+                                [ text "v. 1.0.0" ]
                             ]
                         ]
                     ]
