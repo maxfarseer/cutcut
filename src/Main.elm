@@ -45,6 +45,7 @@ main =
 type Page
     = WelcomePage
     | EditorPage Editor.Model
+    | SettingsPage
     | NotFoundPage
 
 
@@ -128,6 +129,9 @@ updateUrl url model =
         Editor ->
             Editor.init model.flags.env.removeBgApiKey |> toEditor model
 
+        Settings ->
+            ( { model | page = SettingsPage }, Cmd.none )
+
         NotFound ->
             ( { model | page = NotFoundPage }, Cmd.none )
 
@@ -172,6 +176,11 @@ body model =
         NotFoundPage ->
             [ viewHeader
             , div [] [ text "Not found" ]
+            ]
+
+        SettingsPage ->
+            [ viewHeader
+            , div [] [ text "Settings page" ]
             ]
 
         EditorPage editorModel ->
