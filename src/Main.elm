@@ -8,6 +8,7 @@ import Html.Styled exposing (Html, a, div, footer, h1, h2, img, nav, p, section,
 import Html.Styled.Attributes exposing (attribute, class, href, id, src, target)
 import Json.Decode as JD
 import Route exposing (Route(..))
+import Settings
 import Url
 
 
@@ -45,7 +46,7 @@ main =
 type Page
     = WelcomePage
     | EditorPage Editor.Model
-    | SettingsPage
+    | SettingsPage Settings.Model
     | NotFoundPage
 
 
@@ -95,6 +96,7 @@ type Msg
     = LinkClicked Browser.UrlRequest
     | UrlChanged Url.Url
     | GotEditorMsg Editor.Msg
+    | GotSettingsMsg Settings.Msg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -119,6 +121,14 @@ update msg model =
                 _ ->
                     ( model, Cmd.none )
 
+        GotSettingsMsg settingsMsg ->
+            case model.page of
+                SettingsPage settingsModel ->
+                    toSettings model (Settings.update settingsMsg settingsModel)
+
+                _ ->
+                    ( model, Cmd.none )
+
 
 updateUrl : Url.Url -> Model -> ( Model, Cmd Msg )
 updateUrl url model =
@@ -130,7 +140,7 @@ updateUrl url model =
             Editor.init model.flags.env.removeBgApiKey |> toEditor model
 
         Settings ->
-            ( { model | page = SettingsPage }, Cmd.none )
+            ( { model | page = SettingsPage Settings.init }, Cmd.none )
 
         NotFound ->
             ( { model | page = NotFoundPage }, Cmd.none )
@@ -140,6 +150,13 @@ toEditor : Model -> ( Editor.Model, Cmd Editor.Msg ) -> ( Model, Cmd Msg )
 toEditor model ( editorModel, editorCmd ) =
     ( { model | page = EditorPage editorModel }
     , Cmd.map GotEditorMsg editorCmd
+    )
+
+
+toSettings : Model -> ( Settings.Model, Cmd Settings.Msg ) -> ( Model, Cmd Msg )
+toSettings model ( settingsModel, settingsCmd ) =
+    ( { model | page = SettingsPage settingsModel }
+    , Cmd.map GotSettingsMsg settingsCmd
     )
 
 
@@ -178,9 +195,9 @@ body model =
             , div [] [ text "Not found" ]
             ]
 
-        SettingsPage ->
+        SettingsPage settingsModel ->
             [ viewHeader
-            , div [] [ text "Settings page" ]
+            , Settings.view settingsModel |> Html.Styled.map GotSettingsMsg
             ]
 
         EditorPage editorModel ->
@@ -226,6 +243,8 @@ viewHeader =
                         [ text "Home" ]
                     , a [ class "navbar-item", href "/editor" ]
                         [ text "Editor" ]
+                    , a [ class "navbar-item", href "/settings" ]
+                        [ text "Settings" ]
                     ]
                 , div [ class "navbar-end" ]
                     [ div [ class "navbar-item" ]
