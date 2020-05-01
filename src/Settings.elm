@@ -14,7 +14,17 @@ type alias Model =
 
 
 type Msg
-    = InputChanged String
+    = TelegramBotTokenChanged String
+    | TelegramUserIdChanged String
+    | TelegramBotIdChanged String
+    | RemoveBgApiKeyChanged String
+
+
+type InputName
+    = TelegramBotToken
+    | TelegramUserId
+    | TelegramBotId
+    | RemoveBgApiKey
 
 
 init : Model
@@ -29,8 +39,17 @@ init =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        InputChanged value ->
+        TelegramBotTokenChanged value ->
+            ( { model | telegramBotToken = value }, Cmd.none )
+
+        TelegramUserIdChanged value ->
+            ( { model | telegramUserId = value }, Cmd.none )
+
+        TelegramBotIdChanged value ->
             ( { model | telegramBotId = value }, Cmd.none )
+
+        RemoveBgApiKeyChanged value ->
+            ( { model | removeBgApiKey = value }, Cmd.none )
 
 
 view : Model -> Html Msg
@@ -43,13 +62,10 @@ view model =
                 [ div [ class "column is-7" ]
                     [ div [ class "columns" ]
                         [ div [ class "column is-8" ]
-                            [ input
-                                [ class "input"
-                                , onInput InputChanged
-                                , placeholder "Enter telegramBotId"
-                                , value model.telegramBotId
-                                ]
-                                []
+                            [ viewInput TelegramBotTokenChanged TelegramBotToken model
+                            , viewInput TelegramUserIdChanged TelegramUserId model
+                            , viewInput TelegramBotIdChanged TelegramBotId model
+                            , viewInput RemoveBgApiKeyChanged RemoveBgApiKey model
                             ]
                         ]
                     ]
@@ -57,3 +73,50 @@ view model =
                 ]
             ]
         ]
+
+
+viewInput : (String -> Msg) -> InputName -> Model -> Html Msg
+viewInput onChange inputName model =
+    div [ class "field" ]
+        [ div [ class "control" ]
+            [ input
+                [ class "input"
+                , onInput onChange
+                , placeholder ("Enter " ++ returnPlaceholder inputName)
+                , value (returnValue model inputName)
+                ]
+                []
+            ]
+        ]
+
+
+returnPlaceholder : InputName -> String
+returnPlaceholder inputName =
+    case inputName of
+        TelegramBotToken ->
+            "telegramBotToken"
+
+        TelegramUserId ->
+            "telegramUserId"
+
+        TelegramBotId ->
+            "telegramBotId"
+
+        RemoveBgApiKey ->
+            "removeBgApiKey"
+
+
+returnValue : Model -> InputName -> String
+returnValue model inputName =
+    case inputName of
+        TelegramBotToken ->
+            model.telegramBotToken
+
+        TelegramUserId ->
+            model.telegramUserId
+
+        TelegramBotId ->
+            model.telegramBotId
+
+        RemoveBgApiKey ->
+            model.removeBgApiKey
