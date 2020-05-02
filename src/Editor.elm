@@ -13,7 +13,7 @@ import Ports exposing (IncomingMsg(..), OutgoingMsg(..), StickerUploadError, lis
 type UploadStickerStatus
     = NotAsked
     | Loading
-    | Errorerd StickerUploadError
+    | Errored StickerUploadError
     | Success
 
 
@@ -61,6 +61,10 @@ update msg model =
             ( { model | addText = updatedAddText }, addTextCmd |> Cmd.map FromAddText )
 
         FromJS incomingMsg ->
+            let
+                _ =
+                    Debug.log "Editor FromJS incomingMsg" incomingMsg
+            in
             case incomingMsg of
                 ImageCropped base64ImgUrl ->
                     let
@@ -80,13 +84,26 @@ update msg model =
                     ( { model | uploadStickerStatus = Success }, Cmd.none )
 
                 StickerUploadedFailure err ->
-                    ( { model | uploadStickerStatus = Errorerd err }, Cmd.none )
+                    ( { model | uploadStickerStatus = Errored err }, Cmd.none )
+
+                -- TODO: I don't want to use it here, how can I avoid it?
+                LoadedSettingsFromLS s ->
+                    let
+                        _ =
+                            Debug.log "LoadedSettingsFromLS editor" s
+                    in
+                    ( model, Cmd.none )
 
                 UnknownIncomingMessage str ->
                     -- TODO: show error message to user
                     ( model, Cmd.none )
 
         FromJSDecodeError err ->
+            -- TODO: show error message to user
+            let
+                _ =
+                    Debug.log "Editor: FromJSDecodeError" err
+            in
             ( model, Cmd.none )
 
         ClickedDownloadSticker ->
@@ -176,7 +193,7 @@ renderUploadImgToStickerSetBtn status =
                 Loading ->
                     ( "is-loading", True )
 
-                Errorerd _ ->
+                Errored _ ->
                     ( "", False )
     in
     div [ class "columns" ]
@@ -195,7 +212,7 @@ renderUploadImgToStickerSetBtn status =
 renderErrorMessage : UploadStickerStatus -> Html Msg
 renderErrorMessage status =
     case status of
-        Errorerd err ->
+        Errored err ->
             div [ class "column" ]
                 [ p [ class "has-text-danger" ]
                     [ text "Upload sticker error" ]

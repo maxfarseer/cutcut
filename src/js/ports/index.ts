@@ -1,6 +1,6 @@
 import { IPortMsg } from "./types";
 import { CustomWindow } from '../../custom.window';
-import { saveSettingsToLS } from "./storage";
+import { saveSettingsToLS, askForSettingsFromLS } from "./storage";
 declare let window: CustomWindow;
 
 const getCustomCropper = (): Node => {
@@ -95,6 +95,11 @@ const handlePortMsg = async ({ action, payload }: IPortMsg) => {
     case 'SaveSettingsToLS': {
       saveSettingsToLS(payload);
       break;
+    }
+
+    case 'AskForSettingsFromLS': {
+      askForSettingsFromLS();
+      return;
     }
 
     default:

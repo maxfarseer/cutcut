@@ -111,18 +111,26 @@ update msg model =
         UrlChanged url ->
             updateUrl url model
 
-        GotEditorMsg editorMsg ->
+        GotSettingsMsg settingsMsg ->
+            let
+                _ =
+                    Debug.log "GogSettingsMsg" settingsMsg
+            in
             case model.page of
-                EditorPage editorModel ->
-                    toEditor model (Editor.update editorMsg editorModel)
+                SettingsPage settingsModel ->
+                    toSettings model (Settings.update settingsMsg settingsModel)
 
                 _ ->
                     ( model, Cmd.none )
 
-        GotSettingsMsg settingsMsg ->
+        GotEditorMsg editorMsg ->
+            let
+                _ =
+                    Debug.log "GotEditorMsg" editorMsg
+            in
             case model.page of
-                SettingsPage settingsModel ->
-                    toSettings model (Settings.update settingsMsg settingsModel)
+                EditorPage editorModel ->
+                    toEditor model (Editor.update editorMsg editorModel)
 
                 _ ->
                     ( model, Cmd.none )
@@ -168,16 +176,16 @@ subscriptions model =
         WelcomePage ->
             Sub.none
 
+        SettingsPage _ ->
+            Settings.subscriptions ()
+                |> Sub.map GotSettingsMsg
+
         EditorPage _ ->
             Editor.subscriptions ()
                 |> Sub.map GotEditorMsg
 
         NotFoundPage ->
             Sub.none
-
-        SettingsPage _ ->
-            Settings.subscriptions ()
-                |> Sub.map GotSettingsMsg
 
 
 

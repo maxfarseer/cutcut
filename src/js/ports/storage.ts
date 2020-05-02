@@ -1,3 +1,5 @@
+import { sendToElm } from './index'
+
 const key = 'cutcut.settings';
 
 export type UserEnvSettings = {
@@ -11,9 +13,17 @@ export const saveSettingsToLS = (payload: UserEnvSettings) => {
   localStorage.setItem(key, JSON.stringify(payload));
 }
 
-export const getSettingsFromLS = (): string | null => {
+const getSettingsFromLS = (): string | null => {
   if (localStorage.getItem(key)) {
     return JSON.parse(localStorage.getItem(key) as string);
   }
   return JSON.stringify(null); 
+}
+
+export const askForSettingsFromLS = (): void => {
+  console.log('askForSettingsFromLS', getSettingsFromLS())
+  sendToElm({
+    action: 'LoadedSettingsFromLS',
+    payload: getSettingsFromLS(),
+  });
 }

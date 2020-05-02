@@ -1,7 +1,7 @@
 port module Ports exposing (IncomingMsg(..), OutgoingMsg(..), StickerUploadError, listenToJs, sendToJs)
 
 import Base64 exposing (Base64ImgUrl, decoderStringToBase64ImgUrl, toString)
-import Data.Settings
+import Data.Settings exposing (settingsDecoder, settingsEncoder)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode
 
@@ -27,6 +27,7 @@ type OutgoingMsg
     | RequestUploadToPack
     | AddText String
     | SaveSettingsToLS Data.Settings.Model
+    | AskForSettingsFromLS
 
 
 type IncomingMsg
@@ -35,6 +36,7 @@ type IncomingMsg
     | UnknownIncomingMessage String
     | StickerUploadedSuccess
     | StickerUploadedFailure StickerUploadError
+    | LoadedSettingsFromLS Data.Settings.Model
 
 
 {-| Send messages to JS
@@ -78,19 +80,8 @@ sendToJs outgoingMsg =
             SaveSettingsToLS settings ->
                 { action = "SaveSettingsToLS", payload = settingsEncoder settings }
 
-
-
--- ENCODERS
-
-
-settingsEncoder : Data.Settings.Model -> Encode.Value
-settingsEncoder settings =
-    Encode.object
-        [ ( "telegramBotToken", Encode.string settings.telegramBotToken )
-        , ( "telegramUserId", Encode.string settings.telegramUserId )
-        , ( "telegramBotId", Encode.string settings.telegramBotId )
-        , ( "removeBgApiKey", Encode.string settings.removeBgApiKey )
-        ]
+            AskForSettingsFromLS ->
+                { action = "AskForSettingsFromLS", payload = Encode.null }
 
 
 
@@ -135,6 +126,11 @@ incomingMsgDecoder =
                         stickerUploadFailureDecoder
                             |> payloadDecoder
                             |> Decode.map StickerUploadedFailure
+
+                    "LoadedSettingsFromLS" ->
+                        settingsDecoder
+                            |> payloadDecoder
+                            |> Decode.map LoadedSettingsFromLS
 
                     _ ->
                         Decode.succeed <|

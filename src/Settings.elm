@@ -1,10 +1,10 @@
-module Settings exposing (Model, Msg, init, update, view)
+module Settings exposing (Model, Msg, init, subscriptions, update, view)
 
 import Data.Settings
 import Html.Styled exposing (Html, button, div, h1, h2, input, label, section, text)
 import Html.Styled.Attributes exposing (class, placeholder, type_, value)
 import Html.Styled.Events exposing (onClick, onInput)
-import Ports exposing (IncomingMsg(..), OutgoingMsg(..), sendToJs)
+import Ports exposing (IncomingMsg(..), OutgoingMsg(..), listenToJs, sendToJs)
 
 
 type alias Model =
@@ -17,6 +17,8 @@ type Msg
     | TelegramBotIdChanged String
     | RemoveBgApiKeyChanged String
     | ClickedSave
+    | FromJS IncomingMsg
+    | FromJSDecodeError String
 
 
 type InputName
@@ -26,20 +28,13 @@ type InputName
     | RemoveBgApiKey
 
 
-init : Maybe Data.Settings.Model -> ( Model, Cmd Msg )
-init settingsFromLS =
-    case settingsFromLS of
-        Just settings ->
-            ( { telegramBotToken = settings.telegramBotToken
-              , telegramUserId = settings.telegramUserId
-              , telegramBotId = settings.telegramBotId
-              , removeBgApiKey = settings.removeBgApiKey
-              }
-            , Cmd.none
-            )
-
-        Nothing ->
-            ( Data.Settings.empty, Cmd.none )
+init : ( Model, Cmd Msg )
+init =
+    let
+        _ =
+            Debug.log "Settings init" "1"
+    in
+    ( Data.Settings.empty, sendToJs <| AskForSettingsFromLS )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -59,6 +54,31 @@ update msg model =
 
         ClickedSave ->
             ( model, sendToJs <| SaveSettingsToLS model )
+
+        FromJS incomingMsg ->
+            let
+                _ =
+                    Debug.log "settings incoming msg" msg
+            in
+            case incomingMsg of
+                LoadedSettingsFromLS settings ->
+                    let
+                        _ =
+                            Debug.log "settings" settings
+                    in
+                    ( settings, Cmd.none )
+
+                -- TODO: how can I avoid it here?
+                _ ->
+                    ( model, Cmd.none )
+
+        FromJSDecodeError err ->
+            -- TODO: show error message to user (refactor(?), because we have same in Editor.elm)
+            let
+                _ =
+                    Debug.log "Settings: FromJSDecodeError" err
+            in
+            ( model, Cmd.none )
 
 
 view : Model -> Html Msg
@@ -142,3 +162,8 @@ returnValue model inputName =
 
         RemoveBgApiKey ->
             model.removeBgApiKey
+
+
+subscriptions : a -> Sub Msg
+subscriptions =
+    \_ -> listenToJs FromJS FromJSDecodeError
