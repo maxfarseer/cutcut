@@ -26,13 +26,20 @@ type InputName
     | RemoveBgApiKey
 
 
-init : Model
-init =
-    { telegramBotToken = ""
-    , telegramUserId = ""
-    , telegramBotId = ""
-    , removeBgApiKey = ""
-    }
+init : Maybe Data.Settings.Model -> ( Model, Cmd Msg )
+init settingsFromLS =
+    case settingsFromLS of
+        Just settings ->
+            ( { telegramBotToken = settings.telegramBotToken
+              , telegramUserId = settings.telegramUserId
+              , telegramBotId = settings.telegramBotId
+              , removeBgApiKey = settings.removeBgApiKey
+              }
+            , Cmd.none
+            )
+
+        Nothing ->
+            ( Data.Settings.empty, Cmd.none )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )

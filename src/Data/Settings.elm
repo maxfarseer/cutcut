@@ -1,4 +1,4 @@
-module Data.Settings exposing (Model)
+module Data.Settings exposing (Model, empty)
 
 
 type alias Model =
@@ -6,4 +6,13 @@ type alias Model =
     , telegramUserId : String
     , telegramBotId : String
     , removeBgApiKey : String
+    }
+
+
+empty : Model
+empty =
+    { telegramBotToken = ""
+    , telegramUserId = ""
+    , telegramBotId = ""
+    , removeBgApiKey = ""
     }

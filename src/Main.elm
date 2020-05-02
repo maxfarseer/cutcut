@@ -2,8 +2,8 @@ module Main exposing (main)
 
 import Browser
 import Browser.Navigation as Nav
+import Data.Settings as DS
 import Editor
-import EnvAliases exposing (RemoveBgApiKey)
 import Html.Styled exposing (Html, a, div, footer, h1, h2, img, nav, p, section, span, strong, text, toUnstyled)
 import Html.Styled.Attributes exposing (attribute, class, href, id, src, target)
 import Json.Decode as JD
@@ -12,13 +12,8 @@ import Settings
 import Url
 
 
-type alias FlagsEnv =
-    { removeBgApiKey : RemoveBgApiKey
-    }
-
-
 type alias Flags =
-    { env : FlagsEnv
+    { env : Maybe DS.Model
     , buildDate : Int
     }
 
@@ -67,7 +62,7 @@ init flags url key =
             updateUrl url
                 { page = NotFoundPage
                 , key = key
-                , flags = { env = FlagsEnv "no-env", buildDate = 0 }
+                , flags = { env = Nothing, buildDate = 0 }
                 }
 
 
@@ -78,14 +73,17 @@ init flags url key =
 flagsDecoder : JD.Decoder Flags
 flagsDecoder =
     JD.map2 Flags
-        (JD.field "env" flagsEnvDecoder)
+        (JD.field "env" flagsEnvDecoder |> JD.nullable)
         (JD.field "buildDate" JD.int)
 
 
-flagsEnvDecoder : JD.Decoder FlagsEnv
+flagsEnvDecoder : JD.Decoder DS.Model
 flagsEnvDecoder =
-    JD.map FlagsEnv
-        (JD.field "REMOVE_BG_API_KEY" JD.string)
+    JD.map4 DS.Model
+        (JD.field "telegramBotToken" JD.string)
+        (JD.field "telegramUserId" JD.string)
+        (JD.field "telegramBotId" JD.string)
+        (JD.field "removeBgApiKey" JD.string)
 
 
 
@@ -137,10 +135,10 @@ updateUrl url model =
             ( { model | page = WelcomePage }, Cmd.none )
 
         Editor ->
-            Editor.init model.flags.env.removeBgApiKey |> toEditor model
+            Editor.init |> toEditor model
 
         Settings ->
-            ( { model | page = SettingsPage Settings.init }, Cmd.none )
+            Settings.init model.flags.env |> toSettings model
 
         NotFound ->
             ( { model | page = NotFoundPage }, Cmd.none )

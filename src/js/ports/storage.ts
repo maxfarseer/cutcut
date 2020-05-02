@@ -1,3 +1,5 @@
+const key = 'cutcut.settings';
+
 export type UserEnvSettings = {
   telegramBotToken : string
   telegramUserId : string
@@ -6,5 +8,12 @@ export type UserEnvSettings = {
 }
 
 export const saveSettingsToLS = (payload: UserEnvSettings) => {
-  localStorage.setItem('cutcut.settings', JSON.stringify(payload));
+  localStorage.setItem(key, JSON.stringify(payload));
+}
+
+export const getSettingsFromLS = (): string | null => {
+  if (localStorage.getItem(key)) {
+    return JSON.parse(localStorage.getItem(key) as string);
+  }
+  return JSON.stringify(null); 
 }
