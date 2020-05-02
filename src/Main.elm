@@ -138,7 +138,7 @@ updateUrl url model =
             Editor.init |> toEditor model
 
         Settings ->
-            Settings.init model.flags.env |> toSettings model
+            Settings.init |> toSettings model
 
         NotFound ->
             ( { model | page = NotFoundPage }, Cmd.none )
@@ -165,12 +165,19 @@ toSettings model ( settingsModel, settingsCmd ) =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     case model.page of
+        WelcomePage ->
+            Sub.none
+
         EditorPage _ ->
             Editor.subscriptions ()
                 |> Sub.map GotEditorMsg
 
-        _ ->
+        NotFoundPage ->
             Sub.none
+
+        SettingsPage _ ->
+            Settings.subscriptions ()
+                |> Sub.map GotSettingsMsg
 
 
 
