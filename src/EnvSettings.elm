@@ -43,6 +43,11 @@ settingsEncoder settings =
         ]
 
 
+incomingMsgDecoder : JD.Decoder String
+incomingMsgDecoder =
+    JD.field "action" JD.string
+
+
 settingsDecoder : JD.Decoder Model
 settingsDecoder =
     JD.map4 Model
@@ -58,9 +63,27 @@ port msgForEnvSettings : (JD.Value -> msg) -> Sub msg
 
 update : JD.Value -> Model
 update json =
-    case JD.decodeValue settingsDecoder json of
-        Ok data ->
-            data
+    case JD.decodeValue incomingMsgDecoder json of
+        Ok incomingMsg ->
+            case incomingMsg of
+                "LoadedSettingsFromLS" ->
+                    case JD.decodeValue settingsDecoder json of
+                        Ok data ->
+                            data
+
+                        Err err ->
+                            let
+                                _ =
+                                    Debug.log "Decode settings error" err
+                            in
+                            empty
+
+                _ ->
+                    let
+                        _ =
+                            Debug.log "unsupported message" incomingMsg
+                    in
+                    empty
 
         Err err ->
             let
