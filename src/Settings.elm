@@ -1,6 +1,6 @@
 module Settings exposing (Model, Msg, init, subscriptions, update, view)
 
-import EnvSettings exposing (IncomingMsg(..))
+import EnvSettings exposing (IncomingMsg(..), OutgoingMsg(..), sendToStoragePort)
 import Html.Styled exposing (Html, button, div, h1, h2, input, label, section, text)
 import Html.Styled.Attributes exposing (class, placeholder, type_, value)
 import Html.Styled.Events exposing (onClick, onInput)
@@ -34,7 +34,7 @@ type InputName
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( EnvSettings.empty, sendToJs <| AskForSettingsFromLS )
+    ( EnvSettings.empty, sendToStoragePort <| AskForSettingsFromLS )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -53,7 +53,7 @@ update msg model =
             ( { model | removeBgApiKey = value }, Cmd.none )
 
         ClickedSave ->
-            ( model, sendToJs <| SaveSettingsToLS model )
+            ( model, sendToStoragePort <| SaveSettingsToLS model )
 
         FromEnvSettingsPort json ->
             let

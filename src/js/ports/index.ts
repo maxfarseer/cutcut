@@ -1,6 +1,6 @@
-import { IPortMsg } from "./types";
+import { IPortMsg } from './types';
 import { CustomWindow } from '../../custom.window';
-import { saveSettingsToLS, askForSettingsFromLS } from "./storage";
+import { handlePortStorageMsg, sendToEnvSettings } from './storage';
 declare let window: CustomWindow;
 
 const getCustomCropper = (): Node => {
@@ -12,7 +12,7 @@ const getCustomEraser = (): Node => {
 }
 
 const getCustomCanvas = (): Node => {
-  return document.getElementsByTagName('custom-canvas')[0]
+  return document.getElementsByTagName('custom-canvas')[0];
 }
 
 const cropImageInit = (imgUrl: string) => {
@@ -92,16 +92,6 @@ const handlePortMsg = async ({ action, payload }: IPortMsg) => {
       break;
     }
 
-    case 'SaveSettingsToLS': {
-      saveSettingsToLS(payload);
-      break;
-    }
-
-    case 'AskForSettingsFromLS': {
-      askForSettingsFromLS();
-      return;
-    }
-
     default:
       throw new Error(`Received unknown message ${action} from Elm.`);
   }
@@ -111,8 +101,4 @@ const sendToElm = ({ action, payload }: IPortMsg) => {
   window.elmApp.ports.msgForElm.send({ action, payload })
 }
 
-const sendToEnvSettings = ({ action, payload }: IPortMsg) => {
-  window.elmApp.ports.msgForEnvSettings.send({ action, payload })
-}
-
-export { handlePortMsg, sendToElm, sendToEnvSettings };
+export { handlePortMsg, handlePortStorageMsg, sendToElm, sendToEnvSettings };

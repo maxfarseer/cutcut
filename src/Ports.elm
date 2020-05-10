@@ -26,8 +26,6 @@ type OutgoingMsg
     | DownloadSticker
     | RequestUploadToPack
     | AddText String
-    | SaveSettingsToLS EnvSettings.Model
-    | AskForSettingsFromLS
 
 
 type IncomingMsg
@@ -75,12 +73,6 @@ sendToJs outgoingMsg =
 
             RequestUploadToPack ->
                 { action = "RequestUploadToPack", payload = Encode.null }
-
-            SaveSettingsToLS settings ->
-                { action = "SaveSettingsToLS", payload = settingsEncoder settings }
-
-            AskForSettingsFromLS ->
-                { action = "AskForSettingsFromLS", payload = Encode.null }
 
 
 

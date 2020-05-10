@@ -1,28 +1,53 @@
-import { sendToEnvSettings } from './index'
+import { IPortMsg } from './types';
+import { CustomWindow } from '../../custom.window';
+
+declare let window: CustomWindow;
 
 const key = 'cutcut.settings';
 
 export type UserEnvSettings = {
-  telegramBotToken : string
-  telegramUserId : string
-  telegramBotId : string
-  removeBgApiKey : string
-}
+  telegramBotToken: string,
+  telegramUserId: string,
+  telegramBotId: string,
+  removeBgApiKey: string,
+};
 
-export const saveSettingsToLS = (payload: UserEnvSettings) => {
+const saveSettingsToLS = (payload: UserEnvSettings) => {
   localStorage.setItem(key, JSON.stringify(payload));
-}
+};
 
 const getSettingsFromLS = (): string | null => {
   if (localStorage.getItem(key)) {
     return JSON.parse(localStorage.getItem(key) as string);
   }
-  return JSON.stringify(null); 
-}
+  return JSON.stringify(null);
+};
 
-export const askForSettingsFromLS = (): void => {
+const askForSettingsFromLS = (): void => {
   sendToEnvSettings({
     action: 'LoadedSettingsFromLS',
     payload: getSettingsFromLS(),
   });
+};
+
+export const handlePortStorageMsg = async ({ action, payload }: IPortMsg) => {
+  switch (action) {
+    case 'SaveSettingsToLS': {
+      saveSettingsToLS(payload);
+      break;
+    }
+    case 'AskForSettingsFromLS': {
+      askForSettingsFromLS();
+      return;
+    }
+
+    default:
+      throw new Error(
+        `Received unknown message ${action} for Storage port from Elm.`
+      );
+  }
+};
+
+export const sendToEnvSettings = ({ action, payload }: IPortMsg) => {
+  window.elmApp.ports.msgForEnvSettings.send({ action, payload })
 }

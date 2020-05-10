@@ -17,6 +17,10 @@ export interface IElmApp {
     msgForJs: {
       subscribe: Function,
       unsubscribe: Function,
+    },
+    msgForStorage: {
+      subscribe: Function,
+      unsubscribe: Function,
     }
   }
 }

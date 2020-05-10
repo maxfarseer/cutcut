@@ -1,8 +1,10 @@
 port module EnvSettings exposing
     ( IncomingMsg(..)
     , Model
+    , OutgoingMsg(..)
     , empty
     , msgForEnvSettings
+    , sendToStoragePort
     , settingsDecoder
     , settingsEncoder
     , update
@@ -10,6 +12,16 @@ port module EnvSettings exposing
 
 import Json.Decode as JD
 import Json.Encode as JE
+
+
+
+-- TODO: check duplicate code in Ports, reduce it
+
+
+type alias PortData =
+    { action : String
+    , payload : JE.Value
+    }
 
 
 type alias Model =
@@ -22,6 +34,11 @@ type alias Model =
 
 type IncomingMsg
     = LoadedSettingsFromLS JD.Value
+
+
+type OutgoingMsg
+    = AskForSettingsFromLS
+    | SaveSettingsToLS Model
 
 
 empty : Model
@@ -56,6 +73,28 @@ settingsDecoder =
         (JD.field "telegramBotId" JD.string)
         (JD.field "removeBgApiKey" JD.string)
         |> JD.field "payload"
+
+
+
+-- To JS
+
+
+port msgForStorage : PortData -> Cmd msg
+
+
+sendToStoragePort : OutgoingMsg -> Cmd msg
+sendToStoragePort outgoingMsg =
+    msgForStorage <|
+        case outgoingMsg of
+            SaveSettingsToLS settings ->
+                { action = "SaveSettingsToLS", payload = settingsEncoder settings }
+
+            AskForSettingsFromLS ->
+                { action = "AskForSettingsFromLS", payload = JE.null }
+
+
+
+-- From JS
 
 
 port msgForEnvSettings : (JD.Value -> msg) -> Sub msg
