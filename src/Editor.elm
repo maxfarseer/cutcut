@@ -86,14 +86,6 @@ update msg model =
                 StickerUploadedFailure err ->
                     ( { model | uploadStickerStatus = Errored err }, Cmd.none )
 
-                -- TODO: I don't want to use it here, how can I avoid it?
-                LoadedSettingsFromLS s ->
-                    let
-                        _ =
-                            Debug.log "LoadedSettingsFromLS editor" s
-                    in
-                    ( model, Cmd.none )
-
                 UnknownIncomingMessage str ->
                     -- TODO: show error message to user
                     ( model, Cmd.none )
@@ -227,4 +219,8 @@ renderErrorMessage status =
 
 subscriptions : a -> Sub Msg
 subscriptions =
-    \_ -> listenToJs FromJS FromJSDecodeError
+    \_ ->
+        Sub.batch
+            [ listenToJs FromJS FromJSDecodeError
+            , Sub.none
+            ]

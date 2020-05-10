@@ -2,8 +2,8 @@ module Main exposing (main)
 
 import Browser
 import Browser.Navigation as Nav
-import Data.Settings as DS
 import Editor
+import EnvSettings
 import Html.Styled exposing (Html, a, div, footer, h1, h2, img, nav, p, section, span, strong, text, toUnstyled)
 import Html.Styled.Attributes exposing (attribute, class, href, id, src, target)
 import Json.Decode as JD
@@ -13,8 +13,7 @@ import Url
 
 
 type alias Flags =
-    { env : Maybe DS.Model
-    , buildDate : Int
+    { buildDate : Int
     }
 
 
@@ -49,6 +48,7 @@ type alias Model =
     { key : Nav.Key
     , page : Page
     , flags : Flags
+    , envSettings : EnvSettings.Model
     }
 
 
@@ -56,13 +56,19 @@ init : JD.Value -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
 init flags url key =
     case JD.decodeValue flagsDecoder flags of
         Ok decodedFlags ->
-            updateUrl url { page = NotFoundPage, key = key, flags = decodedFlags }
+            updateUrl url
+                { page = NotFoundPage
+                , key = key
+                , flags = decodedFlags
+                , envSettings = EnvSettings.empty
+                }
 
         Err err ->
             updateUrl url
                 { page = NotFoundPage
                 , key = key
-                , flags = { env = Nothing, buildDate = 0 }
+                , flags = { buildDate = 0 }
+                , envSettings = EnvSettings.empty
                 }
 
 
@@ -72,18 +78,8 @@ init flags url key =
 
 flagsDecoder : JD.Decoder Flags
 flagsDecoder =
-    JD.map2 Flags
-        (JD.field "env" flagsEnvDecoder |> JD.nullable)
+    JD.map Flags
         (JD.field "buildDate" JD.int)
-
-
-flagsEnvDecoder : JD.Decoder DS.Model
-flagsEnvDecoder =
-    JD.map4 DS.Model
-        (JD.field "telegramBotToken" JD.string)
-        (JD.field "telegramUserId" JD.string)
-        (JD.field "telegramBotId" JD.string)
-        (JD.field "removeBgApiKey" JD.string)
 
 
 
@@ -114,7 +110,7 @@ update msg model =
         GotSettingsMsg settingsMsg ->
             let
                 _ =
-                    Debug.log "GogSettingsMsg" settingsMsg
+                    Debug.log "GotSettingsMsg" settingsMsg
             in
             case model.page of
                 SettingsPage settingsModel ->
@@ -146,7 +142,7 @@ updateUrl url model =
             Editor.init |> toEditor model
 
         Settings ->
-            Settings.init |> toSettings model
+            Settings.init () |> toSettings model
 
         NotFound ->
             ( { model | page = NotFoundPage }, Cmd.none )
@@ -177,7 +173,7 @@ subscriptions model =
             Sub.none
 
         SettingsPage _ ->
-            Settings.subscriptions ()
+            Settings.subscriptions
                 |> Sub.map GotSettingsMsg
 
         EditorPage _ ->
@@ -241,7 +237,13 @@ viewHeader =
                     [ img [ attribute "height" "28", src "https://i.imgur.com/OquiVkC.png", attribute "width" "96" ]
                         []
                     ]
-                , a [ attribute "aria-expanded" "false", attribute "aria-label" "menu", class "navbar-burger burger", attribute "data-target" "navbarBasicExample", attribute "role" "button" ]
+                , a
+                    [ attribute "aria-expanded" "false"
+                    , attribute "aria-label" "menu"
+                    , class "navbar-burger burger"
+                    , attribute "data-target" "navbarBasicExample"
+                    , attribute "role" "button"
+                    ]
                     [ span [ attribute "aria-hidden" "true" ]
                         []
                     , span [ attribute "aria-hidden" "true" ]

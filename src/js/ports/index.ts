@@ -111,4 +111,8 @@ const sendToElm = ({ action, payload }: IPortMsg) => {
   window.elmApp.ports.msgForElm.send({ action, payload })
 }
 
-export { handlePortMsg, sendToElm };
+const sendToEnvSettings = ({ action, payload }: IPortMsg) => {
+  window.elmApp.ports.msgForEnvSettings.send({ action, payload })
+}
+
+export { handlePortMsg, sendToElm, sendToEnvSettings };

@@ -1,7 +1,7 @@
 port module Ports exposing (IncomingMsg(..), OutgoingMsg(..), StickerUploadError, listenToJs, sendToJs)
 
 import Base64 exposing (Base64ImgUrl, decoderStringToBase64ImgUrl, toString)
-import Data.Settings exposing (settingsDecoder, settingsEncoder)
+import EnvSettings exposing (settingsEncoder)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode
 
@@ -26,7 +26,7 @@ type OutgoingMsg
     | DownloadSticker
     | RequestUploadToPack
     | AddText String
-    | SaveSettingsToLS Data.Settings.Model
+    | SaveSettingsToLS EnvSettings.Model
     | AskForSettingsFromLS
 
 
@@ -36,7 +36,6 @@ type IncomingMsg
     | UnknownIncomingMessage String
     | StickerUploadedSuccess
     | StickerUploadedFailure StickerUploadError
-    | LoadedSettingsFromLS Data.Settings.Model
 
 
 {-| Send messages to JS
@@ -126,11 +125,6 @@ incomingMsgDecoder =
                         stickerUploadFailureDecoder
                             |> payloadDecoder
                             |> Decode.map StickerUploadedFailure
-
-                    "LoadedSettingsFromLS" ->
-                        settingsDecoder
-                            |> payloadDecoder
-                            |> Decode.map LoadedSettingsFromLS
 
                     _ ->
                         Decode.succeed <|

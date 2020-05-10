@@ -1,4 +1,12 @@
-module Data.Settings exposing (Model, empty, settingsDecoder, settingsEncoder)
+port module EnvSettings exposing
+    ( IncomingMsg(..)
+    , Model
+    , empty
+    , msgForEnvSettings
+    , settingsDecoder
+    , settingsEncoder
+    , update
+    )
 
 import Json.Decode as JD
 import Json.Encode as JE
@@ -10,6 +18,10 @@ type alias Model =
     , telegramBotId : String
     , removeBgApiKey : String
     }
+
+
+type IncomingMsg
+    = LoadedSettingsFromLS JD.Value
 
 
 empty : Model
@@ -38,3 +50,21 @@ settingsDecoder =
         (JD.field "telegramUserId" JD.string)
         (JD.field "telegramBotId" JD.string)
         (JD.field "removeBgApiKey" JD.string)
+        |> JD.field "payload"
+
+
+port msgForEnvSettings : (JD.Value -> msg) -> Sub msg
+
+
+update : JD.Value -> Model
+update json =
+    case JD.decodeValue settingsDecoder json of
+        Ok data ->
+            data
+
+        Err err ->
+            let
+                _ =
+                    Debug.todo "Add error message to the user"
+            in
+            empty

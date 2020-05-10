@@ -1,4 +1,4 @@
-import { sendToElm } from './index'
+import { sendToEnvSettings } from './index'
 
 const key = 'cutcut.settings';
 
@@ -21,8 +21,7 @@ const getSettingsFromLS = (): string | null => {
 }
 
 export const askForSettingsFromLS = (): void => {
-  console.log('askForSettingsFromLS', getSettingsFromLS())
-  sendToElm({
+  sendToEnvSettings({
     action: 'LoadedSettingsFromLS',
     payload: getSettingsFromLS(),
   });

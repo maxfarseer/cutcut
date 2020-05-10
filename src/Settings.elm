@@ -1,14 +1,15 @@
 module Settings exposing (Model, Msg, init, subscriptions, update, view)
 
-import Data.Settings
+import EnvSettings exposing (IncomingMsg(..))
 import Html.Styled exposing (Html, button, div, h1, h2, input, label, section, text)
 import Html.Styled.Attributes exposing (class, placeholder, type_, value)
 import Html.Styled.Events exposing (onClick, onInput)
-import Ports exposing (IncomingMsg(..), OutgoingMsg(..), listenToJs, sendToJs)
+import Json.Decode as JD
+import Ports exposing (OutgoingMsg(..), sendToJs)
 
 
 type alias Model =
-    Data.Settings.Model
+    EnvSettings.Model
 
 
 type Msg
@@ -17,8 +18,7 @@ type Msg
     | TelegramBotIdChanged String
     | RemoveBgApiKeyChanged String
     | ClickedSave
-    | FromJS IncomingMsg
-    | FromJSDecodeError String
+    | FromEnvSettingsPort JD.Value
 
 
 type InputName
@@ -28,13 +28,9 @@ type InputName
     | RemoveBgApiKey
 
 
-init : ( Model, Cmd Msg )
-init =
-    let
-        _ =
-            Debug.log "Settings init" "1"
-    in
-    ( Data.Settings.empty, sendToJs <| AskForSettingsFromLS )
+init : () -> ( Model, Cmd Msg )
+init _ =
+    ( EnvSettings.empty, sendToJs <| AskForSettingsFromLS )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -55,30 +51,12 @@ update msg model =
         ClickedSave ->
             ( model, sendToJs <| SaveSettingsToLS model )
 
-        FromJS incomingMsg ->
+        FromEnvSettingsPort json ->
             let
-                _ =
-                    Debug.log "settings incoming msg" msg
+                updatedEnvSettings =
+                    EnvSettings.update json
             in
-            case incomingMsg of
-                LoadedSettingsFromLS settings ->
-                    let
-                        _ =
-                            Debug.log "settings" settings
-                    in
-                    ( settings, Cmd.none )
-
-                -- TODO: how can I avoid it here?
-                _ ->
-                    ( model, Cmd.none )
-
-        FromJSDecodeError err ->
-            -- TODO: show error message to user (refactor(?), because we have same in Editor.elm)
-            let
-                _ =
-                    Debug.log "Settings: FromJSDecodeError" err
-            in
-            ( model, Cmd.none )
+            ( updatedEnvSettings, Cmd.none )
 
 
 view : Model -> Html Msg
@@ -164,6 +142,7 @@ returnValue model inputName =
             model.removeBgApiKey
 
 
-subscriptions : a -> Sub Msg
+subscriptions : Sub Msg
 subscriptions =
-    \_ -> listenToJs FromJS FromJSDecodeError
+    --\_ -> listenToJs FromJS FromJSDecodeError
+    EnvSettings.msgForEnvSettings FromEnvSettingsPort
