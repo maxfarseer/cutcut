@@ -4,6 +4,7 @@ import AddImg
 import AddText
 import Css exposing (block, border3, display, height, px, rgb, solid, width)
 import Custom exposing (customCanvas)
+import EnvAliases exposing (RemoveBgApiKey)
 import Html.Styled exposing (Html, button, div, h1, h2, map, p, section, text)
 import Html.Styled.Attributes exposing (class, css, disabled)
 import Html.Styled.Events exposing (onClick)
@@ -24,13 +25,13 @@ type alias Model =
     }
 
 
-init : ( Model, Cmd Msg )
-init =
-    ( { addImg = AddImg.init "removeBgApiKey"
+init : RemoveBgApiKey -> ( Model, Cmd Msg )
+init removeBgApiKey =
+    ( { addImg = AddImg.init removeBgApiKey
       , addText = AddText.init
       , uploadStickerStatus = NotAsked
       }
-    , Cmd.none
+    , sendToJs <| AskForSettingsFromLS
     )
 
 
@@ -222,5 +223,4 @@ subscriptions =
     \_ ->
         Sub.batch
             [ listenToJs FromJS FromJSDecodeError
-            , Sub.none
             ]

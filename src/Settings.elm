@@ -8,6 +8,10 @@ import Json.Decode as JD
 import Ports exposing (OutgoingMsg(..), sendToJs)
 
 
+
+-- TODO: change model to NoSettings | HasSettings or something, to get rid of "blink" with empty lines and filled after
+
+
 type alias Model =
     EnvSettings.Model
 
@@ -144,5 +148,4 @@ returnValue model inputName =
 
 subscriptions : Sub Msg
 subscriptions =
-    --\_ -> listenToJs FromJS FromJSDecodeError
-    EnvSettings.msgForEnvSettings FromEnvSettingsPort
+    Sub.none

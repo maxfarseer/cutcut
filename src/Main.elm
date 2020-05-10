@@ -1,5 +1,6 @@
 module Main exposing (main)
 
+import AddImg
 import Browser
 import Browser.Navigation as Nav
 import Editor
@@ -48,7 +49,6 @@ type alias Model =
     { key : Nav.Key
     , page : Page
     , flags : Flags
-    , envSettings : EnvSettings.Model
     }
 
 
@@ -60,7 +60,6 @@ init flags url key =
                 { page = NotFoundPage
                 , key = key
                 , flags = decodedFlags
-                , envSettings = EnvSettings.empty
                 }
 
         Err err ->
@@ -68,7 +67,6 @@ init flags url key =
                 { page = NotFoundPage
                 , key = key
                 , flags = { buildDate = 0 }
-                , envSettings = EnvSettings.empty
                 }
 
 
@@ -91,6 +89,7 @@ type Msg
     | UrlChanged Url.Url
     | GotEditorMsg Editor.Msg
     | GotSettingsMsg Settings.Msg
+    | GotEnvSettingsPortMsg JD.Value
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -108,10 +107,6 @@ update msg model =
             updateUrl url model
 
         GotSettingsMsg settingsMsg ->
-            let
-                _ =
-                    Debug.log "GotSettingsMsg" settingsMsg
-            in
             case model.page of
                 SettingsPage settingsModel ->
                     toSettings model (Settings.update settingsMsg settingsModel)
@@ -120,15 +115,45 @@ update msg model =
                     ( model, Cmd.none )
 
         GotEditorMsg editorMsg ->
-            let
-                _ =
-                    Debug.log "GotEditorMsg" editorMsg
-            in
             case model.page of
                 EditorPage editorModel ->
                     toEditor model (Editor.update editorMsg editorModel)
 
                 _ ->
+                    ( model, Cmd.none )
+
+        GotEnvSettingsPortMsg json ->
+            case model.page of
+                SettingsPage _ ->
+                    let
+                        newModel =
+                            EnvSettings.update json
+                    in
+                    ( { model
+                        | page = SettingsPage newModel
+                      }
+                    , Cmd.none
+                    )
+
+                EditorPage _ ->
+                    let
+                        newEnvSettings =
+                            EnvSettings.update json
+
+                        newModel =
+                            Editor.init newEnvSettings.removeBgApiKey
+                                |> Tuple.first
+                    in
+                    ( { model
+                        | page = EditorPage newModel
+                      }
+                    , Cmd.none
+                    )
+
+                WelcomePage ->
+                    ( model, Cmd.none )
+
+                NotFoundPage ->
                     ( model, Cmd.none )
 
 
@@ -138,8 +163,9 @@ updateUrl url model =
         Welcome ->
             ( { model | page = WelcomePage }, Cmd.none )
 
+        -- TODO: use Nothing here for removeBgApiKey or think about better solution
         Editor ->
-            Editor.init |> toEditor model
+            Editor.init "TODO:fake-remove-bg-api-key" |> toEditor model
 
         Settings ->
             Settings.init () |> toSettings model
@@ -168,20 +194,27 @@ toSettings model ( settingsModel, settingsCmd ) =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    case model.page of
-        WelcomePage ->
-            Sub.none
+    let
+        subscriptionForPageOnly =
+            case model.page of
+                WelcomePage ->
+                    Sub.none
 
-        SettingsPage _ ->
-            Settings.subscriptions
-                |> Sub.map GotSettingsMsg
+                SettingsPage _ ->
+                    Settings.subscriptions
+                        |> Sub.map GotSettingsMsg
 
-        EditorPage _ ->
-            Editor.subscriptions ()
-                |> Sub.map GotEditorMsg
+                EditorPage _ ->
+                    Editor.subscriptions ()
+                        |> Sub.map GotEditorMsg
 
-        NotFoundPage ->
-            Sub.none
+                NotFoundPage ->
+                    Sub.none
+    in
+    Sub.batch
+        [ subscriptionForPageOnly
+        , EnvSettings.msgForEnvSettings GotEnvSettingsPortMsg
+        ]
 
 
 
