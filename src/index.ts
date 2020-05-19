@@ -12,12 +12,6 @@ const errorLogger = (error: string) => console.error(`App Error: ${error}`);
 const node = document.querySelector('#app');
 
 try {
-  if (!process.env.REMOVE_BG_API_KEY) {
-    throw new Error(
-      'You forgot to set up REMOVE_BG_API_KEY in .env, check README for project',
-    );
-  }
-
   const flags = {
     buildDate: +new Date(),
   };
