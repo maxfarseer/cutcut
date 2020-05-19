@@ -324,7 +324,9 @@ viewWelcomePage =
             [ text "That hobby project built with Elm & Typescript"
             ]
         , p []
-            [ text "At first you have to setup user and bot ids, and you can go to "
+            [ text "At first you have to setup "
+            , a [ href "/settings" ] [ text "variables" ]
+            , text " and you can go to "
             , a [ href "/edit" ] [ text "/edit" ]
             , text " then."
             ]
