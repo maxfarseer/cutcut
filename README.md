@@ -6,28 +6,28 @@ Make your own stickers to telegram with easy-peasy process.
 
 ([youtube demo link](https://youtu.be/aBbs5pRoJXQ))
 
-### For start project
+Presentation (slides) about learning Elm and working on this project:
+- English (todo)
+- [На русском](https://docs.google.com/presentation/d/1__TGf1rlomeTtJ5gq5dxd9fu_Q4g8Zfyalu5wQKLnTM/edit?usp=sharing)
 
-Setup your environment variables, by copying env file first:
-
-```
-cp .env.example .env
-```
-
-Fullfill .env file with next variables:
-
-- TELEGRAM_BOT_TOKEN, read [documentation](https://core.telegram.org/bots/api#authorizing-your-bot) chapter
-- TELEGRAM_BOT_ID, same link as before
-- TELEGRAM_USER_ID, use `@jsondumpbot` in telegram
-- REMOVE_BG_API_KEY, you can find the key [here](https://www.remove.bg/profile#api-key) after registration
-
-Now you can start project as usual:
+### Run project
 
 ```
 npm install
 node_modules/.bin/elm install
 npm start
 ```
+
+### Settings variables
+
+Paste your variables at `/settings` page
+
+- TELEGRAM_BOT_TOKEN, read [documentation](https://core.telegram.org/bots/api#authorizing-your-bot) chapter
+- TELEGRAM_BOT_ID, same link as before
+- TELEGRAM_USER_ID, use `@jsondumpbot` in telegram
+- REMOVE_BG_API_KEY, you can find the key [here](https://www.remove.bg/profile#api-key) after registration
+
+### Other info
 
 For VS code users
 
@@ -43,6 +43,8 @@ _.vscode/settings.json_
 
 ### Attention to parcel bundler
 
-Somehow parcel can be broken with cache(?). If you have strange behaviour of elm compiler or whatever else, try to restart your project.
+Somehow parcel can be broken with cache(?). If you have strange behaviour of elm compiler or whatever else:
+- try to restart your project;
+- try to delete `.cache` folder. If it doesn't help, delete `.dist`, `.elm-stuff`, `node_modules` and reinstall the dependencies.
 
-Also, this version of parcel doesn't work as expected with `"elm/browser": "1.0.2",`, because of it, I use 1.0.1 version of elm/browser here. It may work for you (on your machine), try it!
+Also, this version of parcel doesn't work as expected with `"elm/browser": "1.0.2",` sometimes. If you will have strange error, try to change dependency to `"elm/browser": "1.0.1",`.
