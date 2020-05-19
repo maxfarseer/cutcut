@@ -1,6 +1,6 @@
-import { IPortMsg } from './types';
+import { IPortEditorMsg } from './types';
 import { CustomWindow } from '../../custom.window';
-import { handlePortStorageMsg, sendToEnvSettings } from './storage';
+
 declare let window: CustomWindow;
 
 const getCustomCropper = (): Node => {
@@ -59,7 +59,7 @@ const addText = (payload: string) => {
   getCustomCanvas().dispatchEvent(event);
 }
 
-const handlePortMsg = async ({ action, payload }: IPortMsg) => {
+export const handlePortEditorMsg = async ({ action, payload }: IPortEditorMsg) => {
   switch (action) {
     case 'CropImageInit': {
       cropImageInit(payload);
@@ -97,8 +97,6 @@ const handlePortMsg = async ({ action, payload }: IPortMsg) => {
   }
 };
 
-const sendToElm = ({ action, payload }: IPortMsg) => {
-  window.elmApp.ports.msgForElm.send({ action, payload })
+export const sendToElmFromEditor = ({ action, payload }: IPortEditorMsg) => {
+  window.elmApp.ports.msgFromJsToEditor.send({ action, payload })
 }
-
-export { handlePortMsg, handlePortStorageMsg, sendToElm, sendToEnvSettings };

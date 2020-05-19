@@ -3,7 +3,7 @@ port module EnvSettings exposing
     , Model
     , OutgoingMsg(..)
     , empty
-    , msgForEnvSettings
+    , msgFromJsToSettings
     , sendToStoragePort
     , settingsDecoder
     , settingsEncoder
@@ -79,12 +79,12 @@ settingsDecoder =
 -- To JS
 
 
-port msgForStorage : PortData -> Cmd msg
+port msgForJsStorage : PortData -> Cmd msg
 
 
 sendToStoragePort : OutgoingMsg -> Cmd msg
 sendToStoragePort outgoingMsg =
-    msgForStorage <|
+    msgForJsStorage <|
         case outgoingMsg of
             SaveSettingsToLS settings ->
                 { action = "SaveSettingsToLS", payload = settingsEncoder settings }
@@ -97,7 +97,7 @@ sendToStoragePort outgoingMsg =
 -- From JS
 
 
-port msgForEnvSettings : (JD.Value -> msg) -> Sub msg
+port msgFromJsToSettings : (JD.Value -> msg) -> Sub msg
 
 
 update : JD.Value -> Model

@@ -1,6 +1,5 @@
 module Main exposing (main)
 
-import AddImg
 import Browser
 import Browser.Navigation as Nav
 import Editor
@@ -62,7 +61,7 @@ init flags url key =
                 , flags = decodedFlags
                 }
 
-        Err err ->
+        Err _ ->
             updateUrl url
                 { page = NotFoundPage
                 , key = key
@@ -213,7 +212,7 @@ subscriptions model =
     in
     Sub.batch
         [ subscriptionForPageOnly
-        , EnvSettings.msgForEnvSettings GotEnvSettingsPortMsg
+        , EnvSettings.msgFromJsToSettings GotEnvSettingsPortMsg
         ]
 
 

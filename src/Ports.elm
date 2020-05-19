@@ -1,7 +1,17 @@
-port module Ports exposing (IncomingMsg(..), OutgoingMsg(..), StickerUploadError, listenToJs, sendToJs)
+port module Ports exposing
+    ( IncomingMsg(..)
+    , OutgoingMsg(..)
+    , StickerUploadError
+    , listenToJs
+    , sendToJs
+    )
 
-import Base64 exposing (Base64ImgUrl, decoderStringToBase64ImgUrl, toString)
-import EnvSettings exposing (settingsEncoder)
+import Base64
+    exposing
+        ( Base64ImgUrl
+        , decoderStringToBase64ImgUrl
+        , toString
+        )
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode
 
@@ -38,17 +48,17 @@ type IncomingMsg
 
 {-| Send messages to JS
 -}
-port msgForJs : PortData -> Cmd msg
+port msgForJsEditor : PortData -> Cmd msg
 
 
 {-| Listen to messages from JS
 -}
-port msgForElm : (Decode.Value -> msg) -> Sub msg
+port msgFromJsToEditor : (Decode.Value -> msg) -> Sub msg
 
 
 sendToJs : OutgoingMsg -> Cmd msg
 sendToJs outgoingMsg =
-    msgForJs <|
+    msgForJsEditor <|
         case outgoingMsg of
             CropImageInit base64 ->
                 { action = "CropImageInit", payload = Encode.string (toString base64) }
@@ -127,7 +137,7 @@ incomingMsgDecoder =
 
 listenToJs : (IncomingMsg -> msg) -> (String -> msg) -> Sub msg
 listenToJs decodeSuccessTag decodeErrorTag =
-    msgForElm <|
+    msgFromJsToEditor <|
         \dataToDecode ->
             case Decode.decodeValue incomingMsgDecoder dataToDecode of
                 Ok incomingMsg ->

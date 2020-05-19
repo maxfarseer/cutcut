@@ -1,4 +1,4 @@
-import { IPortMsg } from './types';
+import { IPortSettingsMsg } from './types';
 import { CustomWindow } from '../../custom.window';
 
 declare let window: CustomWindow;
@@ -30,7 +30,7 @@ const askForSettingsFromLS = (): void => {
   });
 };
 
-export const handlePortStorageMsg = async ({ action, payload }: IPortMsg) => {
+export const handlePortStorageMsg = async ({ action, payload }: IPortSettingsMsg) => {
   switch (action) {
     case 'SaveSettingsToLS': {
       saveSettingsToLS(payload);
@@ -48,6 +48,6 @@ export const handlePortStorageMsg = async ({ action, payload }: IPortMsg) => {
   }
 };
 
-export const sendToEnvSettings = ({ action, payload }: IPortMsg) => {
-  window.elmApp.ports.msgForEnvSettings.send({ action, payload })
+export const sendToEnvSettings = ({ action, payload }: IPortSettingsMsg) => {
+  window.elmApp.ports.msgFromJsToSettings.send({ action, payload })
 }

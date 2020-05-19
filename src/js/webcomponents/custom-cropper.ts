@@ -1,6 +1,6 @@
 import Cropper from 'cropperjs';
 import { CustomWindow } from '../../custom.window';
-import { sendToElm } from '../ports'
+import { sendToElmFromEditor } from '../ports/editor';
 
 declare let window: CustomWindow;
 
@@ -84,7 +84,7 @@ class CustomCropper extends HTMLElement {
   cropImage = () => {
     if (this._cropper) {
       const dataUrl = this._cropper.getCroppedCanvas().toDataURL();
-      sendToElm({ action: 'ImageCropped', payload: dataUrl });
+      sendToElmFromEditor({ action: 'ImageCropped', payload: dataUrl });
     } else {
       console.warn('instance of cropper not found');
     }

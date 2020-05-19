@@ -1,5 +1,5 @@
 import { fabric } from 'fabric'
-import { sendToElm } from '../ports';
+import { sendToElmFromEditor } from '../ports/editor';
 
 type CustomCanvasOptions = {
   strokeWidth: number;
@@ -248,10 +248,10 @@ class CustomCanvas extends HTMLElement {
           .then(r => r.json())
           .then(json => {
             if (json.ok) {
-              sendToElm({ action: 'StickerUploadedSuccess', payload: null });
+              sendToElmFromEditor({ action: 'StickerUploadedSuccess', payload: null });
             } else {
               const { error_code, description } = json;
-              sendToElm({
+              sendToElmFromEditor({
                 action: 'StickerUploadedFailure',
                 payload: {
                   code: error_code,

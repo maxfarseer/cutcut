@@ -39,8 +39,8 @@ init removeBgApiKey =
 type Msg
     = FromAddImg AddImg.Msg
     | FromAddText AddText.Msg
-    | FromJS IncomingMsg
-    | FromJSDecodeError String
+    | FromJsEditor IncomingMsg
+    | FromJsEditorDecodeError String
     | ClickedDownloadSticker
     | ClickedUploadToPack
 
@@ -62,11 +62,7 @@ update msg model =
             in
             ( { model | addText = updatedAddText }, addTextCmd |> Cmd.map FromAddText )
 
-        FromJS incomingMsg ->
-            let
-                _ =
-                    Debug.log "Editor FromJS incomingMsg" incomingMsg
-            in
+        FromJsEditor incomingMsg ->
             case incomingMsg of
                 ImageCropped base64ImgUrl ->
                     let
@@ -92,11 +88,11 @@ update msg model =
                     -- TODO: show error message to user
                     ( model, Cmd.none )
 
-        FromJSDecodeError err ->
+        FromJsEditorDecodeError err ->
             -- TODO: show error message to user
             let
                 _ =
-                    Debug.log "Editor: FromJSDecodeError" err
+                    Debug.log "Editor: FromJsEditorDecodeError" err
             in
             ( model, Cmd.none )
 
@@ -206,6 +202,12 @@ renderUploadImgToStickerSetBtn status =
 renderErrorMessage : UploadStickerStatus -> Html Msg
 renderErrorMessage status =
     case status of
+        NotAsked ->
+            text ""
+
+        Loading ->
+            text ""
+
         Errored err ->
             div [ class "column" ]
                 [ p [ class "has-text-danger" ]
@@ -214,8 +216,7 @@ renderErrorMessage status =
                     [ text (String.fromInt err.code ++ ": " ++ err.description) ]
                 ]
 
-        -- TODO: question: is "_" ok in this situation?
-        _ ->
+        Success ->
             text ""
 
 
@@ -223,5 +224,5 @@ subscriptions : a -> Sub Msg
 subscriptions =
     \_ ->
         Sub.batch
-            [ listenToJs FromJS FromJSDecodeError
+            [ listenToJs FromJsEditor FromJsEditorDecodeError
             ]

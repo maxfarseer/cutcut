@@ -1,6 +1,7 @@
 // @ts-ignore
 import { Elm } from './Main.elm';
-import { handlePortMsg, handlePortStorageMsg } from './js/ports';
+import { handlePortEditorMsg } from './js/ports/editor';
+import { handlePortStorageMsg } from './js/ports/storage';
 import { CustomWindow } from './custom.window';
 import { IElmApp } from './js/ports/types';
 
@@ -24,8 +25,8 @@ try {
   const app: IElmApp = Elm.Main.init({ node, flags });
 
   // ports
-  app.ports.msgForJs.subscribe(handlePortMsg);
-  app.ports.msgForStorage.subscribe(handlePortStorageMsg);
+  app.ports.msgForJsEditor.subscribe(handlePortEditorMsg);
+  app.ports.msgForJsStorage.subscribe(handlePortStorageMsg);
   // end ports
 
   window.elmApp = app;

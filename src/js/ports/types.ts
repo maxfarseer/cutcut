@@ -1,24 +1,27 @@
-// TODO:
-// split IPortMsg to groups (Edtitor and EnvSettings)
-// add typeof action
-export interface IPortMsg {
+// TODO: action type as union
+export interface IPortEditorMsg {
+  action: string,
+  payload: any,
+}
+
+export interface IPortSettingsMsg {
   action: string,
   payload: any,
 }
 
 export interface IElmApp {
   ports: {
-    msgForElm: {
-      send: ({ action, payload }: IPortMsg) => void,
+    msgFromJsToEditor: {
+      send: ({ action, payload }: IPortEditorMsg) => void,
     },
-    msgForEnvSettings: {
-      send: ({ action, payload }: IPortMsg) => void,
+    msgFromJsToSettings: {
+      send: ({ action, payload }: IPortSettingsMsg) => void,
     },
-    msgForJs: {
+    msgForJsEditor: {
       subscribe: Function,
       unsubscribe: Function,
     },
-    msgForStorage: {
+    msgForJsStorage: {
       subscribe: Function,
       unsubscribe: Function,
     }
