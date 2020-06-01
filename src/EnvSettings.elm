@@ -3,11 +3,11 @@ port module EnvSettings exposing
     , Model
     , OutgoingMsg(..)
     , empty
-    , msgFromJsToSettings
+    , listenToJs
+    , msgFromJsToEnvSettings
     , sendToStoragePort
     , settingsDecoder
     , settingsEncoder
-    , update
     )
 
 import Json.Decode as JD
@@ -33,7 +33,8 @@ type alias Model =
 
 
 type IncomingMsg
-    = LoadedSettingsFromLS JD.Value
+    = LoadedSettingsFromLS Model
+    | EnvSettingsUnknownIncomingMessage String
 
 
 type OutgoingMsg
@@ -60,9 +61,27 @@ settingsEncoder settings =
         ]
 
 
-incomingMsgDecoder : JD.Decoder String
+payloadDecoder : JD.Decoder value -> JD.Decoder value
+payloadDecoder decoder =
+    JD.field "payload" decoder
+
+
+incomingMsgDecoder : JD.Decoder IncomingMsg
 incomingMsgDecoder =
     JD.field "action" JD.string
+        |> JD.andThen
+            (\action ->
+                case action of
+                    "LoadedSettingsFromLS" ->
+                        settingsDecoder
+                            |> payloadDecoder
+                            |> JD.map LoadedSettingsFromLS
+
+                    _ ->
+                        JD.succeed <|
+                            EnvSettingsUnknownIncomingMessage
+                                ("Decoder for incoming messages failed, because of unknown action name " ++ action)
+            )
 
 
 settingsDecoder : JD.Decoder Model
@@ -72,7 +91,6 @@ settingsDecoder =
         (JD.field "telegramUserId" JD.string)
         (JD.field "telegramBotId" JD.string)
         (JD.field "removeBgApiKey" JD.string)
-        |> JD.field "payload"
 
 
 
@@ -97,36 +115,16 @@ sendToStoragePort outgoingMsg =
 -- From JS
 
 
-port msgFromJsToSettings : (JD.Value -> msg) -> Sub msg
+port msgFromJsToEnvSettings : (JD.Value -> msg) -> Sub msg
 
 
-update : JD.Value -> Model
-update json =
-    case JD.decodeValue incomingMsgDecoder json of
-        Ok incomingMsg ->
-            case incomingMsg of
-                "LoadedSettingsFromLS" ->
-                    case JD.decodeValue settingsDecoder json of
-                        Ok data ->
-                            data
+listenToJs : (IncomingMsg -> msg) -> (String -> msg) -> Sub msg
+listenToJs decodeSuccessTag decodeErrorTag =
+    msgFromJsToEnvSettings <|
+        \dataToDecode ->
+            case JD.decodeValue incomingMsgDecoder dataToDecode of
+                Ok incomingMsg ->
+                    decodeSuccessTag incomingMsg
 
-                        Err err ->
-                            let
-                                _ =
-                                    Debug.log "Decode settings error" err
-                            in
-                            empty
-
-                _ ->
-                    let
-                        _ =
-                            Debug.log "unsupported message" incomingMsg
-                    in
-                    empty
-
-        Err err ->
-            let
-                _ =
-                    Debug.todo "Add error message to the user"
-            in
-            empty
+                Err str ->
+                    decodeErrorTag "Error code #2001: Decode json error. Refresh the page and try again. If it doesn't help, ask developer"

@@ -6,4 +6,8 @@ This is simple manually created file with error codes.
 
 #### 1001
 
-Decode json problem.
+Decode json problem (ports).
+
+#### 2001
+
+Decode json problem (ports for env settings).

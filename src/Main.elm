@@ -3,12 +3,13 @@ module Main exposing (main)
 import Browser
 import Browser.Navigation as Nav
 import Editor
-import EnvSettings
+import EnvSettings exposing (IncomingMsg(..))
 import Html.Styled exposing (Html, a, div, footer, h1, h2, img, nav, p, section, span, strong, text, toUnstyled)
 import Html.Styled.Attributes exposing (attribute, class, href, id, src, target)
 import Json.Decode as JD
 import Route exposing (Route(..))
 import Settings
+import Ui.Notification
 import Url
 
 
@@ -44,10 +45,16 @@ type Page
     | NotFoundPage
 
 
+type Notification
+    = GenericError String
+    | UnknownDecoderMessage String
+
+
 type alias Model =
     { key : Nav.Key
     , page : Page
     , flags : Flags
+    , notification : Maybe Notification
     }
 
 
@@ -59,6 +66,7 @@ init flags url key =
                 { page = NotFoundPage
                 , key = key
                 , flags = decodedFlags
+                , notification = Nothing
                 }
 
         Err _ ->
@@ -66,6 +74,7 @@ init flags url key =
                 { page = NotFoundPage
                 , key = key
                 , flags = { buildDate = 0 }
+                , notification = Nothing
                 }
 
 
@@ -88,7 +97,9 @@ type Msg
     | UrlChanged Url.Url
     | GotEditorMsg Editor.Msg
     | GotSettingsMsg Settings.Msg
-    | GotEnvSettingsPortMsg JD.Value
+    | FromStorageSuccess EnvSettings.IncomingMsg
+    | FromStorageError String
+    | CloseNotification
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -121,39 +132,44 @@ update msg model =
                 _ ->
                     ( model, Cmd.none )
 
-        GotEnvSettingsPortMsg json ->
-            case model.page of
-                SettingsPage _ ->
+        FromStorageSuccess incomingMsg ->
+            case incomingMsg of
+                LoadedSettingsFromLS data ->
                     let
-                        newModel =
-                            EnvSettings.update json
+                        newPageModel =
+                            updateSettings data model.page
                     in
-                    ( { model
-                        | page = SettingsPage newModel
-                      }
-                    , Cmd.none
-                    )
+                    ( { model | page = newPageModel }, Cmd.none )
 
-                EditorPage _ ->
-                    let
-                        newEnvSettings =
-                            EnvSettings.update json
+                EnvSettingsUnknownIncomingMessage str ->
+                    ( { model | notification = Just (UnknownDecoderMessage str) }, Cmd.none )
 
-                        newModel =
-                            Editor.init newEnvSettings.removeBgApiKey
-                                |> Tuple.first
-                    in
-                    ( { model
-                        | page = EditorPage newModel
-                      }
-                    , Cmd.none
-                    )
+        FromStorageError str ->
+            ( { model | notification = Just (GenericError str) }, Cmd.none )
 
-                WelcomePage ->
-                    ( model, Cmd.none )
+        CloseNotification ->
+            ( { model | notification = Nothing }, Cmd.none )
 
-                NotFoundPage ->
-                    ( model, Cmd.none )
+
+updateSettings : EnvSettings.Model -> Page -> Page
+updateSettings settings page =
+    case page of
+        SettingsPage _ ->
+            SettingsPage settings
+
+        EditorPage _ ->
+            let
+                newModel =
+                    Editor.init settings.removeBgApiKey
+                        |> Tuple.first
+            in
+            EditorPage newModel
+
+        WelcomePage ->
+            WelcomePage
+
+        NotFoundPage ->
+            NotFoundPage
 
 
 updateUrl : Url.Url -> Model -> ( Model, Cmd Msg )
@@ -212,7 +228,7 @@ subscriptions model =
     in
     Sub.batch
         [ subscriptionForPageOnly
-        , EnvSettings.msgFromJsToSettings GotEnvSettingsPortMsg
+        , EnvSettings.listenToJs FromStorageSuccess FromStorageError
         ]
 
 
@@ -232,24 +248,24 @@ body : Model -> List (Html Msg)
 body model =
     case model.page of
         NotFoundPage ->
-            [ viewHeader
+            [ viewHeader model.notification
             , div [] [ text "Not found" ]
             ]
 
         SettingsPage settingsModel ->
-            [ viewHeader
+            [ viewHeader model.notification
             , Settings.view settingsModel |> Html.Styled.map GotSettingsMsg
             ]
 
         EditorPage editorModel ->
-            [ viewHeader
+            [ viewHeader model.notification
             , Editor.view editorModel |> Html.Styled.map GotEditorMsg
             ]
 
         WelcomePage ->
             [ section [ class "hero is-fullheight" ]
                 [ div [ class "hero-head" ]
-                    [ viewHeader
+                    [ viewHeader model.notification
                     ]
                 , div [ class "hero-body" ]
                     [ viewWelcomePage ]
@@ -260,10 +276,11 @@ body model =
             ]
 
 
-viewHeader : Html msg
-viewHeader =
+viewHeader : Maybe Notification -> Html Msg
+viewHeader notificationData =
     nav [ attribute "aria-label" "main navigation", class "navbar", attribute "role" "navigation" ]
-        [ div [ class "container" ]
+        [ viewNotification notificationData
+        , div [ class "container" ]
             [ div [ class "navbar-brand" ]
                 [ a [ class "navbar-item", href "/" ]
                     [ img [ attribute "height" "28", src "https://i.imgur.com/OquiVkC.png", attribute "width" "96" ]
@@ -312,6 +329,27 @@ viewHeader =
                 ]
             ]
         ]
+
+
+viewNotification : Maybe Notification -> Html Msg
+viewNotification notification =
+    case notification of
+        Just notificationData ->
+            case notificationData of
+                GenericError err ->
+                    { text = err
+                    , closeMsg = CloseNotification
+                    }
+                        |> Ui.Notification.showError
+
+                UnknownDecoderMessage err ->
+                    { text = err
+                    , closeMsg = CloseNotification
+                    }
+                        |> Ui.Notification.showError
+
+        Nothing ->
+            text ""
 
 
 viewWelcomePage : Html msg

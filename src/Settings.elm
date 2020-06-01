@@ -4,7 +4,6 @@ import EnvSettings exposing (IncomingMsg(..), OutgoingMsg(..), sendToStoragePort
 import Html.Styled exposing (Html, button, div, h1, h2, input, label, section, text)
 import Html.Styled.Attributes exposing (class, placeholder, type_, value)
 import Html.Styled.Events exposing (onClick, onInput)
-import Json.Decode as JD
 
 
 type alias Model =
@@ -17,7 +16,6 @@ type Msg
     | TelegramBotIdChanged String
     | RemoveBgApiKeyChanged String
     | ClickedSave
-    | FromJsStorage JD.Value
 
 
 type InputName
@@ -49,13 +47,6 @@ update msg model =
 
         ClickedSave ->
             ( model, sendToStoragePort <| SaveSettingsToLS model )
-
-        FromJsStorage json ->
-            let
-                updatedEnvSettings =
-                    EnvSettings.update json
-            in
-            ( updatedEnvSettings, Cmd.none )
 
 
 view : Model -> Html Msg

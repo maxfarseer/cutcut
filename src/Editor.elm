@@ -252,6 +252,4 @@ renderNotification err =
 subscriptions : a -> Sub Msg
 subscriptions =
     \_ ->
-        Sub.batch
-            [ listenToJs FromJsEditor FromJsEditorDecodeError
-            ]
+        listenToJs FromJsEditor FromJsEditorDecodeError
