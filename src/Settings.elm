@@ -7,10 +7,6 @@ import Html.Styled.Events exposing (onClick, onInput)
 import Json.Decode as JD
 
 
-
--- TODO: change model to NoSettings | HasSettings or something, to get rid of "blink" with empty lines and filled after
-
-
 type alias Model =
     EnvSettings.Model
 

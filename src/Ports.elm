@@ -144,4 +144,4 @@ listenToJs decodeSuccessTag decodeErrorTag =
                     decodeSuccessTag incomingMsg
 
                 Err str ->
-                    decodeErrorTag "TODO: better decoder error"
+                    decodeErrorTag "Error code #1001: Decode json error. Refresh the page and try again. If it doesn't help, ask developer"
