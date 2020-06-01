@@ -322,21 +322,21 @@ viewRemoveBgQuestion status imgUrl =
         [ div [ class "columns" ]
             [ div [ class "column" ]
                 [ p []
-                    [ text "You can remove background automatically ("
+                    [ text "If you like, background will be removed automatically (with help of "
                     , a
                         [ href "https://www.remove.bg/", target "_blank" ]
-                        [ text "remove.bg " ]
+                        [ text "remove.bg" ]
                     , text
-                        "API is using)"
+                        " service)."
                     ]
                 , p []
-                    [ text "Don't forget to setup environment variables with "
+                    [ text "Don't forget to setup your settings variables with "
                     , a
                         [ href "https://www.remove.bg/api", target "_blank" ]
                         [ text "API key" ]
                     , text
-                        ". See example "
-                    , a [ href "https://github.com/maxfarseer/cutcut/blob/master/.env.example", target "_blank" ] [ text "here" ]
+                        ". You can find settings page "
+                    , a [ href "/settings" ] [ text "here" ]
                     , text "."
                     ]
                 ]
