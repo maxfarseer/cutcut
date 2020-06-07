@@ -14,7 +14,7 @@ export interface IElmApp {
     msgFromJsToEditor: {
       send: ({ action, payload }: IPortEditorMsg) => void,
     },
-    msgFromJsToSettings: {
+    msgFromJsToEnvSettings: {
       send: ({ action, payload }: IPortSettingsMsg) => void,
     },
     msgForJsEditor: {

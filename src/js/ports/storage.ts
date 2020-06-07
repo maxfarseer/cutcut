@@ -51,5 +51,5 @@ export const handlePortStorageMsg = async ({ action, payload }: IPortSettingsMsg
 };
 
 export const sendToEnvSettings = ({ action, payload }: IPortSettingsMsg) => {
-  window.elmApp.ports.msgFromJsToSettings.send({ action, payload })
+  window.elmApp.ports.msgFromJsToEnvSettings.send({ action, payload })
 }

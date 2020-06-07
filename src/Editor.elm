@@ -10,6 +10,7 @@ import Html.Styled exposing (Html, button, div, h1, h2, map, p, section, text)
 import Html.Styled.Attributes exposing (class, css, disabled)
 import Html.Styled.Events exposing (onClick)
 import Ports exposing (IncomingMsg(..), OutgoingMsg(..), StickerUploadError, listenToJs, sendToJs)
+import Ui.Notification
 
 
 type UploadStickerStatus
@@ -19,10 +20,16 @@ type UploadStickerStatus
     | Success
 
 
+type Error
+    = UnknownIncomingMessageFromJs String
+    | DecodeErrorFromJsEditor String
+
+
 type alias Model =
     { addImg : AddImg.Model
     , addText : AddText.Model
     , uploadStickerStatus : UploadStickerStatus
+    , error : Maybe Error
     }
 
 
@@ -31,6 +38,7 @@ init removeBgApiKey =
     ( { addImg = AddImg.init removeBgApiKey
       , addText = AddText.init
       , uploadStickerStatus = NotAsked
+      , error = Nothing
       }
     , sendToStoragePort <| AskForSettingsFromLS
     )
@@ -43,6 +51,7 @@ type Msg
     | FromJsEditorDecodeError String
     | ClickedDownloadSticker
     | ClickedUploadToPack
+    | ClickedCloseErrorNotification
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -85,16 +94,10 @@ update msg model =
                     ( { model | uploadStickerStatus = Errored err }, Cmd.none )
 
                 UnknownIncomingMessage str ->
-                    -- TODO: show error message to user
-                    ( model, Cmd.none )
+                    ( { model | error = Just <| UnknownIncomingMessageFromJs str }, Cmd.none )
 
         FromJsEditorDecodeError err ->
-            -- TODO: show error message to user
-            let
-                _ =
-                    Debug.log "Editor: FromJsEditorDecodeError" err
-            in
-            ( model, Cmd.none )
+            ( { model | error = Just <| DecodeErrorFromJsEditor err }, Cmd.none )
 
         ClickedDownloadSticker ->
             ( model, sendToJs <| DownloadSticker )
@@ -102,12 +105,16 @@ update msg model =
         ClickedUploadToPack ->
             ( { model | uploadStickerStatus = Loading }, sendToJs <| RequestUploadToPack )
 
+        ClickedCloseErrorNotification ->
+            ( { model | error = Nothing }, Cmd.none )
+
 
 view : Model -> Html Msg
 view model =
     section []
         [ div [ class "container" ]
-            [ h1 [ class "title" ] [ text "Editor" ]
+            [ renderNotification model.error
+            , h1 [ class "title" ] [ text "Editor" ]
             , h2 [ class "subtitle" ] [ text "Upload photo and make fun" ]
             , div [ class "columns" ]
                 [ div [ class "column is-7" ]
@@ -220,9 +227,29 @@ renderErrorMessage status =
             text ""
 
 
+renderNotification : Maybe Error -> Html Msg
+renderNotification err =
+    case err of
+        Nothing ->
+            text ""
+
+        -- TODO: messages not user friendly, but it shouldn't be visible for end user
+        Just problem ->
+            case problem of
+                UnknownIncomingMessageFromJs str ->
+                    { text = str
+                    , closeMsg = ClickedCloseErrorNotification
+                    }
+                        |> Ui.Notification.showError
+
+                DecodeErrorFromJsEditor str ->
+                    { text = str
+                    , closeMsg = ClickedCloseErrorNotification
+                    }
+                        |> Ui.Notification.showError
+
+
 subscriptions : a -> Sub Msg
 subscriptions =
     \_ ->
-        Sub.batch
-            [ listenToJs FromJsEditor FromJsEditorDecodeError
-            ]
+        listenToJs FromJsEditor FromJsEditorDecodeError

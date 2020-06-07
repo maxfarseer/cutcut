@@ -1,1 +1,7 @@
 /* custom styles here */
+
+.custom-notification {
+  z-index: 9999;
+  position: fixed;
+  top: 2rem;
+}
