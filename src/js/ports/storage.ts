@@ -12,7 +12,7 @@ export type UserEnvSettings = {
   removeBgApiKey: string,
 };
 
-export type SettingsFromLS = UserEnvSettings | "null";
+export type SettingsFromLS = UserEnvSettings | null;
 
 const saveSettingsToLS = (payload: UserEnvSettings) => {
   localStorage.setItem(key, JSON.stringify(payload));
@@ -22,7 +22,7 @@ export const getSettingsFromLS = (): SettingsFromLS => {
   if (localStorage.getItem(key)) {
     return JSON.parse(localStorage.getItem(key) as string);
   }
-  return JSON.stringify(null) as "null";
+  return null;
 };
 
 const askForSettingsFromLS = (): void => {

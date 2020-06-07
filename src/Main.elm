@@ -151,25 +151,30 @@ update msg model =
             ( { model | notification = Nothing }, Cmd.none )
 
 
-updateSettings : EnvSettings.Model -> Page -> Page
+updateSettings : Maybe EnvSettings.Model -> Page -> Page
 updateSettings settings page =
-    case page of
-        SettingsPage _ ->
-            SettingsPage settings
+    case settings of
+        Just settingsData ->
+            case page of
+                SettingsPage _ ->
+                    SettingsPage settingsData
 
-        EditorPage _ ->
-            let
-                newModel =
-                    Editor.init settings.removeBgApiKey
-                        |> Tuple.first
-            in
-            EditorPage newModel
+                EditorPage _ ->
+                    let
+                        newModel =
+                            Editor.init settingsData.removeBgApiKey
+                                |> Tuple.first
+                    in
+                    EditorPage newModel
 
-        WelcomePage ->
-            WelcomePage
+                WelcomePage ->
+                    WelcomePage
 
-        NotFoundPage ->
-            NotFoundPage
+                NotFoundPage ->
+                    NotFoundPage
+
+        Nothing ->
+            page
 
 
 updateUrl : Url.Url -> Model -> ( Model, Cmd Msg )

@@ -33,7 +33,7 @@ type alias Model =
 
 
 type IncomingMsg
-    = LoadedSettingsFromLS Model
+    = LoadedSettingsFromLS (Maybe Model)
     | EnvSettingsUnknownIncomingMessage String
 
 
@@ -84,13 +84,14 @@ incomingMsgDecoder =
             )
 
 
-settingsDecoder : JD.Decoder Model
+settingsDecoder : JD.Decoder (Maybe Model)
 settingsDecoder =
     JD.map4 Model
         (JD.field "telegramBotToken" JD.string)
         (JD.field "telegramUserId" JD.string)
         (JD.field "telegramBotId" JD.string)
         (JD.field "removeBgApiKey" JD.string)
+        |> JD.nullable
 
 
 
