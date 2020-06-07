@@ -1,8 +1,16 @@
 import { fabric } from 'fabric'
-import { sendToElm } from '../ports';
+import { sendToElmFromEditor } from '../ports/editor';
+import { getSettingsFromLS, SettingsFromLS } from '../ports/storage';
 
 type CustomCanvasOptions = {
   strokeWidth: number;
+}
+
+type UploadToStickerPackArgs = {
+  tempCanvas: HTMLCanvasElement;
+  emoji: string;
+  telegramBotToken: string;
+  telegramBotId: string;
 }
 
 class CustomCanvas extends HTMLElement {
@@ -188,10 +196,16 @@ class CustomCanvas extends HTMLElement {
 
   requestUploadToPack = () => {
     try {
-      // this doesn't work for process.env
-      // const { TELEGRAM_BOT_TOKEN, TELEGRAM_BOT_ID } = process.env;
-      if (!process.env.TELEGRAM_BOT_TOKEN || !process.env.TELEGRAM_BOT_ID) {
-        throw new Error('Your forgot to set up environment variables. Please check your .env file. https://parceljs.org/env.html')
+      const settings: SettingsFromLS = getSettingsFromLS();
+
+      if (settings === "null") {
+        throw new Error('You forgot to set up variables. Please check settings page (and your localstorage).');
+      }
+
+      const { telegramBotToken, telegramBotId } = settings;
+
+      if (!telegramBotToken || !telegramBotId) {
+        throw new Error('You forgot to set up telegram *telegramBotToken* and *telegramBotId*. Please check settings page (and your localstorage).');
       }
 
       if (!this._cf) {
@@ -221,7 +235,12 @@ class CustomCanvas extends HTMLElement {
           const tempCanvasCtx = tempCanvas.getContext('2d');
           tempCanvasCtx!.drawImage(img, 0, 0, WIDTH, HEIGHT);
 
-          this.uploadToStickerPack(tempCanvas, '💍')
+          this.uploadToStickerPack({
+            tempCanvas,
+            emoji:  '💍',
+            telegramBotToken,
+            telegramBotId
+          });
         }
         img.src = dataUrl;
       })
@@ -230,11 +249,11 @@ class CustomCanvas extends HTMLElement {
     }
   }
 
-  uploadToStickerPack(tempCanvas: HTMLCanvasElement, emoji: string) {
+  uploadToStickerPack({ tempCanvas, emoji, telegramBotId, telegramBotToken }: UploadToStickerPackArgs) {
     tempCanvas.toBlob((blob) => {
       if (blob) {
         const formData = new FormData();
-        formData.append('user_id', process.env.TELEGRAM_BOT_ID as string); // bot id here
+        formData.append('user_id', telegramBotId);
         formData.append('name', 'firstpack_by_cutcutelm_bot');
         formData.append('png_sticker', blob);
         formData.append('emojis', emoji);
@@ -244,14 +263,14 @@ class CustomCanvas extends HTMLElement {
           body: formData,
         };
 
-        fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN as string}/addStickerToSet`, options)
+        fetch(`https://api.telegram.org/bot${telegramBotToken}/addStickerToSet`, options)
           .then(r => r.json())
           .then(json => {
             if (json.ok) {
-              sendToElm({ action: 'StickerUploadedSuccess', payload: null });
+              sendToElmFromEditor({ action: 'StickerUploadedSuccess', payload: null });
             } else {
               const { error_code, description } = json;
-              sendToElm({
+              sendToElmFromEditor({
                 action: 'StickerUploadedFailure',
                 payload: {
                   code: error_code,

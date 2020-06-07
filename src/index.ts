@@ -1,6 +1,7 @@
 // @ts-ignore
 import { Elm } from './Main.elm';
-import { handlePortMsg } from './js/ports';
+import { handlePortEditorMsg } from './js/ports/editor';
+import { handlePortStorageMsg } from './js/ports/storage';
 import { CustomWindow } from './custom.window';
 import { IElmApp } from './js/ports/types';
 
@@ -11,23 +12,15 @@ const errorLogger = (error: string) => console.error(`App Error: ${error}`);
 const node = document.querySelector('#app');
 
 try {
-  if (!process.env.REMOVE_BG_API_KEY) {
-    throw new Error(
-      'You forgot to set up REMOVE_BG_API_KEY in .env, check README for project',
-    );
-  }
-
   const flags = {
-    env: {
-      REMOVE_BG_API_KEY: process.env.REMOVE_BG_API_KEY,
-    },
     buildDate: +new Date(),
   };
 
   const app: IElmApp = Elm.Main.init({ node, flags });
 
   // ports
-  app.ports.msgForJs.subscribe(handlePortMsg);
+  app.ports.msgForJsEditor.subscribe(handlePortEditorMsg);
+  app.ports.msgForJsStorage.subscribe(handlePortStorageMsg);
   // end ports
 
   window.elmApp = app;

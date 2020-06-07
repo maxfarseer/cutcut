@@ -8,6 +8,7 @@ type Route
     = NotFound
     | Welcome
     | Editor
+    | Settings
 
 
 matchRoute : Parser (Route -> a) a
@@ -16,6 +17,7 @@ matchRoute =
         [ map Welcome top
         , map Welcome (s "index.html")
         , map Editor (s "editor")
+        , map Settings (s "settings")
         ]
 
 

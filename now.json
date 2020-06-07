@@ -1,10 +1,5 @@
 {
   "build": {
-    "env": {
-      "TELEGRAM_BOT_TOKEN": "@telegram_bot_token",
-      "TELEGRAM_USER_ID": "@telegram_user_id",
-      "TELEGRAM_BOT_ID": "@telegram_bot_id",
-      "REMOVE_BG_API_KEY": "@remove_bg_api_key"
-    }
+    "env": {}
   }
 }
