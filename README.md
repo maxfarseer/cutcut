@@ -2,7 +2,7 @@
 
 Make your own stickers to telegram with easy-peasy process.
 
-![how-it-work-gif](https://uc7fbbf6740778ca49fcc7f92103.previews.dropboxusercontent.com/p/orig/AAyIcs6s10lLymGXhXQ-DU-eb0B2HoIhyCx4Qf74lhfsE6lqVfVodk08qU2P_elzBAPI2TeEs57Fzws7a1UMYtQMN1KmgmGw-rteoohagDwT-anJG2sLgFlFTmap-ILZR20BEEiFXWvbyOblKJUEPukk8-uDiesvxXQVYpRa0A9QRL4UK7ddyUryH-HSUVUyT4wDpVqSFJA6N7C5jOLTR9ssw99fyPHBoZndDJ_AurVvD78WZkC41KwsfACa_tnNoSEQd-sPFmO-tBcQCXYFYfAX1fGsI6RXf5HsvdZm6nrf0c1l0IjXynpKmpo4q7Y-7xajrU6PUhAZ-a9T-UsBXbSel1vBE7BRacvc0aIv_kg9Sg/p.gif?fv_content=true&size_mode=5)
+![how-it-work-gif](https://maxpfrontend.ru/wp-content/uploads/2020/06/lana-sticker-process.gif)
 
 ([youtube demo link](https://youtu.be/aBbs5pRoJXQ))
 

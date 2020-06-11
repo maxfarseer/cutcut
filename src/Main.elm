@@ -4,7 +4,7 @@ import Browser
 import Browser.Navigation as Nav
 import Editor
 import EnvSettings exposing (IncomingMsg(..))
-import Html.Styled exposing (Html, a, div, footer, h1, h2, img, nav, p, section, span, strong, text, toUnstyled)
+import Html.Styled exposing (Html, a, button, div, footer, h1, h2, img, nav, p, section, span, strong, text, toUnstyled)
 import Html.Styled.Attributes exposing (attribute, class, href, id, src, target)
 import Json.Decode as JD
 import Route exposing (Route(..))
@@ -318,16 +318,8 @@ viewHeader notificationData =
                 , div [ class "navbar-end" ]
                     [ div [ class "navbar-item" ]
                         [ div [ class "buttons" ]
-                            [ a
-                                [ class "button is-info"
-                                , href "https://github.com/maxfarseer/cutcut/"
-                                , target "_blank"
-                                ]
-                                [ strong []
-                                    [ text "Fork me" ]
-                                ]
-                            , a [ class "button is-light" ]
-                                [ text "v. 1.0.0" ]
+                            [ button [ class "button is-light" ]
+                                [ text "v 1.0.0" ]
                             ]
                         ]
                     ]
@@ -385,10 +377,16 @@ viewFooter =
                     [ strong []
                         [ text "CutCut" ]
                     , text " by "
-                    , a [ href "https://maxpfrontend.ru" ]
+                    , a
+                        [ href "https://maxpfrontend.ru"
+                        , target "_blank"
+                        ]
                         [ text "Max Frontend" ]
                     , text ". The source code on "
-                    , a [ href "https://github.com/maxfarseer/cutcut/" ]
+                    , a
+                        [ href "https://github.com/maxfarseer/cutcut/"
+                        , target "_blank"
+                        ]
                         [ text "github" ]
                     , text ". Munich, 2020"
                     ]

@@ -1,8 +1,8 @@
 module Settings exposing (Model, Msg, init, subscriptions, update, view)
 
 import EnvSettings exposing (IncomingMsg(..), OutgoingMsg(..), sendToStoragePort)
-import Html.Styled exposing (Html, button, div, h1, h2, input, label, section, text)
-import Html.Styled.Attributes exposing (class, placeholder, type_, value)
+import Html.Styled exposing (Html, a, button, div, h1, h2, header, input, label, li, p, section, span, text, ul)
+import Html.Styled.Attributes exposing (class, href, placeholder, target, type_, value)
 import Html.Styled.Events exposing (onClick, onInput)
 
 
@@ -56,9 +56,9 @@ view model =
             [ h1 [ class "title" ] [ text "Settings" ]
             , h2 [ class "subtitle" ] [ text "Apply your settings" ]
             , div [ class "columns" ]
-                [ div [ class "column is-7" ]
+                [ div [ class "column is-5" ]
                     [ div [ class "columns" ]
-                        [ div [ class "column is-8" ]
+                        [ div [ class "column" ]
                             [ viewInput TelegramBotTokenChanged TelegramBotToken model
                             , viewInput TelegramUserIdChanged TelegramUserId model
                             , viewInput TelegramBotIdChanged TelegramBotId model
@@ -66,7 +66,24 @@ view model =
                             ]
                         ]
                     ]
-                , div [ class "column" ] []
+                , div [ class "column" ]
+                    [ div [ class "columns" ]
+                        [ div [ class "column" ]
+                            [ div
+                                [ class "card" ]
+                                [ header [ class "card-header" ]
+                                    [ p [ class "card-header-title" ]
+                                        [ text "Where I can find settings variables?" ]
+                                    ]
+                                , div [ class "card-content" ]
+                                    [ div [ class "content" ]
+                                        [ viewCardContent
+                                        ]
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]
                 ]
             , div [ class "columns" ]
                 [ div [ class "column" ]
@@ -96,6 +113,40 @@ viewInput onChange inputName model =
                 , value (returnValue model inputName)
                 ]
                 []
+            ]
+        ]
+
+
+viewCardContent : Html Msg
+viewCardContent =
+    ul []
+        [ li []
+            [ text "TELEGRAM_BOT_TOKEN, read "
+            , a
+                [ href "https://core.telegram.org/bots/api#authorizing-your-bot"
+                , target "_blank"
+                ]
+                [ text "documentation" ]
+            , text " chapter"
+            ]
+        , li
+            []
+            [ text "TELEGRAM_BOT_ID, same link as before" ]
+        , li
+            []
+            [ text "TELEGRAM_USER_ID, use "
+            , span [ class "has-background-info-light" ] [ text "@jsondumpbot" ]
+            , text " in telegram"
+            ]
+        , li
+            []
+            [ text "REMOVE_BG_API_KEY, you can find the key "
+            , a
+                [ href "https://www.remove.bg/profile#api-key"
+                , target "_blank"
+                ]
+                [ text "here" ]
+            , text " after registration"
             ]
         ]
 
