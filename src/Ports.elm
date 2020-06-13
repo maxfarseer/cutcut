@@ -44,6 +44,8 @@ type IncomingMsg
     | UnknownIncomingMessage String
     | StickerUploadedSuccess
     | StickerUploadedFailure StickerUploadError
+    | StickerUploadedFailureNoSettings
+    | StickerUploadedFailureNoTelegramSettings
 
 
 {-| Send messages to JS
@@ -127,6 +129,12 @@ incomingMsgDecoder =
                         stickerUploadFailureDecoder
                             |> payloadDecoder
                             |> Decode.map StickerUploadedFailure
+
+                    "StickerUploadedFailureNoSettings" ->
+                        Decode.succeed StickerUploadedFailureNoSettings
+
+                    "StickerUploadedFailureNoTelegramSettings" ->
+                        Decode.succeed StickerUploadedFailureNoTelegramSettings
 
                     _ ->
                         Decode.succeed <|

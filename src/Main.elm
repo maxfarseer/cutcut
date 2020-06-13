@@ -362,7 +362,7 @@ viewWelcomePage =
             [ text "At first you have to setup "
             , a [ href "/settings" ] [ text "variables" ]
             , text " and you can go to "
-            , a [ href "/edit" ] [ text "/edit" ]
+            , a [ href "/editor" ] [ text "/editor" ]
             , text " then."
             ]
         ]

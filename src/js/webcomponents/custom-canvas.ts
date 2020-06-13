@@ -198,13 +198,21 @@ class CustomCanvas extends HTMLElement {
     try {
       const settings: SettingsFromLS = getSettingsFromLS();
 
-      if (settings === "null") {
+      if (settings === null) {
+        sendToElmFromEditor({
+          action: 'StickerUploadedFailureNoSettings',
+          payload: null,
+        });
         throw new Error('You forgot to set up variables. Please check settings page (and your localstorage).');
       }
 
       const { telegramBotToken, telegramBotId } = settings;
 
       if (!telegramBotToken || !telegramBotId) {
+        sendToElmFromEditor({
+          action: 'StickerUploadedFailureNoTelegramSettings',
+          payload: null,
+        });
         throw new Error('You forgot to set up telegram *telegramBotToken* and *telegramBotId*. Please check settings page (and your localstorage).');
       }
 

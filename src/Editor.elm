@@ -23,6 +23,8 @@ type UploadStickerStatus
 type Error
     = UnknownIncomingMessageFromJs String
     | DecodeErrorFromJsEditor String
+    | SettingsNotExist
+    | SettingsForTelegramMissing
 
 
 type alias Model =
@@ -92,6 +94,12 @@ update msg model =
 
                 StickerUploadedFailure err ->
                     ( { model | uploadStickerStatus = Errored err }, Cmd.none )
+
+                StickerUploadedFailureNoSettings ->
+                    ( { model | error = Just SettingsNotExist }, Cmd.none )
+
+                StickerUploadedFailureNoTelegramSettings ->
+                    ( { model | error = Just SettingsForTelegramMissing }, Cmd.none )
 
                 UnknownIncomingMessage str ->
                     ( { model | error = Just <| UnknownIncomingMessageFromJs str }, Cmd.none )
@@ -233,7 +241,6 @@ renderNotification err =
         Nothing ->
             text ""
 
-        -- TODO: messages not user friendly, but it shouldn't be visible for end user
         Just problem ->
             case problem of
                 UnknownIncomingMessageFromJs str ->
@@ -244,6 +251,18 @@ renderNotification err =
 
                 DecodeErrorFromJsEditor str ->
                     { text = str
+                    , closeMsg = ClickedCloseErrorNotification
+                    }
+                        |> Ui.Notification.showError
+
+                SettingsNotExist ->
+                    { text = "You forgot to setup settings. Check settings page"
+                    , closeMsg = ClickedCloseErrorNotification
+                    }
+                        |> Ui.Notification.showError
+
+                SettingsForTelegramMissing ->
+                    { text = "You forgot to setup Telegram settings. Check settings page"
                     , closeMsg = ClickedCloseErrorNotification
                     }
                         |> Ui.Notification.showError
