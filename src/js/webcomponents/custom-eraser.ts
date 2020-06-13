@@ -1,4 +1,5 @@
 import { sendToElmFromEditor } from '../ports/editor';
+import { logError } from '../error-logger';
 
 const ERASE_CANVAS_ID = 'erase-canvas';
 const ERASE_CANVAS_DIV_ID = 'erase-canvas-wrapper';
@@ -25,27 +26,31 @@ class CustomEraser extends HTMLElement {
   }
 
   initEraseCanvas = (imgNode: HTMLImageElement) => {
-    const { width, height } = imgNode;
-    const canvas = document.createElement('canvas');
-    canvas.id = ERASE_CANVAS_ID;
-    canvas.width = width;
-    canvas.height = height;
-    const ctx = canvas.getContext('2d');
+    try {
+      const { width, height } = imgNode;
+      const canvas = document.createElement('canvas');
+      canvas.id = ERASE_CANVAS_ID;
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
 
-    const wrapper = document.getElementById(ERASE_CANVAS_DIV_ID);
+      const wrapper = document.getElementById(ERASE_CANVAS_DIV_ID);
 
-    if (wrapper) {
-      wrapper.appendChild(canvas);
-    } else {
-      console.warn('canvas parent div not found, check CustomEraser')
-    }
+      if (wrapper) {
+        wrapper.appendChild(canvas);
+      } else {
+        throw new Error('initEraseCanvas: canvas parent div not found, check CustomEraser');
+      }
 
-    if (ctx) {
-      ctx.drawImage(imgNode, 0, 0);
-      this.initEraseTool(canvas, ctx);
-    } else {
-      console.warn('canvas context doesn\'t exist, check CustomEraser')
-    }
+      if (ctx) {
+        ctx.drawImage(imgNode, 0, 0);
+        this.initEraseTool(canvas, ctx);
+      } else {
+        throw new Error('canvas context doesn\'t exist, check CustomEraser');
+      }
+    } catch (e) {
+      logError(e);
+    } 
   };
 
   initEraseTool = (canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D) => {

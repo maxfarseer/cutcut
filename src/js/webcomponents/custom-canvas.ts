@@ -1,6 +1,7 @@
 import { fabric } from 'fabric'
 import { sendToElmFromEditor } from '../ports/editor';
 import { getSettingsFromLS, SettingsFromLS } from '../ports/storage';
+import { logMessage, logError } from '../error-logger';
 
 type CustomCanvasOptions = {
   strokeWidth: number;
@@ -54,7 +55,7 @@ class CustomCanvas extends HTMLElement {
     const text = (e as CustomEvent).detail;
     try {
       if (!this._cf) {
-        throw new Error('fabric instance not found');
+        throw new Error('addText: fabric instance not found');
       }
 
       const textObj = new fabric.Text(text, {
@@ -69,7 +70,7 @@ class CustomCanvas extends HTMLElement {
       this._cf.add(textObj);
 
     } catch (err) {
-      console.warn(err);
+      logError(err);
     }
   }
 
@@ -85,23 +86,27 @@ class CustomCanvas extends HTMLElement {
   }
 
   drawImage(e: Event) {
-    const imgUrl = (e as CustomEvent).detail;
-    const img = new Image();
-    img.crossOrigin = 'Anonymous';
+    try {
+      const imgUrl = (e as CustomEvent).detail;
+      const img = new Image();
+      img.crossOrigin = 'Anonymous';
 
-    img.onload = () => {
-      const base64image = this.addStroke(img);
-      this.drawFabricImage(base64image);
-    };
+      img.onload = () => {
+        const base64image = this.addStroke(img);
+        this.drawFabricImage(base64image);
+      };
 
-    img.src = imgUrl;
+      img.src = imgUrl;
+    } catch (err) {
+      logError(err);
+    }
   }
 
   // not used
-  clearCanvas(ctx: CanvasRenderingContext2D) {
+  /* clearCanvas(ctx: CanvasRenderingContext2D) {
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
     ctx.beginPath();
-  }
+  } */
 
   addStroke(img: HTMLImageElement) {
     const { width, height } = img;
@@ -156,14 +161,14 @@ class CustomCanvas extends HTMLElement {
   downloadSticker = () => {
     try {
       if (!this._cf) {
-        throw new Error('fabric instance does not exist');
+        throw new Error('downloadSticker: fabric instance not found');
       }
       this._cf.discardActiveObject();
       this._cf.requestRenderAll();
 
       window.requestAnimationFrame(() => {
         if (!this._canvas) {
-          throw new Error('canvas node does not exist');
+          throw new Error('downloadSticker: canvas node does not exist');
         }
         const dpr = this.getDpr();
         const dataUrl = this._canvas.toDataURL();
@@ -190,7 +195,7 @@ class CustomCanvas extends HTMLElement {
         img.src = dataUrl;
       })
     } catch (err) {
-      console.warn(err);
+      logError(err);
     }
   }
 
@@ -203,7 +208,7 @@ class CustomCanvas extends HTMLElement {
           action: 'StickerUploadedFailureNoSettings',
           payload: null,
         });
-        throw new Error('You forgot to set up variables. Please check settings page (and your localstorage).');
+        throw new Error('requestUploadToPack: You forgot to set up variables. Please check settings page (and your localstorage).');
       }
 
       const { telegramBotToken, telegramBotId } = settings;
@@ -213,18 +218,18 @@ class CustomCanvas extends HTMLElement {
           action: 'StickerUploadedFailureNoTelegramSettings',
           payload: null,
         });
-        throw new Error('You forgot to set up telegram *telegramBotToken* and *telegramBotId*. Please check settings page (and your localstorage).');
+        throw new Error('requestUploadToPack: You forgot to set up telegram *telegramBotToken* and *telegramBotId*. Please check settings page (and your localstorage).');
       }
 
       if (!this._cf) {
-        throw new Error('fabric instance does not exist');
+        throw new Error('requestUploadToPack: fabric instance not found');
       }
       this._cf.discardActiveObject();
       this._cf.requestRenderAll();
 
       window.requestAnimationFrame(() => {
         if (!this._canvas) {
-          throw new Error('this._canvas does not exist, check CustomCanvas component');
+          throw new Error('requestUploadToPack: this._canvas does not exist');
         }
 
         const dpr = this.getDpr();
@@ -253,44 +258,55 @@ class CustomCanvas extends HTMLElement {
         img.src = dataUrl;
       })
     } catch (err) {
-      console.warn(err);
+      logError(err);
     }
   }
 
   uploadToStickerPack({ tempCanvas, emoji, telegramBotId, telegramBotToken }: UploadToStickerPackArgs) {
-    tempCanvas.toBlob((blob) => {
-      if (blob) {
-        const formData = new FormData();
-        formData.append('user_id', telegramBotId);
-        formData.append('name', 'firstpack_by_cutcutelm_bot');
-        formData.append('png_sticker', blob);
-        formData.append('emojis', emoji);
-
-        const options = {
-          method: 'POST',
-          body: formData,
-        };
-
-        fetch(`https://api.telegram.org/bot${telegramBotToken}/addStickerToSet`, options)
-          .then(r => r.json())
-          .then(json => {
-            if (json.ok) {
-              sendToElmFromEditor({ action: 'StickerUploadedSuccess', payload: null });
-            } else {
-              const { error_code, description } = json;
-              sendToElmFromEditor({
-                action: 'StickerUploadedFailure',
-                payload: {
-                  code: error_code,
-                  description
-                }
-              });
-            }
-          })
-      } else {
-        console.log('blob is null')
-      }
-    })
+    try {
+      tempCanvas.toBlob((blob) => {
+        if (blob) {
+          const formData = new FormData();
+          formData.append('user_id', telegramBotId);
+          formData.append('name', 'firstpack_by_cutcutelm_bot');
+          formData.append('png_sticker', blob);
+          formData.append('emojis', emoji);
+  
+          const options = {
+            method: 'POST',
+            body: formData,
+          };
+  
+          fetch(`https://api.telegram.org/bot${telegramBotToken}/addStickerToSet`, options)
+            .then(r => r.json())
+            .then(json => {
+              if (json.ok) {
+                sendToElmFromEditor({ action: 'StickerUploadedSuccess', payload: null });
+              } else {
+                const { error_code, description } = json;
+                sendToElmFromEditor({
+                  action: 'StickerUploadedFailure',
+                  payload: {
+                    code: error_code,
+                    description,
+                  }
+                });
+              }
+            })
+        } else {
+          logMessage('uploadToStickerPack: blob is null');
+        }
+      })
+    } catch (err) {
+      sendToElmFromEditor({
+        action: 'StickerUploadedFailure',
+        payload: {
+          code: 0,
+          description: 'Check your internet connection and try again',
+        }
+      });
+      logError(err);
+    }
   }
 }
 

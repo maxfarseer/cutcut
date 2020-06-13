@@ -1,6 +1,7 @@
 import Cropper from 'cropperjs';
 import { CustomWindow } from '../../custom.window';
 import { sendToElmFromEditor } from '../ports/editor';
+import { logError, logMessage } from '../error-logger';
 
 declare let window: CustomWindow;
 
@@ -30,63 +31,78 @@ class CustomCropper extends HTMLElement {
 
   initCropper = (img: HTMLCanvasElement) => {
     // https://github.com/fengyuanchen/cropperjs#options
-    const self = this;
+    try {
+      const self = this;
 
-    const cropper = new Cropper(img, {
-      crop(event) {
-        // coordinates & more
-      },
-      ready() {
-        self._cropper = cropper;
-      },
-    });
+      const cropper = new Cropper(img, {
+        crop(event) {
+          // coordinates & more
+        },
+        ready() {
+          self._cropper = cropper;
+        },
+      });
+    } catch (err) {
+      logError(err);
+    }
   };
 
   loadImage = (imgUrl: string) => {
-    const img = new Image();
+    try {
+      const img = new Image();
 
-    img.onload = () => {
-      this.resizeImg(img)
-        .then((canvas: HTMLCanvasElement) => {
-          if (this._wrapperDiv) {
-            this._wrapperDiv.appendChild(canvas);
-          } else {
-            console.warn('parent div for crop-image canvas element not found');
-          }
-          this.initCropper(canvas);
-        });
+      img.onload = () => {
+        this.resizeImg(img)
+          .then((canvas: HTMLCanvasElement) => {
+            if (this._wrapperDiv) {
+              this._wrapperDiv.appendChild(canvas);
+            } else {
+              throw new Error('loadImage: parent div for crop-image canvas element not found');
+            }
+            this.initCropper(canvas);
+          });
+      }
+
+      img.src = imgUrl;
+    } catch (err) {
+      logError(err);
     }
-
-    img.src = imgUrl;
   };
 
   resizeImg = (img: HTMLImageElement) => {
-    const expected = 640;
-    const { width, height } = img;
+    try {
+      const expected = 640;
+      const { width, height } = img;
 
-    const newHeight = height * expected / width;
+      const newHeight = height * expected / width;
 
-    const canvas = document.createElement('canvas');
-    canvas.width = expected;
-    canvas.height = newHeight;
+      const canvas = document.createElement('canvas');
+      canvas.width = expected;
+      canvas.height = newHeight;
 
-    const from = img;
-    const to = canvas;
+      const from = img;
+      const to = canvas;
 
-    return window.pica().resize(from, to, {
-      alpha: true,
-      unsharpAmount: 80,
-      unsharpRadius: 0.6,
-      unsharpThreshold: 2
-    });
+      return window.pica().resize(from, to, {
+        alpha: true,
+        unsharpAmount: 80,
+        unsharpRadius: 0.6,
+        unsharpThreshold: 2
+      });
+    } catch (err) {
+      logError(err);
+    }
   }
 
   cropImage = () => {
-    if (this._cropper) {
+    try {
+      if (!this._cropper) {
+        throw new Error('cropImage: instance of cropper not found')
+      }
       const dataUrl = this._cropper.getCroppedCanvas().toDataURL();
       sendToElmFromEditor({ action: 'ImageCropped', payload: dataUrl });
-    } else {
-      console.warn('instance of cropper not found');
+    } catch (err) {
+      logError(err)
     }
   };
 }
