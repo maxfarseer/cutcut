@@ -4,11 +4,11 @@ import { handlePortEditorMsg } from './js/ports/editor';
 import { handlePortStorageMsg } from './js/ports/storage';
 import { CustomWindow } from './custom.window';
 import { IElmApp } from './js/ports/types';
+import { logError } from './js/error-logger';
 
 // https://stackoverflow.com/questions/12709074/how-do-you-explicitly-set-a-new-property-on-window-in-typescript
 declare let window: CustomWindow;
 
-const errorLogger = (error: string) => console.error(`App Error: ${error}`);
 const node = document.querySelector('#app');
 
 try {
@@ -25,7 +25,7 @@ try {
 
   window.elmApp = app;
 } catch (e) {
-  errorLogger(e);
+  logError(e)
   node!.textContent = 'An error occurred while initializing the app';
 }
 // here was a typecript error: Cannot find global value 'Promise'.ts(2468)
