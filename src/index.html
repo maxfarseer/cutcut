@@ -26,6 +26,17 @@
     <script src='/js/webcomponents/custom-canvas.ts'></script>
     <script src='/js/webcomponents/custom-cropper.ts'></script>
     <script src='/js/webcomponents/custom-eraser.ts'></script>
+
+    <!-- Sentry -->
+    <script src="https://browser.sentry-cdn.com/5.17.0/bundle.min.js" integrity="sha384-lowBFC6YTkvMIWPORr7+TERnCkZdo5ab00oH5NkFLeQUAmBTLGwJpFjF6djuxJ/5" crossorigin="anonymous">
+    </script>
+
+    <script>
+      Sentry.init({
+        dsn: 'https://9fafe2f8270e43fdaa9d08a6d50c36de@o407016.ingest.sentry.io/5275497',
+      });
+    </script>
+
     <script async src="index.ts"></script>
   </head>
     
