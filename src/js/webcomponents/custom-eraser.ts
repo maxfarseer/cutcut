@@ -1,5 +1,5 @@
 import { sendToElmFromEditor } from '../ports/editor';
-import { logError } from '../error-logger';
+import { logError } from '../utils/error-logger';
 
 const ERASE_CANVAS_ID = 'erase-canvas';
 const ERASE_CANVAS_DIV_ID = 'erase-canvas-wrapper';

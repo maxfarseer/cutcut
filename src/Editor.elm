@@ -10,6 +10,7 @@ import Html.Styled exposing (Html, button, div, h1, h2, map, p, section, text)
 import Html.Styled.Attributes exposing (class, css, disabled)
 import Html.Styled.Events exposing (onClick)
 import Ports exposing (IncomingMsg(..), OutgoingMsg(..), StickerUploadError, listenToJs, sendToJs)
+import Tracking exposing (OutgoingMsg(..), track)
 import Ui.Notification
 
 
@@ -108,7 +109,12 @@ update msg model =
             ( { model | error = Just <| DecodeErrorFromJsEditor err }, Cmd.none )
 
         ClickedDownloadSticker ->
-            ( model, sendToJs <| DownloadSticker )
+            ( model
+            , Cmd.batch
+                [ sendToJs <| DownloadSticker
+                , track <| TrackEvent "ClickedDownloadSticker"
+                ]
+            )
 
         ClickedUploadToPack ->
             ( { model | uploadStickerStatus = Loading }, sendToJs <| RequestUploadToPack )

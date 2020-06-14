@@ -1,11 +1,8 @@
 import { Scope, Severity } from '@sentry/types';
-import { CustomWindow } from '../custom.window';
+import { CustomWindow } from '../../custom.window';
+import { isDevMode } from './index';
 
 declare let window: CustomWindow;
-
-const isLocalhost = (): boolean => {
-  return window.location.hostname === 'localhost';
-};
 
 const logError = (e: Error | string) => {
   let error = null;
@@ -15,7 +12,7 @@ const logError = (e: Error | string) => {
     error = new Error(e);
   }
 
-  if (isLocalhost()) {
+  if (isDevMode()) {
     console.error(error);
   } else {
     window.Sentry.captureException(error);
@@ -23,7 +20,7 @@ const logError = (e: Error | string) => {
 };
 
 const logMessage = (msg: string) => {
-  if (isLocalhost()) {
+  if (isDevMode()) {
     console.info(msg);
   } else {
     // @ts-ignore

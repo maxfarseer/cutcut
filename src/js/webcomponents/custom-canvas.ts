@@ -1,7 +1,7 @@
 import { fabric } from 'fabric'
 import { sendToElmFromEditor } from '../ports/editor';
 import { getSettingsFromLS, SettingsFromLS } from '../ports/storage';
-import { logMessage, logError } from '../error-logger';
+import { logMessage, logError } from '../utils/error-logger';
 
 type CustomCanvasOptions = {
   strokeWidth: number;

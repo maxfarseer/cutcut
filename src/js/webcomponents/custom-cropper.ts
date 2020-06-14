@@ -1,7 +1,7 @@
 import Cropper from 'cropperjs';
 import { CustomWindow } from '../../custom.window';
 import { sendToElmFromEditor } from '../ports/editor';
-import { logError, logMessage } from '../error-logger';
+import { logError } from '../utils/error-logger';
 
 declare let window: CustomWindow;
 
