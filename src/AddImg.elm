@@ -12,6 +12,7 @@ import Json.Decode as JD
 import Json.Encode as JE
 import Ports exposing (OutgoingMsg(..), sendToJs)
 import Task
+import Tracking exposing (OutgoingMsg(..), track)
 import Ui.Modal
 
 
@@ -93,10 +94,15 @@ update msg model =
         GotFiles files ->
             case List.head files of
                 Nothing ->
-                    ( model, Cmd.none )
+                    ( model, track <| TrackEvent "GotFiles Nothing" )
 
                 Just file ->
-                    ( model, Task.perform GotFileUrl <| File.toUrl file )
+                    ( model
+                    , Cmd.batch
+                        [ Task.perform GotFileUrl <| File.toUrl file
+                        , track <| TrackEvent "GotFiles"
+                        ]
+                    )
 
         GotFileUrl base64 ->
             ( { model | step = Crop }, sendToJs <| CropImageInit (fromString base64) )
@@ -105,22 +111,30 @@ update msg model =
             ( { model | step = Add }, Cmd.none )
 
         ClickedCropFinish ->
-            ( model, sendToJs <| CropImage )
+            ( model
+            , Cmd.batch
+                [ sendToJs <| CropImage
+                , track <| TrackEvent "ClickedCropFinish"
+                ]
+            )
 
         ClickedRemoveBg imgUrl ->
             ( { model | step = RemoveBgOrNot Loading imgUrl }
-            , Http.request
-                { url = "https://api.remove.bg/v1.0/removebg"
-                , headers =
-                    [ Http.header "X-Api-Key" model.removeBgApiKey
-                    , Http.header "Accept" "application/json"
-                    ]
-                , method = "POST"
-                , timeout = Nothing
-                , tracker = Nothing
-                , body = Http.jsonBody <| removeBgRequestEncoder imgUrl
-                , expect = expectStringDetailed (GotRemoveBgResponse imgUrl)
-                }
+            , Cmd.batch
+                [ Http.request
+                    { url = "https://api.remove.bg/v1.0/removebg"
+                    , headers =
+                        [ Http.header "X-Api-Key" model.removeBgApiKey
+                        , Http.header "Accept" "application/json"
+                        ]
+                    , method = "POST"
+                    , timeout = Nothing
+                    , tracker = Nothing
+                    , body = Http.jsonBody <| removeBgRequestEncoder imgUrl
+                    , expect = expectStringDetailed (GotRemoveBgResponse imgUrl)
+                    }
+                , track <| TrackEvent "ClickedRemoveBg"
+                ]
             )
 
         GotRemoveBgResponse imgUrl result ->
@@ -128,7 +142,7 @@ update msg model =
                 Err err ->
                     ( RemoveBgOrNot (Errored err) imgUrl
                         |> setStep model
-                    , Cmd.none
+                    , track <| TrackEvent "GotRemoveBgResponse Err"
                     )
 
                 Ok ( metadata, body ) ->
@@ -143,10 +157,20 @@ update msg model =
                             )
 
         ClickedNotRemoveBg imgUrl ->
-            ( { model | step = Erase }, sendToJs <| PrepareForErase imgUrl )
+            ( { model | step = Erase }
+            , Cmd.batch
+                [ sendToJs <| PrepareForErase imgUrl
+                , track <| TrackEvent "ClickedNotRemoveBg"
+                ]
+            )
 
         ClickedEraseFinish ->
-            ( { model | step = Erase }, sendToJs <| AddImgFinish )
+            ( { model | step = Erase }
+            , Cmd.batch
+                [ sendToJs <| AddImgFinish
+                , track <| TrackEvent "ClickedEraseFinish"
+                ]
+            )
 
 
 

@@ -117,7 +117,12 @@ update msg model =
             )
 
         ClickedUploadToPack ->
-            ( { model | uploadStickerStatus = Loading }, sendToJs <| RequestUploadToPack )
+            ( { model | uploadStickerStatus = Loading }
+            , Cmd.batch
+                [ sendToJs <| RequestUploadToPack
+                , track <| TrackEvent "ClickedUploadToPack"
+                ]
+            )
 
         ClickedCloseErrorNotification ->
             ( { model | error = Nothing }, Cmd.none )

@@ -1,6 +1,7 @@
 port module Tracking exposing
     ( OutgoingMsg(..)
     , track
+    , trackEvent
     )
 
 import Json.Encode as JE
@@ -30,3 +31,8 @@ track outgoingMsg =
             -- TODO: payload as object not supported yet
             TrackEvent eventName ->
                 { action = "TrackEvent", payload = JE.string eventName }
+
+
+trackEvent : String -> Cmd msg
+trackEvent eventName =
+    track (TrackEvent eventName)
