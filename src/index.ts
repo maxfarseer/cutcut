@@ -1,5 +1,5 @@
 // @ts-ignore
-import { Elm } from './Main.elm';
+import { Elm } from './elm/Main.elm';
 import { handlePortEditorMsg } from './js/ports/editor';
 import { handlePortStorageMsg } from './js/ports/storage';
 import { handlePortTrackingMsg } from './js/ports/tracking';
