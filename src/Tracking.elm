@@ -51,7 +51,6 @@ track : OutgoingMsg -> Cmd msg
 track outgoingMsg =
     msgForJsTracking <|
         case outgoingMsg of
-            -- TODO: payload as object not supported yet
             TrackEvent eventName ->
                 { action = "TrackEvent", payload = JE.string eventName }
 
