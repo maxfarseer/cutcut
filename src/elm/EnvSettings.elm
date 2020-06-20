@@ -33,8 +33,9 @@ type alias Model =
 
 
 type IncomingMsg
-    = LoadedSettingsFromLS (Maybe Model)
-    | EnvSettingsUnknownIncomingMessage String
+    = EnvSettingsUnknownIncomingMessage String
+    | LoadedSettingsFromLS (Maybe Model)
+    | SettingsSavedSuccessfully
 
 
 type OutgoingMsg
@@ -77,10 +78,13 @@ incomingMsgDecoder =
                             |> payloadDecoder
                             |> JD.map LoadedSettingsFromLS
 
+                    "SettingsSavedSuccessfully" ->
+                        JD.succeed SettingsSavedSuccessfully
+
                     _ ->
                         JD.succeed <|
                             EnvSettingsUnknownIncomingMessage
-                                ("Decoder for incoming messages failed, because of unknown action name " ++ action)
+                                ("Decoder for incoming messages (EnvSettings) failed, because of unknown action name " ++ action)
             )
 
 

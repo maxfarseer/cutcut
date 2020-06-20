@@ -21,18 +21,20 @@ type UploadStickerStatus
     | Success
 
 
-type Error
-    = UnknownIncomingMessageFromJs String
+type Notification
+    = None
+    | UnknownIncomingMessageFromJs String
     | DecodeErrorFromJsEditor String
     | SettingsNotExist
     | SettingsForTelegramMissing
+    | UploadedSticker
 
 
 type alias Model =
     { addImg : AddImg.Model
     , addText : AddText.Model
     , uploadStickerStatus : UploadStickerStatus
-    , error : Maybe Error
+    , notification : Notification
     }
 
 
@@ -41,7 +43,7 @@ init removeBgApiKey =
     ( { addImg = AddImg.init removeBgApiKey
       , addText = AddText.init
       , uploadStickerStatus = NotAsked
-      , error = Nothing
+      , notification = None
       }
     , sendToStoragePort <| AskForSettingsFromLS
     )
@@ -54,7 +56,7 @@ type Msg
     | FromJsEditorDecodeError String
     | ClickedDownloadSticker
     | ClickedUploadToPack
-    | ClickedCloseErrorNotification
+    | ClickedCloseNotification
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -91,22 +93,27 @@ update msg model =
                     ( { model | addImg = updatedAddImg }, Cmd.none )
 
                 StickerUploadedSuccess ->
-                    ( { model | uploadStickerStatus = Success }, Cmd.none )
+                    ( { model
+                        | uploadStickerStatus = Success
+                        , notification = UploadedSticker
+                      }
+                    , Cmd.none
+                    )
 
                 StickerUploadedFailure err ->
                     ( { model | uploadStickerStatus = Errored err }, Cmd.none )
 
                 StickerUploadedFailureNoSettings ->
-                    ( { model | error = Just SettingsNotExist }, Cmd.none )
+                    ( { model | notification = SettingsNotExist }, Cmd.none )
 
                 StickerUploadedFailureNoTelegramSettings ->
-                    ( { model | error = Just SettingsForTelegramMissing }, Cmd.none )
+                    ( { model | notification = SettingsForTelegramMissing }, Cmd.none )
 
                 UnknownIncomingMessage str ->
-                    ( { model | error = Just <| UnknownIncomingMessageFromJs str }, Cmd.none )
+                    ( { model | notification = UnknownIncomingMessageFromJs str }, Cmd.none )
 
         FromJsEditorDecodeError err ->
-            ( { model | error = Just <| DecodeErrorFromJsEditor err }, Cmd.none )
+            ( { model | notification = DecodeErrorFromJsEditor err }, Cmd.none )
 
         ClickedDownloadSticker ->
             ( model
@@ -124,15 +131,15 @@ update msg model =
                 ]
             )
 
-        ClickedCloseErrorNotification ->
-            ( { model | error = Nothing }, Cmd.none )
+        ClickedCloseNotification ->
+            ( { model | notification = None }, Cmd.none )
 
 
 view : Model -> Html Msg
 view model =
     section []
         [ div [ class "container" ]
-            [ renderNotification model.error
+            [ renderNotification model.notification
             , h1 [ class "title" ] [ text "Editor" ]
             , h2 [ class "subtitle" ] [ text "Upload photo and make fun" ]
             , div [ class "columns" ]
@@ -246,37 +253,41 @@ renderErrorMessage status =
             text ""
 
 
-renderNotification : Maybe Error -> Html Msg
-renderNotification err =
-    case err of
-        Nothing ->
+renderNotification : Notification -> Html Msg
+renderNotification notification =
+    case notification of
+        None ->
             text ""
 
-        Just problem ->
-            case problem of
-                UnknownIncomingMessageFromJs str ->
-                    { text = str
-                    , closeMsg = ClickedCloseErrorNotification
-                    }
-                        |> Ui.Notification.showError
+        UnknownIncomingMessageFromJs str ->
+            { text = str
+            , closeMsg = ClickedCloseNotification
+            }
+                |> Ui.Notification.showError
 
-                DecodeErrorFromJsEditor str ->
-                    { text = str
-                    , closeMsg = ClickedCloseErrorNotification
-                    }
-                        |> Ui.Notification.showError
+        DecodeErrorFromJsEditor str ->
+            { text = str
+            , closeMsg = ClickedCloseNotification
+            }
+                |> Ui.Notification.showError
 
-                SettingsNotExist ->
-                    { text = "You forgot to setup settings. Check settings page"
-                    , closeMsg = ClickedCloseErrorNotification
-                    }
-                        |> Ui.Notification.showError
+        SettingsNotExist ->
+            { text = "You forgot to setup settings. Check settings page"
+            , closeMsg = ClickedCloseNotification
+            }
+                |> Ui.Notification.showError
 
-                SettingsForTelegramMissing ->
-                    { text = "You forgot to setup Telegram settings. Check settings page"
-                    , closeMsg = ClickedCloseErrorNotification
-                    }
-                        |> Ui.Notification.showError
+        SettingsForTelegramMissing ->
+            { text = "You forgot to setup Telegram settings. Check settings page"
+            , closeMsg = ClickedCloseNotification
+            }
+                |> Ui.Notification.showError
+
+        UploadedSticker ->
+            { text = "Your sticker was uploaded. It will appear in telegram in period of 30min - 3 hours"
+            , closeMsg = ClickedCloseNotification
+            }
+                |> Ui.Notification.showSuccess
 
 
 subscriptions : a -> Sub Msg

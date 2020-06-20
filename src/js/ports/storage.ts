@@ -16,6 +16,10 @@ export type SettingsFromLS = UserEnvSettings | null;
 
 const saveSettingsToLS = (payload: UserEnvSettings) => {
   localStorage.setItem(key, JSON.stringify(payload));
+  sendToEnvSettings({
+    action: 'SettingsSavedSuccessfully',
+    payload: null,
+  });
 };
 
 export const getSettingsFromLS = (): SettingsFromLS => {
