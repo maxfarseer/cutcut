@@ -1,8 +1,4 @@
-port module Tracking exposing
-    ( OutgoingMsg(..)
-    , track
-    , trackEvent
-    )
+port module Tracking exposing (trackEvent)
 
 import Json.Encode as JE
 

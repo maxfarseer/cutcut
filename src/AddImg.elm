@@ -12,7 +12,7 @@ import Json.Decode as JD
 import Json.Encode as JE
 import Ports exposing (OutgoingMsg(..), sendToJs)
 import Task
-import Tracking exposing (OutgoingMsg(..), track)
+import Tracking exposing (trackEvent)
 import Ui.Modal
 
 
@@ -94,13 +94,13 @@ update msg model =
         GotFiles files ->
             case List.head files of
                 Nothing ->
-                    ( model, track <| TrackEvent "GotFiles Nothing" )
+                    ( model, trackEvent "GotFiles Nothing" )
 
                 Just file ->
                     ( model
                     , Cmd.batch
                         [ Task.perform GotFileUrl <| File.toUrl file
-                        , track <| TrackEvent "GotFiles"
+                        , trackEvent "GotFiles"
                         ]
                     )
 
@@ -114,7 +114,7 @@ update msg model =
             ( model
             , Cmd.batch
                 [ sendToJs <| CropImage
-                , track <| TrackEvent "ClickedCropFinish"
+                , trackEvent "ClickedCropFinish"
                 ]
             )
 
@@ -133,7 +133,7 @@ update msg model =
                     , body = Http.jsonBody <| removeBgRequestEncoder imgUrl
                     , expect = expectStringDetailed (GotRemoveBgResponse imgUrl)
                     }
-                , track <| TrackEvent "ClickedRemoveBg"
+                , trackEvent "ClickedRemoveBg"
                 ]
             )
 
@@ -142,7 +142,7 @@ update msg model =
                 Err err ->
                     ( RemoveBgOrNot (Errored err) imgUrl
                         |> setStep model
-                    , track <| TrackEvent "GotRemoveBgResponse Err"
+                    , trackEvent "GotRemoveBgResponse Err"
                     )
 
                 Ok ( metadata, body ) ->
@@ -160,7 +160,7 @@ update msg model =
             ( { model | step = Erase }
             , Cmd.batch
                 [ sendToJs <| PrepareForErase imgUrl
-                , track <| TrackEvent "ClickedNotRemoveBg"
+                , trackEvent "ClickedNotRemoveBg"
                 ]
             )
 
@@ -168,7 +168,7 @@ update msg model =
             ( { model | step = Erase }
             , Cmd.batch
                 [ sendToJs <| AddImgFinish
-                , track <| TrackEvent "ClickedEraseFinish"
+                , trackEvent "ClickedEraseFinish"
                 ]
             )
 
