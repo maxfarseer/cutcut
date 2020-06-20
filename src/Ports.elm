@@ -114,7 +114,6 @@ incomingMsgDecoder =
             (\action ->
                 case action of
                     "ImageCropped" ->
-                        -- Decode.map ImageCropped (payloadDecoder Decode.string) is equal to
                         decoderStringToBase64ImgUrl
                             |> payloadDecoder
                             |> Decode.map ImageCropped

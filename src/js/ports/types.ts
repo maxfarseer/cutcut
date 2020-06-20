@@ -24,6 +24,10 @@ export interface IElmApp {
     msgForJsStorage: {
       subscribe: Function,
       unsubscribe: Function,
-    }
+    },
+    msgForJsTracking: {
+      subscribe: Function,
+      unsubscribe: Function,
+    },
   }
 }

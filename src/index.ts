@@ -2,9 +2,10 @@
 import { Elm } from './Main.elm';
 import { handlePortEditorMsg } from './js/ports/editor';
 import { handlePortStorageMsg } from './js/ports/storage';
+import { handlePortTrackingMsg } from './js/ports/tracking';
 import { CustomWindow } from './custom.window';
 import { IElmApp } from './js/ports/types';
-import { logError } from './js/error-logger';
+import { logError } from './js/utils/error-logger';
 
 // https://stackoverflow.com/questions/12709074/how-do-you-explicitly-set-a-new-property-on-window-in-typescript
 declare let window: CustomWindow;
@@ -21,6 +22,7 @@ try {
   // ports
   app.ports.msgForJsEditor.subscribe(handlePortEditorMsg);
   app.ports.msgForJsStorage.subscribe(handlePortStorageMsg);
+  app.ports.msgForJsTracking.subscribe(handlePortTrackingMsg);
   // end ports
 
   window.elmApp = app;
