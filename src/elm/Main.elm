@@ -46,15 +46,17 @@ type Page
 
 
 type Notification
-    = GenericError String
+    = None
+    | GenericError String
     | UnknownDecoderMessage String
+    | SettingsSaved
 
 
 type alias Model =
     { key : Nav.Key
     , page : Page
     , flags : Flags
-    , notification : Maybe Notification
+    , notification : Notification
     }
 
 
@@ -66,7 +68,7 @@ init flags url key =
                 { page = NotFoundPage
                 , key = key
                 , flags = decodedFlags
-                , notification = Nothing
+                , notification = None
                 }
 
         Err _ ->
@@ -74,7 +76,7 @@ init flags url key =
                 { page = NotFoundPage
                 , key = key
                 , flags = { buildDate = 0 }
-                , notification = Nothing
+                , notification = None
                 }
 
 
@@ -142,13 +144,16 @@ update msg model =
                     ( { model | page = newPageModel }, Cmd.none )
 
                 EnvSettingsUnknownIncomingMessage str ->
-                    ( { model | notification = Just (UnknownDecoderMessage str) }, Cmd.none )
+                    ( { model | notification = UnknownDecoderMessage str }, Cmd.none )
+
+                SettingsSavedSuccessfully ->
+                    ( { model | notification = SettingsSaved }, Cmd.none )
 
         FromStorageError str ->
-            ( { model | notification = Just (GenericError str) }, Cmd.none )
+            ( { model | notification = GenericError str }, Cmd.none )
 
         CloseNotification ->
-            ( { model | notification = Nothing }, Cmd.none )
+            ( { model | notification = None }, Cmd.none )
 
 
 updateSettings : Maybe EnvSettings.Model -> Page -> Page
@@ -281,7 +286,7 @@ body model =
             ]
 
 
-viewHeader : Maybe Notification -> Html Msg
+viewHeader : Notification -> Html Msg
 viewHeader notificationData =
     nav [ attribute "aria-label" "main navigation", class "navbar", attribute "role" "navigation" ]
         [ viewNotification notificationData
@@ -328,24 +333,28 @@ viewHeader notificationData =
         ]
 
 
-viewNotification : Maybe Notification -> Html Msg
+viewNotification : Notification -> Html Msg
 viewNotification notification =
     case notification of
-        Just notificationData ->
-            case notificationData of
-                GenericError err ->
-                    { text = err
-                    , closeMsg = CloseNotification
-                    }
-                        |> Ui.Notification.showError
+        GenericError err ->
+            { text = err
+            , closeMsg = CloseNotification
+            }
+                |> Ui.Notification.showError
 
-                UnknownDecoderMessage err ->
-                    { text = err
-                    , closeMsg = CloseNotification
-                    }
-                        |> Ui.Notification.showError
+        UnknownDecoderMessage err ->
+            { text = err
+            , closeMsg = CloseNotification
+            }
+                |> Ui.Notification.showError
 
-        Nothing ->
+        SettingsSaved ->
+            { text = "Your settings was saved. Now you should be able to use editor. Welcome!"
+            , closeMsg = CloseNotification
+            }
+                |> Ui.Notification.showSuccess
+
+        None ->
             text ""
 
 
