@@ -4,6 +4,7 @@ import Html.Styled exposing (Html, button, input, text)
 import Html.Styled.Attributes exposing (class, placeholder, value)
 import Html.Styled.Events exposing (onClick, onInput)
 import Ports exposing (OutgoingMsg(..), sendToJs)
+import Tracking exposing (trackWithPayload)
 import Ui.Modal
 
 
@@ -43,7 +44,20 @@ update msg model =
         ClickedAddText ->
             case model of
                 ModalOpen config ->
-                    ( ModalClosed, sendToJs <| AddText config.text )
+                    let
+                        trackTextEvent =
+                            { name = "ClickedAddText"
+                            , category = "Editor"
+                            , label = "Add text"
+                            , value = "config.text"
+                            }
+                    in
+                    ( ModalClosed
+                    , Cmd.batch
+                        [ sendToJs <| AddText config.text
+                        , trackWithPayload trackTextEvent
+                        ]
+                    )
 
                 ModalClosed ->
                     -- impossible case

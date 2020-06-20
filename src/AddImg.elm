@@ -412,7 +412,7 @@ viewRemoveBgErrorBlock status =
                         NetworkError ->
                             text "Network error. Check your internet connection, refresh page and try again"
 
-                        -- TODO: can we use better/shorter syntax here.
+                        -- TODO: can we use better/shorter syntax here?
                         BadStatus metadata body ->
                             case removeBgBadStatusBodyDecoder body of
                                 Ok errorDescription ->
