@@ -365,6 +365,8 @@ viewWelcomePage =
             , a [ href "/editor" ] [ text "/editor" ]
             , text " then."
             ]
+        , p []
+            [ text "Your sticker will appear in telegram ~30min - 3 hours after upload." ]
         ]
 
 
