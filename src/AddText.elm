@@ -49,7 +49,7 @@ update msg model =
                             { name = "ClickedAddText"
                             , category = "Editor"
                             , label = "Add text"
-                            , value = "config.text"
+                            , value = config.text
                             }
                     in
                     ( ModalClosed
