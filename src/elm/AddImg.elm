@@ -347,7 +347,7 @@ viewRemoveBgQuestion status imgUrl =
         [ div [ class "columns" ]
             [ div [ class "column" ]
                 [ p []
-                    [ text "If you like, background will be removed automatically (with help of "
+                    [ text "If you like, background will be removed automatically (with help of the "
                     , a
                         [ href "https://www.remove.bg/", target "_blank" ]
                         [ text "remove.bg" ]
@@ -355,12 +355,12 @@ viewRemoveBgQuestion status imgUrl =
                         " service)."
                     ]
                 , p []
-                    [ text "Don't forget to setup your settings variables with "
+                    [ text "Don't forget to set your variables with the "
                     , a
                         [ href "https://www.remove.bg/api", target "_blank" ]
                         [ text "API key" ]
                     , text
-                        ". You can find settings page "
+                        ". You can find the settings page "
                     , a [ href "/settings" ] [ text "here" ]
                     , text "."
                     ]
@@ -408,10 +408,10 @@ viewRemoveBgErrorBlock status =
                             text ("Request url is wrong: " ++ str)
 
                         Timeout ->
-                            text "Request takes too much time. Refresh page and try again"
+                            text "Request takes too much time. Refresh the page and try again"
 
                         NetworkError ->
-                            text "Network error. Check your internet connection, refresh page and try again"
+                            text "Network error. Check your internet connection, then refresh the page and try again"
 
                         -- TODO: can we use better/shorter syntax here?
                         BadStatus metadata body ->
@@ -446,7 +446,7 @@ viewEraseStep =
         [ div [ class "columns" ]
             [ div [ class "column" ]
                 [ p []
-                    [ text "Use your mouse to erase unnecessary. But, ouch! Erase tool is crazy ;)"
+                    [ text "Use your mouse to erase unneeded areas. But, careful! Erase tool is crazy ;)"
                     ]
                 ]
             ]

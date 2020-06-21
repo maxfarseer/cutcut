@@ -349,7 +349,7 @@ viewNotification notification =
                 |> Ui.Notification.showError
 
         SettingsSaved ->
-            { text = "Your settings was saved. Now you should be able to use editor. Welcome!"
+            { text = "Your settings have been saved. Now you should be able to use the editor. Welcome!"
             , closeMsg = CloseNotification
             }
                 |> Ui.Notification.showSuccess
@@ -365,17 +365,17 @@ viewWelcomePage =
             [ class "title" ]
             [ text "Hello there" ]
         , h2 [ class "subtitle" ]
-            [ text "This hobby project built with Elm (plus javascript)."
+            [ text "This is a hobby project built with Elm (plus javascript)."
             ]
         , p []
-            [ text "At first you have to setup "
+            [ text "First off, you have to set your "
             , a [ href "/settings" ] [ text "variables" ]
-            , text " and you can go to "
+            , text ", then you can go to "
             , a [ href "/editor" ] [ text "/editor" ]
-            , text " then."
+            , text "."
             ]
         , p []
-            [ text "Your sticker will appear in telegram ~30min - 3 hours after upload." ]
+            [ text "It may take from 30 mins to 3 hours until your sticker becomes available in Telegram." ]
         ]
 
 

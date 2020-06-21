@@ -73,7 +73,7 @@ view model =
                                 [ class "card" ]
                                 [ header [ class "card-header" ]
                                     [ p [ class "card-header-title" ]
-                                        [ text "Where I can find settings variables?" ]
+                                        [ text "Where can I find settings?" ]
                                     ]
                                 , div [ class "card-content" ]
                                     [ div [ class "content" ]
@@ -136,7 +136,7 @@ viewCardContent =
             []
             [ text "TELEGRAM_USER_ID, use "
             , span [ class "has-background-info-light" ] [ text "@jsondumpbot" ]
-            , text " in telegram"
+            , text " in Telegram"
             ]
         , li
             []
