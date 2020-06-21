@@ -12,6 +12,7 @@ type UploadToStickerPackArgs = {
   emoji: string;
   telegramBotToken: string;
   telegramBotId: string;
+  telegramBotStickerPackName: string;
 }
 
 class CustomCanvas extends HTMLElement {
@@ -211,7 +212,7 @@ class CustomCanvas extends HTMLElement {
         throw new Error('requestUploadToPack: You forgot to set the variables. Please check the settings page (and your local storage).');
       }
 
-      const { telegramBotToken, telegramBotId } = settings;
+      const { telegramBotToken, telegramBotId, telegramBotStickerPackName } = settings;
 
       if (!telegramBotToken || !telegramBotId) {
         sendToElmFromEditor({
@@ -252,7 +253,8 @@ class CustomCanvas extends HTMLElement {
             tempCanvas,
             emoji:  '💍',
             telegramBotToken,
-            telegramBotId
+            telegramBotId,
+            telegramBotStickerPackName,
           });
         }
         img.src = dataUrl;
@@ -262,13 +264,14 @@ class CustomCanvas extends HTMLElement {
     }
   }
 
-  uploadToStickerPack({ tempCanvas, emoji, telegramBotId, telegramBotToken }: UploadToStickerPackArgs) {
+  uploadToStickerPack({ tempCanvas, emoji, telegramBotId, telegramBotToken, telegramBotStickerPackName }: UploadToStickerPackArgs) {
     try {
       tempCanvas.toBlob((blob) => {
         if (blob) {
           const formData = new FormData();
           formData.append('user_id', telegramBotId);
-          formData.append('name', 'firstpack_by_cutcutelm_bot');
+          // formData.append('name', 'firstpack_by_cutcutelm_bot');
+          formData.append('name', telegramBotStickerPackName);
           formData.append('png_sticker', blob);
           formData.append('emojis', emoji);
   

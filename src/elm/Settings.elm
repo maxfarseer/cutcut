@@ -14,6 +14,7 @@ type Msg
     = TelegramBotTokenChanged String
     | TelegramUserIdChanged String
     | TelegramBotIdChanged String
+    | TelegramBotStickerPackNameChanged String
     | RemoveBgApiKeyChanged String
     | ClickedSave
 
@@ -22,6 +23,7 @@ type InputName
     = TelegramBotToken
     | TelegramUserId
     | TelegramBotId
+    | TelegramBotStickerPackName
     | RemoveBgApiKey
 
 
@@ -41,6 +43,9 @@ update msg model =
 
         TelegramBotIdChanged value ->
             ( { model | telegramBotId = value }, Cmd.none )
+
+        TelegramBotStickerPackNameChanged value ->
+            ( { model | telegramBotStickerPackName = value }, Cmd.none )
 
         RemoveBgApiKeyChanged value ->
             ( { model | removeBgApiKey = value }, Cmd.none )
@@ -62,6 +67,7 @@ view model =
                             [ viewInput TelegramBotTokenChanged TelegramBotToken model
                             , viewInput TelegramUserIdChanged TelegramUserId model
                             , viewInput TelegramBotIdChanged TelegramBotId model
+                            , viewInput TelegramBotStickerPackNameChanged TelegramBotStickerPackName model
                             , viewInput RemoveBgApiKeyChanged RemoveBgApiKey model
                             ]
                         ]
@@ -134,6 +140,9 @@ viewCardContent =
             [ text "TELEGRAM_BOT_ID, same link as before" ]
         , li
             []
+            [ text "TELEGRAM_BOT_STICKER_PACK_NAME, same link as before" ]
+        , li
+            []
             [ text "TELEGRAM_USER_ID, use "
             , span [ class "has-background-info-light" ] [ text "@jsondumpbot" ]
             , text " in Telegram"
@@ -163,6 +172,9 @@ returnPlaceholder inputName =
         TelegramBotId ->
             "telegramBotId"
 
+        TelegramBotStickerPackName ->
+            "telegramBotStickerPackName"
+
         RemoveBgApiKey ->
             "removeBgApiKey"
 
@@ -178,6 +190,9 @@ returnValue model inputName =
 
         TelegramBotId ->
             model.telegramBotId
+
+        TelegramBotStickerPackName ->
+            model.telegramBotStickerPackName
 
         RemoveBgApiKey ->
             model.removeBgApiKey
