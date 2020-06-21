@@ -1,7 +1,7 @@
 module Settings exposing (Model, Msg, init, subscriptions, update, view)
 
 import EnvSettings exposing (IncomingMsg(..), OutgoingMsg(..), sendToStoragePort)
-import Html.Styled exposing (Html, a, button, div, h1, h2, header, input, label, li, p, section, span, text, ul)
+import Html.Styled exposing (Html, a, br, button, div, h1, h2, header, input, label, li, p, section, span, text, ul)
 import Html.Styled.Attributes exposing (class, href, placeholder, target, type_, value)
 import Html.Styled.Events exposing (onClick, onInput)
 
@@ -87,6 +87,19 @@ view model =
                                         ]
                                     ]
                                 ]
+                            , br [] []
+                            , div
+                                [ class "card" ]
+                                [ header [ class "card-header" ]
+                                    [ p [ class "card-header-title" ]
+                                        [ text "Нужна инструкция на русском?" ]
+                                    ]
+                                , div [ class "card-content" ]
+                                    [ div [ class "content" ]
+                                        [ viewCardContentRu
+                                        ]
+                                    ]
+                                ]
                             ]
                         ]
                     ]
@@ -156,6 +169,21 @@ viewCardContent =
                 ]
                 [ text "here" ]
             , text " after registration"
+            ]
+        ]
+
+
+viewCardContentRu : Html Msg
+viewCardContentRu =
+    ul []
+        [ li []
+            [ text "Инструкция с картинками: "
+            , a
+                [ href "https://hackmd.io/@b1hdcBB2Qmu9KtH_ycT20Q/HyyJfepTI"
+                , target "_blank"
+                ]
+                [ text "здесь" ]
+            , text "."
             ]
         ]
 
