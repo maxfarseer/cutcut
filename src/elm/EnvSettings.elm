@@ -84,7 +84,7 @@ incomingMsgDecoder =
                     _ ->
                         JD.succeed <|
                             EnvSettingsUnknownIncomingMessage
-                                ("Decoder for incoming messages (EnvSettings) failed, because of unknown action name " ++ action)
+                                ("Decoder for incoming messages (EnvSettings) failed, because of an unknown action name " ++ action)
             )
 
 
@@ -132,4 +132,4 @@ listenToJs decodeSuccessTag decodeErrorTag =
                     decodeSuccessTag incomingMsg
 
                 Err str ->
-                    decodeErrorTag "Error code #2001: Decode json error. Refresh the page and try again. If it doesn't help, ask developer"
+                    decodeErrorTag "Error code #2001: JSON decode error. Refresh the page and try again. If that doesn't help, please contact the developer"

@@ -138,7 +138,7 @@ incomingMsgDecoder =
                     _ ->
                         Decode.succeed <|
                             UnknownIncomingMessage
-                                ("Decoder for incoming messages failed, because of unknown action name " ++ action)
+                                ("Decoder for incoming messages failed, because of an unknown action name " ++ action)
             )
 
 
@@ -151,4 +151,4 @@ listenToJs decodeSuccessTag decodeErrorTag =
                     decodeSuccessTag incomingMsg
 
                 Err str ->
-                    decodeErrorTag "Error code #1001: Decode json error. Refresh the page and try again. If it doesn't help, ask developer"
+                    decodeErrorTag "Error code #1001: JSON decode error. Refresh the page and try again. If that doesn't help, please contact the developer"

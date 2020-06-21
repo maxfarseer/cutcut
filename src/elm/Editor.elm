@@ -141,7 +141,7 @@ view model =
         [ div [ class "container" ]
             [ renderNotification model.notification
             , h1 [ class "title" ] [ text "Editor" ]
-            , h2 [ class "subtitle" ] [ text "Upload photo and make fun" ]
+            , h2 [ class "subtitle" ] [ text "Upload a photo and have fun" ]
             , div [ class "columns" ]
                 [ div [ class "column is-7" ]
                     [ div [ class "columns" ]
@@ -244,7 +244,7 @@ renderErrorMessage status =
         Errored err ->
             div [ class "column" ]
                 [ p [ class "has-text-danger" ]
-                    [ text "Upload sticker error" ]
+                    [ text "Sticker upload error" ]
                 , p [ class "has-text-danger" ]
                     [ text (String.fromInt err.code ++ ": " ++ err.description) ]
                 ]
@@ -272,19 +272,19 @@ renderNotification notification =
                 |> Ui.Notification.showError
 
         SettingsNotExist ->
-            { text = "You forgot to setup settings. Check settings page"
+            { text = "You forgot to set the variables. Please check the settings page"
             , closeMsg = ClickedCloseNotification
             }
                 |> Ui.Notification.showError
 
         SettingsForTelegramMissing ->
-            { text = "You forgot to setup Telegram settings. Check settings page"
+            { text = "You forgot to configure Telegram settings. Please check the settings page"
             , closeMsg = ClickedCloseNotification
             }
                 |> Ui.Notification.showError
 
         UploadedSticker ->
-            { text = "Your sticker was uploaded. It will appear in telegram in period of 30min - 3 hours"
+            { text = "Your sticker has been uploaded. It may take from 30 mins to 3 hours until it becomes avaialble in Telegram"
             , closeMsg = ClickedCloseNotification
             }
                 |> Ui.Notification.showSuccess

@@ -208,7 +208,7 @@ class CustomCanvas extends HTMLElement {
           action: 'StickerUploadedFailureNoSettings',
           payload: null,
         });
-        throw new Error('requestUploadToPack: You forgot to set up variables. Please check settings page (and your localstorage).');
+        throw new Error('requestUploadToPack: You forgot to set the variables. Please check the settings page (and your local storage).');
       }
 
       const { telegramBotToken, telegramBotId } = settings;
@@ -218,7 +218,7 @@ class CustomCanvas extends HTMLElement {
           action: 'StickerUploadedFailureNoTelegramSettings',
           payload: null,
         });
-        throw new Error('requestUploadToPack: You forgot to set up telegram *telegramBotToken* and *telegramBotId*. Please check settings page (and your localstorage).');
+        throw new Error('requestUploadToPack: You forgot to set Telegram *telegramBotToken* and *telegramBotId*. Please check the settings page (and your local storage).');
       }
 
       if (!this._cf) {
