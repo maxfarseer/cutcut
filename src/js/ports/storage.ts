@@ -9,6 +9,7 @@ export type UserEnvSettings = {
   telegramBotToken: string,
   telegramUserId: string,
   telegramBotId: string,
+  telegramBotStickerPackName: string,
   removeBgApiKey: string,
 };
 

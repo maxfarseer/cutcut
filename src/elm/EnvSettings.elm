@@ -28,6 +28,7 @@ type alias Model =
     { telegramBotToken : String
     , telegramUserId : String
     , telegramBotId : String
+    , telegramBotStickerPackName : String
     , removeBgApiKey : String
     }
 
@@ -48,6 +49,7 @@ empty =
     { telegramBotToken = ""
     , telegramUserId = ""
     , telegramBotId = ""
+    , telegramBotStickerPackName = ""
     , removeBgApiKey = ""
     }
 
@@ -58,6 +60,7 @@ settingsEncoder settings =
         [ ( "telegramBotToken", JE.string settings.telegramBotToken )
         , ( "telegramUserId", JE.string settings.telegramUserId )
         , ( "telegramBotId", JE.string settings.telegramBotId )
+        , ( "telegramBotStickerPackName", JE.string settings.telegramBotStickerPackName )
         , ( "removeBgApiKey", JE.string settings.removeBgApiKey )
         ]
 
@@ -90,10 +93,11 @@ incomingMsgDecoder =
 
 settingsDecoder : JD.Decoder (Maybe Model)
 settingsDecoder =
-    JD.map4 Model
+    JD.map5 Model
         (JD.field "telegramBotToken" JD.string)
         (JD.field "telegramUserId" JD.string)
         (JD.field "telegramBotId" JD.string)
+        (JD.field "telegramBotStickerPackName" JD.string)
         (JD.field "removeBgApiKey" JD.string)
         |> JD.nullable
 
