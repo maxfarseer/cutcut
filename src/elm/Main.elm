@@ -4,7 +4,7 @@ import Browser
 import Browser.Navigation as Nav
 import Editor
 import EnvSettings exposing (IncomingMsg(..))
-import Html.Styled exposing (Html, a, button, div, footer, h1, h2, img, nav, p, section, span, strong, text, toUnstyled)
+import Html.Styled exposing (Html, a, br, button, div, footer, h1, h2, iframe, img, nav, p, section, span, strong, text, toUnstyled)
 import Html.Styled.Attributes exposing (attribute, class, href, id, src, target)
 import Json.Decode as JD
 import Route exposing (Route(..))
@@ -365,7 +365,7 @@ viewWelcomePage =
             [ class "title" ]
             [ text "Hello there" ]
         , h2 [ class "subtitle" ]
-            [ text "This is a hobby project built with Elm (plus javascript)."
+            [ text "This is a hobby project built with Elm (plus javascript)"
             ]
         , p []
             [ text "First off, you have to set your "
@@ -376,6 +376,19 @@ viewWelcomePage =
             ]
         , p []
             [ text "It may take from 30 mins to 3 hours until your sticker becomes available in Telegram." ]
+        , br [] []
+        , h2 [ class "subtitle" ]
+            [ text "How it works"
+            ]
+        , iframe
+            [ attribute "allow" "accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
+            , attribute "allowfullscreen" ""
+            , attribute "frameborder" "0"
+            , attribute "height" "315"
+            , src "https://www.youtube.com/embed/aBbs5pRoJXQ"
+            , attribute "width" "560"
+            ]
+            []
         ]
 
 
