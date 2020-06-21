@@ -355,7 +355,7 @@ viewRemoveBgQuestion status imgUrl =
                         " service)."
                     ]
                 , p []
-                    [ text "Don't forget to set your settings variables with "
+                    [ text "Don't forget to set your variables with the "
                     , a
                         [ href "https://www.remove.bg/api", target "_blank" ]
                         [ text "API key" ]
